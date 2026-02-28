@@ -1,50 +1,278 @@
-# Welcome to your Expo app 👋
+# Мобильное приложение такси - Руководство по запуску
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+React Native (Expo) мобильное приложение для заказа такси.
 
-## Get started
+## Требования
 
-1. Install dependencies
+- Node.js 18+
+- npm или pnpm
+- Expo CLI
+- Expo Go (для тестирования на физическом устройстве)
 
-   ```bash
-   npm install
-   ```
+## Быстрый старт
 
-2. Start the app
-
-   ```bash
-   npx expo start
-   ```
-
-In the output, you'll find options to open the app in a
-
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
+### 1. Установка зависимостей
 
 ```bash
-npm run reset-project
+cd uber-clone
+npm install
+# или
+pnpm install
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+### 2. Настройка переменных окружения
 
-## Learn more
+Скопируйте файл примера и настройте его:
 
-To learn more about developing your project with Expo, look at the following resources:
+```bash
+cp .env.example .env
+```
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+Отредактируйте файл `.env`:
 
-## Join the community
+```env
+# Google API ключ (обязательно!)
+EXPO_PUBLIC_GOOGLE_API_KEY=ваш-google-api-ключ
 
-Join our community of developers creating universal apps.
+# URL бэкенда
+# Для эмулятора на том же компьютере:
+EXPO_PUBLIC_API_BASE_URL=http://localhost:8000
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+# Для физического устройства используйте IP вашего компьютера:
+# EXPO_PUBLIC_API_BASE_URL=http://192.168.1.100:8000
+```
+
+### 3. Запуск приложения
+
+```bash
+npx expo start
+```
+
+## Запуск на разных устройствах
+
+### iOS Simulator (Mac)
+
+```bash
+npx expo start
+# Нажмите 'i' в терминале
+```
+
+### Android Emulator
+
+```bash
+npx expo start
+# Нажмите 'a' в терминале
+```
+
+### Физическое устройство
+
+1. **iOS (Expo Go):**
+   - Установите Expo Go из App Store
+   - Отсканируйте QR-код из терминала
+   - Убедитесь, что телефон на той же WiFi сети
+
+2. **Android (Expo Go):**
+   - Установите Expo Go из Google Play
+   - Отсканируйте QR-код из терминала
+   - Убедитесь, что телефон на той же WiFi сети
+
+### Настройка для физического устройства
+
+1. Узнайте IP вашего компьютера:
+   - Windows: `ipconfig` (найдите IPv4 Address)
+   - Mac: `ipconfig getifaddr en0`
+   - Linux: `hostname -I`
+
+2. Обновите `.env` файл:
+   ```env
+   EXPO_PUBLIC_API_BASE_URL=http://ВАШ_IP:8000
+   ```
+
+3. Обновите `backend/.env`:
+   ```env
+   HOST_IP=ВАШ_IP
+   CORS_ALLOW_ALL_ORIGINS=True
+   ```
+
+4. Перезапустите Docker контейнеры и Expo
+
+## Получение Google API Key
+
+1. Перейдите в [Google Cloud Console](https://console.cloud.google.com/)
+2. Создайте новый проект
+3. Включите следующие API:
+   - **Maps SDK for Android** - для отображения карт на Android
+   - **Maps SDK for iOS** - для отображения карт на iOS
+   - **Directions API** - для построения маршрутов
+   - **Places API** - для поиска мест
+4. Создайте API ключ в разделе "Credentials"
+5. Добавьте ключ в `.env` файл
+
+## Тестирование
+
+### Вход как клиент
+
+```
+Телефон: +77010000001
+Пароль: test1234
+```
+
+Телефоны клиентов: +77010000001 - +77010000010
+
+### Вход как водитель
+
+```
+Телефон: +77020000001
+Пароль: test1234
+```
+
+Телефоны водителей: +77020000001 - +77020000030
+
+---
+
+## AQA Тестирование (Static Analysis)
+
+### Semgrep - Статический анализ кода
+
+Semgrep - это инструмент для статического анализа безопасности и качества кода.
+
+#### Установка (через npm или pip)
+
+```bash
+# Через npm
+npm install -g semgrep
+
+# Или через pip
+pip install semgrep
+```
+
+#### Запуск
+
+```bash
+# Сканирование TypeScript кода
+semgrep --config=r/typescript --exclude=node_modules c:/tax_service/uber-clone/
+
+# Полное сканирование (все правила)
+semgrep --config=auto --exclude=node_modules c:/tax_service/uber-clone/
+
+# Только безопасность
+semgrep --config=security --exclude=node_modules c:/tax_service/uber-clone/
+```
+
+#### Опции
+
+| Опция | Описание |
+|-------|----------|
+| `--config=auto` | Автоопределение языка |
+| `--config=r/typescript` | Правила TypeScript |
+| `--exclude=node_modules` | Исключить зависимости |
+| `--json` | Вывод в JSON |
+| `--verbose` | Подробный вывод |
+
+#### Пример вывода
+
+```
+✅ Scan completed successfully.
+ • Findings: 16 (16 blocking)
+ • Rules run: 48
+ • Targets scanned: 73
+ • Parsed lines: ~99.9%
+```
+
+#### Создание .semgrepignore
+
+Создайте файл `uber-clone/.semgrepignore`:
+
+```
+node_modules/
+.expo/
+android/
+ios/
+*.d.ts
+```
+
+#### Запуск с логином (расширенные правила)
+
+```bash
+# Авторизуйтесь
+semgrep login
+
+# Запустите сканирование
+semgrep --config=r/typescript --exclude=node_modules c:/tax_service/uber-clone/
+```
+
+После логина доступны дополнительные Pro правила.
+
+## Структура проекта
+
+```
+uber-clone/
+├── app/                    # Экраны приложения
+│   ├── (auth)/            # Экраны аутентификации
+│   │   ├── sign-in.tsx   # Вход
+│   │   ├── sign-up.tsx   # Регистрация
+│   │   └── welcome.tsx   # Приветствие
+│   └── (root)/           # Основные экраны
+│       ├── find-ride.tsx     # Выбор тарифа
+│       ├── confirm-ride.tsx  # Подтверждение поездки
+│       ├── book-ride.tsx     # Заказ поездки
+│       └── (tabs)/           # Табы
+│           ├── home.tsx      # Главная (карта)
+│           └── profile.tsx   # Профиль
+├── components/            # Компоненты
+│   ├── Map.tsx           # Карта
+│   ├── GoogleTextInput.tsx # Поиск мест
+│   └── ...
+├── hooks/                # React хуки
+├── store/                # Zustand хранилище
+├── lib/                  # Утилиты
+├── constants/            # Константы
+└── i18n/                # Интернационализация
+```
+
+## Основные функции
+
+1. **Главный экран** - карта с поиском места назначения
+2. **Выбор тарифа** - Economy, Comfort, Premium, Business
+3. **Подтверждение поездки** - просмотр водителей и цен
+4. **Заказ поездки** - оформление заказа
+5. **Профиль** - история поездок и настройки
+
+## Возможные проблемы
+
+### Ошибка подключения к API
+
+- Проверьте, что backend запущен и доступен
+- Проверьте URL в `.env` файле
+- Для физического устройства убедитесь, что используете IP адрес
+
+### Карта не отображается
+
+- Проверьте Google API Key
+- Убедитесь, что API включены в Google Cloud Console
+
+### Ошибки при установке
+
+```bash
+# Очистка кэша
+rm -rf node_modules
+rm package-lock.json
+npm install
+```
+
+## Команды
+
+```bash
+# Запуск
+npx expo start
+
+# Очистка кэша
+npx expo start --clear
+
+# Сборка для Android
+npx expo prebuild --platform android
+cd android && ./gradlew assembleRelease
+
+# Сборка для iOS
+npx expo prebuild --platform ios
+```

@@ -1,67 +1,56 @@
-// Регистрация, вход, выход, хранение токенов
+// Auth: register, login, logout, token helpers (web + native via lib/storage)
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import * as SecureStore from 'expo-secure-store';
+import * as storage from '@/lib/storage';
 import { fetchAPI } from '@/lib/fetch';
 import { useAuthStore } from '@/store/authStore';
 
 const AUTH_TOKEN_KEY = 'access-token';
 const REFRESH_TOKEN_KEY = 'refresh-token';
+const USER_ROLES_KEY = 'user-roles';
 
-// Access-токен
-export const getAuthToken = async (): Promise<string | null> => {
+// ─── Role helpers ────────────────────────────────────────────────────────────
+
+export const saveUserRoles = async (roles: string[]): Promise<void> => {
+  await storage.setItem(USER_ROLES_KEY, JSON.stringify(roles));
+};
+
+export const getUserRoles = async (): Promise<string[]> => {
   try {
-    return await SecureStore.getItemAsync(AUTH_TOKEN_KEY);
-  } catch (error) {
-    console.error('[Auth] Error getting access token:', error);
-    return null;
+    const raw = await storage.getItem(USER_ROLES_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch {
+    return [];
   }
 };
 
-export const setAuthToken = async (token: string): Promise<void> => {
-  try {
-    await SecureStore.setItemAsync(AUTH_TOKEN_KEY, token);
-  } catch (error) {
-    console.error('[Auth] Error setting access token:', error);
-    throw error;
-  }
+export const removeUserRoles = async (): Promise<void> => {
+  await storage.removeItem(USER_ROLES_KEY);
 };
 
-export const removeAuthToken = async (): Promise<void> => {
-  try {
-    await SecureStore.deleteItemAsync(AUTH_TOKEN_KEY);
-  } catch (error) {
-    console.error('[Auth] Error removing access token:', error);
-  }
-};
+// ─── Access token ─────────────────────────────────────────────────────────────
 
-// Refresh-токен
-export const getRefreshToken = async (): Promise<string | null> => {
-  try {
-    return await SecureStore.getItemAsync(REFRESH_TOKEN_KEY);
-  } catch (error) {
-    console.error('[Auth] Error getting refresh token:', error);
-    return null;
-  }
-};
+export const getAuthToken = (): Promise<string | null> =>
+  storage.getItem(AUTH_TOKEN_KEY);
 
-export const setRefreshToken = async (token: string): Promise<void> => {
-  try {
-    await SecureStore.setItemAsync(REFRESH_TOKEN_KEY, token);
-  } catch (error) {
-    console.error('[Auth] Error setting refresh token:', error);
-    throw error;
-  }
-};
+export const setAuthToken = (token: string): Promise<void> =>
+  storage.setItem(AUTH_TOKEN_KEY, token);
 
-export const removeRefreshToken = async (): Promise<void> => {
-  try {
-    await SecureStore.deleteItemAsync(REFRESH_TOKEN_KEY);
-  } catch (error) {
-    console.error('[Auth] Error removing refresh token:', error);
-  }
-};
+export const removeAuthToken = (): Promise<void> =>
+  storage.removeItem(AUTH_TOKEN_KEY);
 
-// Регистрация
+// ─── Refresh token ───────────────────────────────────────────────────────────
+
+export const getRefreshToken = (): Promise<string | null> =>
+  storage.getItem(REFRESH_TOKEN_KEY);
+
+export const setRefreshToken = (token: string): Promise<void> =>
+  storage.setItem(REFRESH_TOKEN_KEY, token);
+
+export const removeRefreshToken = (): Promise<void> =>
+  storage.removeItem(REFRESH_TOKEN_KEY);
+
+// ─── Mutations ───────────────────────────────────────────────────────────────
+
 export const useRegister = () => {
   return useMutation({
     mutationFn: ({
@@ -89,7 +78,6 @@ export const useRegister = () => {
   });
 };
 
-// Вход
 export const useLogin = () => {
   const queryClient = useQueryClient();
   const { setAuthenticated } = useAuthStore();
@@ -103,13 +91,15 @@ export const useLogin = () => {
     onSuccess: async (data) => {
       await setAuthToken(data.access);
       await setRefreshToken(data.refresh);
+      if (data.user?.roles) {
+        await saveUserRoles(data.user.roles);
+      }
       setAuthenticated(true);
       queryClient.invalidateQueries({ queryKey: ['user'] });
     },
   });
 };
 
-// Обновление токена (refresh)
 export const useRefreshToken = () => {
   return useMutation({
     mutationFn: async () => {
@@ -121,14 +111,11 @@ export const useRefreshToken = () => {
     },
     onSuccess: async (data) => {
       await setAuthToken(data.access);
-      if (data.refresh) {
-        await setRefreshToken(data.refresh);
-      }
+      if (data.refresh) await setRefreshToken(data.refresh);
     },
   });
 };
 
-// Выход (отправляем refresh на бэк для чёрного списка)
 export const useLogout = () => {
   const queryClient = useQueryClient();
   const { setAuthenticated } = useAuthStore();
@@ -144,19 +131,20 @@ export const useLogout = () => {
     onSuccess: async () => {
       await removeAuthToken();
       await removeRefreshToken();
+      await removeUserRoles();
       setAuthenticated(false);
       queryClient.clear();
     },
     onError: async () => {
       await removeAuthToken();
       await removeRefreshToken();
+      await removeUserRoles();
       setAuthenticated(false);
       queryClient.clear();
     },
   });
 };
 
-// Проверка авторизации (для сплэша)
 export const useAuthCheck = () => {
   return useQuery({
     queryKey: ['auth', 'check'],

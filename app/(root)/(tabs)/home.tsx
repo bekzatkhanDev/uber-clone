@@ -88,7 +88,7 @@ const Home = () => {
             onPress={handleSignOut}
             className="justify-center items-center w-10 h-10 rounded-full bg-white shadow-md"
           >
-            <Image source={icons.out} className="w-4 h-4" />
+            <Image source={icons.out} style={{ width: 16, height: 16 }} resizeMode="contain" />
           </TouchableOpacity>
         </View>
       </View>

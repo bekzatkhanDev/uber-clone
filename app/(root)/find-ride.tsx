@@ -213,7 +213,7 @@ const FindRide = () => {
               )}
             </Text>
           </View>
-          <Image source={icons.arrowDown} className="w-5 h-5" />
+          <Image source={icons.arrowDown} style={{ width: 20, height: 20 }} resizeMode="contain" />
         </View>
         {selectedTariff && bulkEstimates && (
           <Text className="text-sm text-gray-500 mt-1">
@@ -244,7 +244,7 @@ const FindRide = () => {
             <View className="flex-row justify-between items-center mb-5">
               <Text className="text-xl font-JakartaSemiBold">{t.findRide.selectTariff}</Text>
               <TouchableOpacity onPress={() => setShowTariffModal(false)}>
-                <Image source={icons.close} className="w-6 h-6" />
+                <Image source={icons.close} style={{ width: 24, height: 24 }} resizeMode="contain" />
               </TouchableOpacity>
             </View>
 

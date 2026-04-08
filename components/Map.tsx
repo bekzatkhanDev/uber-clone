@@ -138,6 +138,7 @@ const Map = () => {
     <MapView
       ref={mapRef}
       style={{ flex: 1 }}
+      provider={mapProvider}
       initialRegion={initialRegion}
       showsUserLocation={false}
       showsMyLocationButton={false}

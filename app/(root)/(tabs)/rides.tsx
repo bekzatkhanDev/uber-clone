@@ -27,7 +27,7 @@ const Rides = () => {
               <>
                 <Image
                   source={images.noResult}
-                  className="w-40 h-40"
+                  style={{ width: 140, height: 140 }}
                   resizeMode="contain"
                 />
                 <Text className="text-sm text-gray-500 mt-3">

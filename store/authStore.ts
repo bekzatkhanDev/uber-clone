@@ -1,9 +1,10 @@
-// Глобальное состояние авторизации (Zustand)
+// Global auth state (Zustand) — uses lib/storage for web + native compatibility
 import { create } from 'zustand';
-import * as SecureStore from 'expo-secure-store';
+import * as storage from '@/lib/storage';
 
 const AUTH_TOKEN_KEY = 'access-token';
 const REFRESH_TOKEN_KEY = 'refresh-token';
+const USER_ROLES_KEY = 'user-roles';
 
 interface AuthState {
   isAuthenticated: boolean;
@@ -16,32 +17,6 @@ interface AuthState {
   clearAuth: () => Promise<void>;
 }
 
-// Хелперы токенов (дублируем здесь, чтобы не тянуть useAuth и не создавать циклы)
-const getAuthToken = async (): Promise<string | null> => {
-  try {
-    return await SecureStore.getItemAsync(AUTH_TOKEN_KEY);
-  } catch (error) {
-    console.error('[AuthStore] Error getting access token:', error);
-    return null;
-  }
-};
-
-const removeAuthToken = async (): Promise<void> => {
-  try {
-    await SecureStore.deleteItemAsync(AUTH_TOKEN_KEY);
-  } catch (error) {
-    console.error('[AuthStore] Error removing access token:', error);
-  }
-};
-
-const removeRefreshToken = async (): Promise<void> => {
-  try {
-    await SecureStore.deleteItemAsync(REFRESH_TOKEN_KEY);
-  } catch (error) {
-    console.error('[AuthStore] Error removing refresh token:', error);
-  }
-};
-
 export const useAuthStore = create<AuthState>((set) => ({
   isAuthenticated: false,
   isLoading: true,
@@ -53,26 +28,23 @@ export const useAuthStore = create<AuthState>((set) => ({
   initialize: async () => {
     try {
       set({ isLoading: true });
-      const token = await getAuthToken();
-      set({ 
-        isAuthenticated: !!token, 
+      const token = await storage.getItem(AUTH_TOKEN_KEY);
+      set({
+        isAuthenticated: !!token,
         isLoading: false,
-        isInitialized: true 
+        isInitialized: true,
       });
     } catch (error) {
       console.error('[AuthStore] Initialize error:', error);
-      set({ 
-        isAuthenticated: false, 
-        isLoading: false,
-        isInitialized: true 
-      });
+      set({ isAuthenticated: false, isLoading: false, isInitialized: true });
     }
   },
 
   clearAuth: async () => {
     try {
-      await removeAuthToken();
-      await removeRefreshToken();
+      await storage.removeItem(AUTH_TOKEN_KEY);
+      await storage.removeItem(REFRESH_TOKEN_KEY);
+      await storage.removeItem(USER_ROLES_KEY);
     } catch (error) {
       console.error('[AuthStore] Clear auth error:', error);
     } finally {

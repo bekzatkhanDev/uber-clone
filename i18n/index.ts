@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import * as SecureStore from 'expo-secure-store';
+import * as storage from '@/lib/storage';
 
 import en from './en.json';
 import ru from './ru.json';
@@ -146,7 +146,7 @@ export const useI18n = create<I18nStore>((set) => ({
   language: 'ru', // Default to Russian for Kazakhstan
   setLanguage: async (language: Language) => {
     try {
-      await SecureStore.setItemAsync('language', language);
+      await storage.setItem('language', language);
     } catch (e) {
       console.error('Failed to save language preference:', e);
     }
@@ -158,7 +158,7 @@ export const useI18n = create<I18nStore>((set) => ({
 // Initialize language from storage
 export const initializeLanguage = async () => {
   try {
-    const savedLanguage = await SecureStore.getItemAsync('language') as Language | null;
+    const savedLanguage = await storage.getItem('language') as Language | null;
     if (savedLanguage && translations[savedLanguage]) {
       return savedLanguage;
     }

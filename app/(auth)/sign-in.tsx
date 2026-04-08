@@ -10,6 +10,7 @@ import { icons, images } from "@/constants";
 import { useLogin } from "@/hooks/useAuth";
 import { useAuthStore } from "@/store/authStore";
 import { useTranslation } from "@/i18n/I18nProvider";
+import { navigateByRole } from "@/lib/utils";
 
 const SignIn = () => {
   const { t } = useTranslation();
@@ -30,9 +31,9 @@ const SignIn = () => {
     signIn(
       { phone: form.phone, password: form.password },
       {
-        onSuccess: () => {
+        onSuccess: (data) => {
           setAuthenticated(true);
-          router.replace("/(root)/(tabs)/home");
+          navigateByRole(data?.user?.roles ?? []);
         },
         onError: (err: any) => {
           console.error("Login error:", err);

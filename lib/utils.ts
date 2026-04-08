@@ -1,4 +1,16 @@
 import { Ride } from "@/types/type";
+import { router } from "expo-router";
+
+// Priority: driver > customer (admin falls back to customer for now)
+export function getHomeRouteForRoles(roles: string[]): string {
+  if (roles.includes('driver')) return '/(driver)/(tabs)/home';
+  return '/(root)/(tabs)/home';
+}
+
+export function navigateByRole(roles: string[]): void {
+  const route = getHomeRouteForRoles(roles);
+  router.replace(route as any);
+}
 
 export const sortRides = (rides: Ride[]): Ride[] => {
   return [...rides].sort((a, b) => {

@@ -33,7 +33,7 @@ const RideLayout = ({ title, snapPoints, children, showLocationInputs, locationI
     <GestureHandlerRootView className="flex-1">
       <View className="flex-1 bg-white">
         {/* Шапка и карта */}
-        <View className="flex flex-col h-screen bg-blue-500">
+        <View className="flex flex-col flex-1 bg-blue-500">
           <View className="absolute z-10 top-16 left-5 flex flex-row items-center">
             <TouchableOpacity onPress={handleBack} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
               <View className="w-10 h-10 bg-white rounded-full items-center justify-center">

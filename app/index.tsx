@@ -1,21 +1,37 @@
-// Точка входа: редирект на главную или на экран входа по авторизации
+// Entry point: redirect to role-appropriate home or auth screen
+import { useEffect, useState } from "react";
 import { Redirect } from "expo-router";
-import { useAuthCheck } from "@/hooks/useAuth";
+import { useAuthCheck, getUserRoles } from "@/hooks/useAuth";
 import { useAuthStore } from "@/store/authStore";
+import { getHomeRouteForRoles } from "@/lib/utils";
 
 const Page = () => {
   const { isAuthenticated, isInitialized } = useAuthStore();
   const { data: secureStoreAuth, isLoading: secureLoading } = useAuthCheck();
+  const [homeRoute, setHomeRoute] = useState<string | null>(null);
+  const [rolesLoaded, setRolesLoaded] = useState(false);
 
   const isReady = isInitialized || !secureLoading;
   const isAuth = isAuthenticated || secureStoreAuth;
 
-  if (!isReady) {
+  useEffect(() => {
+    if (!isReady) return;
+    if (!isAuth) {
+      setRolesLoaded(true);
+      return;
+    }
+    getUserRoles().then((roles) => {
+      setHomeRoute(getHomeRouteForRoles(roles));
+      setRolesLoaded(true);
+    });
+  }, [isReady, isAuth]);
+
+  if (!isReady || !rolesLoaded) {
     return null;
   }
 
-  if (isAuth) {
-    return <Redirect href="/(root)/(tabs)/home" />;
+  if (isAuth && homeRoute) {
+    return <Redirect href={homeRoute as any} />;
   }
 
   return <Redirect href="/(auth)/welcome" />;

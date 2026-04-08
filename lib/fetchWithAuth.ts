@@ -1,6 +1,6 @@
 // Запросы к API с автоматическим обновлением токена при 401
 import { router } from 'expo-router';
-import { getAuthToken, getRefreshToken, removeAuthToken, removeRefreshToken, setAuthToken, setRefreshToken } from '@/hooks/useAuth';
+import { getAuthToken, getRefreshToken, removeAuthToken, removeRefreshToken, removeUserRoles, setAuthToken, setRefreshToken } from '@/hooks/useAuth';
 import { useAuthStore } from '@/store/authStore';
 
 let isRefreshing = false;
@@ -62,6 +62,7 @@ const refreshAccessToken = async (): Promise<boolean> => {
 const handleLogout = async () => {
   await removeAuthToken();
   await removeRefreshToken();
+  await removeUserRoles();
   useAuthStore.getState().setAuthenticated(false);
   router.replace('/(auth)/welcome');
 };

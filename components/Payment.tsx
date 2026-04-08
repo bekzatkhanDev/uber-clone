@@ -1,8 +1,6 @@
-// components/Payment.tsx
 import { router } from 'expo-router';
 import React, { useState } from 'react';
-import { Alert, Image, Text, View } from 'react-native';
-import { ReactNativeModal } from 'react-native-modal';
+import { Alert, Image, Modal, Platform, Text, View } from 'react-native';
 
 import CustomButton from '@/components/CustomButton';
 import { images } from '@/constants';
@@ -25,13 +23,19 @@ const Payment = ({
 
   const [success, setSuccess] = useState<boolean>(false);
 
-  const { execute, isPending } = usePaymentFlow(() => {
-    setSuccess(true);
-  });
+  const { bookTrip, isBooking } = usePaymentFlow();
+
+  const showAlert = (title: string, message: string) => {
+    if (Platform.OS === 'web') {
+      alert(`${title}\n\n${message}`);
+      return;
+    }
+    Alert.alert(title, message);
+  };
 
   const handleConfirmRide = async () => {
     if (!userId) {
-      Alert.alert('Ошибка', 'Пользователь не авторизован');
+      showAlert('Ошибка', 'Пользователь не авторизован');
       return;
     }
 
@@ -41,17 +45,22 @@ const Payment = ({
       destinationLatitude === null ||
       destinationLongitude === null
     ) {
-      Alert.alert('Ошибка', 'Не указаны координаты');
+      showAlert('Ошибка', 'Не указаны координаты');
       return;
     }
 
-    await execute({
-      start_lat: userLatitude,
-      start_lng: userLongitude,
-      end_lat: destinationLatitude,
-      end_lng: destinationLongitude,
-      tariff_code: "economy",
-    });
+    try {
+      await bookTrip({
+        start_lat: userLatitude,
+        start_lng: userLongitude,
+        end_lat: destinationLatitude,
+        end_lng: destinationLongitude,
+        tariff_code: "economy",
+      });
+      setSuccess(true);
+    } catch {
+      // `usePaymentFlow` already shows an Alert; keep UI stable here.
+    }
   };
 
   return (
@@ -60,28 +69,35 @@ const Payment = ({
         title="Confirm Ride"
         className="my-10"
         onPress={handleConfirmRide}
-        disabled={isPending}
+        disabled={isBooking}
       />
 
-      <ReactNativeModal isVisible={success} onBackdropPress={() => setSuccess(false)}>
-        <View className="flex flex-col items-center justify-center bg-white p-7 rounded-2xl">
-          <Image source={images.check} className="w-28 h-28 mt-5" />
-          <Text className="text-2xl text-center font-JakartaBold mt-5">
-            Booking placed successfully
-          </Text>
-          <Text className="text-md text-general-200 font-JakartaRegular text-center mt-3">
-            Thank you for your booking. Your reservation has been successfully placed.
-          </Text>
-          <CustomButton
-            title="Back Home"
-            onPress={() => {
-              setSuccess(false);
-              router.push('/(root)/(tabs)/home');
-            }}
-            className="mt-5"
-          />
+      <Modal
+        visible={success}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setSuccess(false)}
+      >
+        <View className="flex-1 items-center justify-center bg-black/50 px-6">
+          <View className="w-full max-w-md flex flex-col items-center justify-center bg-white p-7 rounded-2xl">
+            <Image source={images.check} className="w-28 h-28 mt-5" />
+            <Text className="text-2xl text-center font-JakartaBold mt-5">
+              Booking placed successfully
+            </Text>
+            <Text className="text-md text-general-200 font-JakartaRegular text-center mt-3">
+              Thank you for your booking. Your reservation has been successfully placed.
+            </Text>
+            <CustomButton
+              title="Back Home"
+              onPress={() => {
+                setSuccess(false);
+                router.push('/(root)/(tabs)/home');
+              }}
+              className="mt-5"
+            />
+          </View>
         </View>
-      </ReactNativeModal>
+      </Modal>
     </>
   );
 };

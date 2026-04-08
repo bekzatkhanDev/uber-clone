@@ -108,7 +108,7 @@ const BookRide = () => {
       {hasAssignedDriver ? (
         <View className="flex flex-col w-full items-center justify-center mt-5">
           <View className="w-28 h-28 rounded-full bg-gray-200 justify-center items-center">
-            <Image source={icons.person} className="w-16 h-16" />
+            <Image source={icons.person} style={{ width: 64, height: 64 }} resizeMode="contain" />
           </View>
 
           <View className="flex flex-row items-center justify-center mt-5 space-x-2">
@@ -157,14 +157,14 @@ const BookRide = () => {
       {/* Адреса */}
       <View className="flex flex-col w-full items-start justify-center mt-5">
         <View className="flex flex-row items-center justify-start mt-3 border-t border-b border-general-700 w-full py-3">
-          <Image source={icons.to} className="w-6 h-6" />
+          <Image source={icons.to} style={{ width: 24, height: 24 }} resizeMode="contain" />
           <Text className="text-lg font-JakartaRegular ml-2">
             {userAddress}
           </Text>
         </View>
 
         <View className="flex flex-row items-center justify-start border-b border-general-700 w-full py-3">
-          <Image source={icons.point} className="w-6 h-6" />
+          <Image source={icons.point} style={{ width: 24, height: 24 }} resizeMode="contain" />
           <Text className="text-lg font-JakartaRegular ml-2">
             {destinationAddress}
           </Text>

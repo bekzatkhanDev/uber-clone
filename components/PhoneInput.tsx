@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
   FlatList,
   Image,
@@ -64,6 +64,31 @@ const PhoneInput: React.FC<PhoneInputProps> = ({
   const [isFocused, setIsFocused] = useState<boolean>(false);
   const inputRef = useRef<TextInput>(null);
 
+  const formatPhoneNumber = useCallback(
+    (text: string, mask: string): string => {
+      // Удаляем все нецифровые символы
+      const cleaned = text.replace(/\D/g, '');
+
+      // Применяем маску
+      let formatted = '';
+      let digitIndex = 0;
+
+      const maskWithoutDialCode = mask.substring(selectedCountry.dialCode.length);
+
+      for (let i = 0; i < maskWithoutDialCode.length && digitIndex < cleaned.length; i++) {
+        if (maskWithoutDialCode[i] === '#') {
+          formatted += cleaned[digitIndex];
+          digitIndex++;
+        } else {
+          formatted += maskWithoutDialCode[i];
+        }
+      }
+
+      return formatted;
+    },
+    [selectedCountry.dialCode]
+  );
+
   useEffect(() => {
     if (value) {
       // Парсинг входящего значения
@@ -74,29 +99,7 @@ const PhoneInput: React.FC<PhoneInputProps> = ({
         setPhone(formatPhoneNumber(numberPart, country.mask));
       }
     }
-  }, [value]);
-
-  const formatPhoneNumber = (text: string, mask: string): string => {
-    // Удаляем все нецифровые символы
-    const cleaned = text.replace(/\D/g, '');
-    
-    // Применяем маску
-    let formatted = '';
-    let digitIndex = 0;
-    
-    const maskWithoutDialCode = mask.substring(selectedCountry.dialCode.length);
-    
-    for (let i = 0; i < maskWithoutDialCode.length && digitIndex < cleaned.length; i++) {
-      if (maskWithoutDialCode[i] === '#') {
-        formatted += cleaned[digitIndex];
-        digitIndex++;
-      } else {
-        formatted += maskWithoutDialCode[i];
-      }
-    }
-    
-    return formatted;
-  };
+  }, [value, formatPhoneNumber]);
 
   const handlePhoneChange = (text: string): void => {
     const formatted = formatPhoneNumber(text, selectedCountry.mask);

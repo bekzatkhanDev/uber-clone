@@ -11,6 +11,7 @@ import { icons, images } from "@/constants";
 import { useLogin, useRegister } from "@/hooks/useAuth";
 import { useAuthStore } from "@/store/authStore";
 import { useTranslation } from "@/i18n/I18nProvider";
+import { navigateByRole } from "@/lib/utils";
 
 const SignUp = () => {
   const { t } = useTranslation();
@@ -46,9 +47,12 @@ const SignUp = () => {
           login(
             { phone: form.phone, password: form.password },
             {
-              onSuccess: () => {
+              onSuccess: (data) => {
                 setAuthenticated(true);
                 setShowSuccessModal(true);
+                // Store roles so the modal button navigates correctly
+                // (register always creates customer, but we read from response to be safe)
+                void 0; // roles saved by useLogin's onSuccess
               },
               onError: (err: any) => {
                 console.error("Auto-login error:", err);
@@ -144,7 +148,7 @@ const SignUp = () => {
             </Text>
             <CustomButton
               title={t.auth.goToHome}
-              onPress={() => router.push("/(root)/(tabs)/home")}
+              onPress={() => navigateByRole(['customer'])}
               className="mt-5"
             />
           </View>

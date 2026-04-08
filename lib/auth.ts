@@ -1,23 +1,20 @@
-import * as Linking from "expo-linking";
-import * as SecureStore from "expo-secure-store";
+import * as storage from '@/lib/storage';
 
 export const tokenCache = {
   async getToken(key: string) {
     try {
-      const item = await SecureStore.getItemAsync(key);
-      return item;
+      return await storage.getItem(key);
     } catch (error) {
-      console.error("SecureStore get item error: ", error);
-      // Don't silently delete token on read error - just return null
+      console.error('Token cache get error:', error);
       return null;
     }
   },
   async saveToken(key: string, value: string) {
     try {
-      return await SecureStore.setItemAsync(key, value);
+      await storage.setItem(key, value);
     } catch (err) {
-      console.error("SecureStore set item error: ", err);
-      throw new Error("Failed to save authentication token");
+      console.error('Token cache save error:', err);
+      throw new Error('Failed to save authentication token');
     }
   },
 };

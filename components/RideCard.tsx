@@ -48,14 +48,14 @@ const RideCard = ({ ride }: { ride: Ride }) => {
 
           <View className="flex flex-col mx-5 gap-y-3 flex-1">
             <View className="flex flex-row items-center gap-x-2">
-              <Image source={icons.to} className="w-5 h-5" />
+              <Image source={icons.to} style={{ width: 20, height: 20 }} resizeMode="contain" />
               <Text className="text-md font-JakartaMedium" numberOfLines={1}>
                 {ride.origin_address || "—"}
               </Text>
             </View>
 
             <View className="flex flex-row items-center gap-x-2">
-              <Image source={icons.point} className="w-5 h-5" />
+              <Image source={icons.point} style={{ width: 20, height: 20 }} resizeMode="contain" />
               <Text className="text-md font-JakartaMedium" numberOfLines={1}>
                 {ride.destination_address || "—"}
               </Text>

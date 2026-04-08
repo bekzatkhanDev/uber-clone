@@ -1,13 +1,13 @@
-// Вызовы Django API с подстановкой токена из SecureStore
-import * as SecureStore from "expo-secure-store";
+// Django API calls with Bearer token — web + native via lib/storage
+import * as storage from '@/lib/storage';
 
-const AUTH_TOKEN_KEY = "access-token";
+const AUTH_TOKEN_KEY = 'access-token';
 
 const getApiBaseUrl = (): string => {
   const baseUrl = process.env.EXPO_PUBLIC_API_BASE_URL;
   if (!baseUrl) {
-    console.error("[API] EXPO_PUBLIC_API_BASE_URL не задан");
-    throw new Error("Укажите EXPO_PUBLIC_API_BASE_URL в .env");
+    console.error('[API] EXPO_PUBLIC_API_BASE_URL not set');
+    throw new Error('Set EXPO_PUBLIC_API_BASE_URL in .env');
   }
   return `${baseUrl}/api/v1`;
 };
@@ -26,25 +26,18 @@ export class ApiError extends Error {
   }
 }
 
-// Универсальный fetch к API: сам подставляет Bearer-токен из хранилища
 export const fetchAPI = async (endpoint: string, options: RequestInit = {}) => {
   const url = `${API_BASE_URL}${endpoint}`;
-  const token = await SecureStore.getItemAsync(AUTH_TOKEN_KEY);
+  const token = await storage.getItem(AUTH_TOKEN_KEY);
 
   const config: RequestInit = {
     ...options,
     headers: {
-      "Content-Type": "application/json",
+      'Content-Type': 'application/json',
       ...options.headers,
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
     },
   };
-
-  if (token) {
-    config.headers = {
-      ...config.headers,
-      Authorization: `Bearer ${token}`,
-    };
-  }
 
   try {
     const response = await fetch(url, config);
@@ -59,9 +52,9 @@ export const fetchAPI = async (endpoint: string, options: RequestInit = {}) => {
     if (!response.ok) {
       const error = new Error(
         responseData?.detail ||
-        responseData?.error ||
-        responseData?.message ||
-        `HTTP ${response.status}: ${response.statusText}`
+          responseData?.error ||
+          responseData?.message ||
+          `HTTP ${response.status}: ${response.statusText}`
       );
       (error as any).status = response.status;
       (error as any).responseData = responseData;

@@ -66,9 +66,10 @@ const Profile = () => {
         <View className="flex flex-row items-center">
           <View className="w-20 h-20 rounded-full bg-gray-200 justify-center items-center">
             {currentUser?.profile_image_url ? (
-              <Image 
-                source={{ uri: currentUser.profile_image_url }} 
-                className="w-20 h-20 rounded-full"
+              <Image
+                source={{ uri: currentUser.profile_image_url }}
+                style={{ width: 80, height: 80, borderRadius: 40 }}
+                resizeMode="cover"
               />
             ) : (
               <Text className="text-2xl font-JakartaBold">
@@ -96,7 +97,7 @@ const Profile = () => {
       <View className="bg-white rounded-xl p-5 mb-5">
         <Text className="text-lg font-JakartaSemiBold mb-3">{t.profile.currentLocation}</Text>
         <View className="flex flex-row items-center">
-          <Image source={icons.point} className="w-5 h-5" />
+          <Image source={icons.point} style={{ width: 20, height: 20 }} resizeMode="contain" />
           <Text className="ml-2 text-gray-600">
             {location?.address || t.common.loading}
           </Text>
@@ -118,7 +119,7 @@ const Profile = () => {
         >
           <Text className="ml-3 flex-1">Русский</Text>
           {language === 'ru' && (
-            <Image source={icons.checkmark} className="w-5 h-5" />
+            <Image source={icons.checkmark} style={{ width: 20, height: 20 }} resizeMode="contain" />
           )}
         </TouchableOpacity>
 
@@ -128,7 +129,7 @@ const Profile = () => {
         >
           <Text className="ml-3 flex-1">Қазақша</Text>
           {language === 'kk' && (
-            <Image source={icons.checkmark} className="w-5 h-5" />
+            <Image source={icons.checkmark} style={{ width: 20, height: 20 }} resizeMode="contain" />
           )}
         </TouchableOpacity>
 
@@ -138,7 +139,7 @@ const Profile = () => {
         >
           <Text className="ml-3 flex-1">English</Text>
           {language === 'en' && (
-            <Image source={icons.checkmark} className="w-5 h-5" />
+            <Image source={icons.checkmark} style={{ width: 20, height: 20 }} resizeMode="contain" />
           )}
         </TouchableOpacity>
       </View>
@@ -148,21 +149,21 @@ const Profile = () => {
         <Text className="text-lg font-JakartaSemiBold mb-3">{t.profile.account}</Text>
         
         <TouchableOpacity className="flex flex-row items-center py-3 border-b border-gray-100">
-          <Image source={icons.person} className="w-5 h-5" />
+          <Image source={icons.person} style={{ width: 20, height: 20 }} resizeMode="contain" />
           <Text className="ml-3 flex-1">{t.profile.editProfile}</Text>
-          <Image source={icons.arrowUp} className="w-4 h-4 transform rotate-90" />
+          <Image source={icons.arrowUp} style={{ width: 16, height: 16, transform: [{ rotate: '90deg' }] }} resizeMode="contain" />
         </TouchableOpacity>
 
         <TouchableOpacity className="flex flex-row items-center py-3 border-b border-gray-100">
-          <Image source={icons.phone} className="w-5 h-5" />
+          <Image source={icons.phone} style={{ width: 20, height: 20 }} resizeMode="contain" />
           <Text className="ml-3 flex-1">{t.profile.phoneNumbers}</Text>
-          <Image source={icons.arrowUp} className="w-4 h-4 transform rotate-90" />
+          <Image source={icons.arrowUp} style={{ width: 16, height: 16, transform: [{ rotate: '90deg' }] }} resizeMode="contain" />
         </TouchableOpacity>
 
         <TouchableOpacity className="flex flex-row items-center py-3">
-          <Image source={icons.list} className="w-5 h-5" />
+          <Image source={icons.list} style={{ width: 20, height: 20 }} resizeMode="contain" />
           <Text className="ml-3 flex-1">{t.profile.rideHistory}</Text>
-          <Image source={icons.arrowUp} className="w-4 h-4 transform rotate-90" />
+          <Image source={icons.arrowUp} style={{ width: 16, height: 16, transform: [{ rotate: '90deg' }] }} resizeMode="contain" />
         </TouchableOpacity>
       </View>
 
@@ -171,20 +172,30 @@ const Profile = () => {
         <Text className="text-lg font-JakartaSemiBold mb-3">{t.profile.payments}</Text>
         
         <TouchableOpacity className="flex flex-row items-center py-3 border-b border-gray-100">
-          <Image source={icons.dollar} className="w-5 h-5" />
+          <Image source={icons.dollar} style={{ width: 20, height: 20 }} resizeMode="contain" />
           <Text className="ml-3 flex-1">{t.profile.paymentMethods}</Text>
-          <Image source={icons.arrowUp} className="w-4 h-4 transform rotate-90" />
+          <Image source={icons.arrowUp} style={{ width: 16, height: 16, transform: [{ rotate: '90deg' }] }} resizeMode="contain" />
         </TouchableOpacity>
 
         <TouchableOpacity className="flex flex-row items-center py-3">
-          <Image source={icons.pin} className="w-5 h-5" />
+          <Image source={icons.pin} style={{ width: 20, height: 20 }} resizeMode="contain" />
           <Text className="ml-3 flex-1">{t.profile.savedPlaces}</Text>
-          <Image source={icons.arrowUp} className="w-4 h-4 transform rotate-90" />
+          <Image source={icons.arrowUp} style={{ width: 16, height: 16, transform: [{ rotate: '90deg' }] }} resizeMode="contain" />
         </TouchableOpacity>
       </View>
 
+      {/* Driver mode switch */}
+      {currentUser?.roles?.includes('driver') && (
+        <TouchableOpacity
+          onPress={() => router.replace('/(driver)/(tabs)/home')}
+          className="bg-[#1a1a2e] rounded-xl p-5 items-center mb-3"
+        >
+          <Text className="text-white font-JakartaSemiBold">Switch to Driver Mode</Text>
+        </TouchableOpacity>
+      )}
+
       {/* Выход */}
-      <TouchableOpacity 
+      <TouchableOpacity
         onPress={handleSignOut}
         className="bg-red-500 rounded-xl p-5 items-center"
       >

@@ -68,15 +68,31 @@ const makeDestIcon = () =>
     iconAnchor: [13, 26],
   });
 
+// Stops all ongoing Leaflet animations before the map is torn down,
+// preventing rAF callbacks from firing on a detached DOM element.
+const MapStopper = () => {
+  const map = useMap();
+  useEffect(() => {
+    return () => {
+      try { map.stop(); } catch {}
+    };
+  }, [map]);
+  return null;
+};
+
 // Helper: fly map to new centre when coordinates change
 const MapController = ({ lat, lng }: { lat: number; lng: number }) => {
   const map = useMap();
   useEffect(() => {
-    // Guard against NaN or invalid coordinates
-    if (typeof lat !== 'number' || typeof lng !== 'number' || isNaN(lat) || isNaN(lng)) {
+    // Guard against NaN, null, undefined, Infinity, etc.
+    if (!isFinite(lat) || !isFinite(lng)) {
       return;
     }
-    map.flyTo([lat, lng], map.getZoom(), { animate: true, duration: 0.8 });
+    try {
+      map.flyTo([lat, lng], map.getZoom(), { animate: true, duration: 0.8 });
+    } catch {
+      // Swallow Leaflet LatLng errors to prevent crashing the map
+    }
   }, [lat, lng, map]);
   return null;
 };
@@ -116,18 +132,23 @@ const Map = ({
   useEffect(() => {
     if (!drivers || !Array.isArray(drivers) || !userLatitude || !userLongitude) return;
     setMarkers(
-      drivers.map((d: NearbyDriver) => ({
-        id: d.id,
-        latitude: d.lat,
-        longitude: d.lng,
-        title: `Driver ${d.id}`,
-        first_name: "Driver",
-        last_name: `${d.id}`,
-        profile_image_url: "",
-        car_image_url: "",
-        rating: 5,
-        distance_km: d.distance_km,
-      }))
+      drivers
+        .filter((d: NearbyDriver) =>
+          typeof d.lat === 'number' && isFinite(d.lat) &&
+          typeof d.lng === 'number' && isFinite(d.lng)
+        )
+        .map((d: NearbyDriver) => ({
+          id: d.id,
+          latitude: d.lat,
+          longitude: d.lng,
+          title: `Driver ${d.id}`,
+          first_name: "Driver",
+          last_name: `${d.id}`,
+          profile_image_url: "",
+          car_image_url: "",
+          rating: 5,
+          distance_km: d.distance_km,
+        }))
     );
   }, [drivers, userLatitude, userLongitude]);
 
@@ -167,9 +188,9 @@ const Map = ({
     );
   }, [userLatitude, userLongitude, destinationLatitude, destinationLongitude]);
 
-  // Ensure center coordinates are valid numbers, fallback to defaults
-  const safeUserLat = (typeof userLatitude === 'number' && !isNaN(userLatitude)) ? userLatitude : DEFAULT_LATITUDE;
-  const safeUserLng = (typeof userLongitude === 'number' && !isNaN(userLongitude)) ? userLongitude : DEFAULT_LONGITUDE;
+  // Ensure center coordinates are valid finite numbers, fallback to defaults
+  const safeUserLat = (typeof userLatitude === 'number' && isFinite(userLatitude)) ? userLatitude : (DEFAULT_LATITUDE ?? 51.1694);
+  const safeUserLng = (typeof userLongitude === 'number' && isFinite(userLongitude)) ? userLongitude : (DEFAULT_LONGITUDE ?? 71.4491);
   
   const center: [number, number] = useMemo(
     () => [safeUserLat, safeUserLng],
@@ -180,18 +201,13 @@ const Map = ({
   const isValidCenter = typeof center[0] === 'number' && typeof center[1] === 'number' && 
                         !isNaN(center[0]) && !isNaN(center[1]);
 
-  if (isLoading || (!safeUserLat && !safeUserLng) || !isValidCenter) {
+  // Only block map rendering when we truly have no valid center — driver
+  // loading state must NOT unmount MapContainer, or Leaflet's rAF callbacks
+  // will fire on a detached DOM element and throw Invalid LatLng (NaN, NaN).
+  if (!isValidCenter) {
     return (
       <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
         <ActivityIndicator size="large" color="#0286FF" />
-      </View>
-    );
-  }
-
-  if (error) {
-    return (
-      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-        <Text style={{ color: "#ef4444" }}>Map error: {error.message}</Text>
       </View>
     );
   }
@@ -223,16 +239,22 @@ const Map = ({
           maxZoom={19}
         />
 
+        <MapStopper />
         <MapController lat={center[0]} lng={center[1]} />
 
         {/* Nearby drivers */}
-        {showDrivers && markers.map((m) => (
-          <Marker
-            key={`driver-${m.id}`}
-            position={[m.latitude, m.longitude]}
-            icon={makeCarIcon(selectedDriver === +m.id)}
-          />
-        ))}
+        {showDrivers && markers
+          .filter((m) =>
+            typeof m.latitude === 'number' && isFinite(m.latitude) &&
+            typeof m.longitude === 'number' && isFinite(m.longitude)
+          )
+          .map((m) => (
+            <Marker
+              key={`driver-${m.id}`}
+              position={[m.latitude, m.longitude]}
+              icon={makeCarIcon(selectedDriver === +m.id)}
+            />
+          ))}
 
         {/* User location */}
         {showUserLocation && safeUserLat && safeUserLng && (

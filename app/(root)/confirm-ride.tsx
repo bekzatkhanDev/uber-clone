@@ -7,145 +7,123 @@ import { ActivityIndicator, Image, Text, View } from "react-native";
 import CustomButton from "@/components/CustomButton";
 import RideLayout from "@/components/RideLayout";
 import { icons } from "@/constants";
-import { useLocationStore, useDriverStore } from "@/store";
+import { useLocationStore } from "@/store";
 import { useTranslation, useCurrency } from "@/i18n/I18nProvider";
+
+const Row = ({ label, value, valueStyle }: { label: string; value: React.ReactNode; valueStyle?: any }) => (
+  <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", paddingVertical: 10 }}>
+    <Text style={{ fontSize: 14, color: "#6b7280", flex: 1 }}>{label}</Text>
+    <View style={{ flex: 1, alignItems: "flex-end" }}>
+      {typeof value === "string" ? (
+        <Text style={[{ fontSize: 14, fontWeight: "600", color: "#111827", textAlign: "right" }, valueStyle]}>{value}</Text>
+      ) : value}
+    </View>
+  </View>
+);
+
+const Card = ({ children }: { children: React.ReactNode }) => (
+  <View style={{ backgroundColor: "white", borderRadius: 16, padding: 16, marginBottom: 12, borderWidth: 1, borderColor: "#f3f4f6", shadowColor: "#000", shadowOpacity: 0.04, shadowRadius: 6, elevation: 2 }}>
+    {children}
+  </View>
+);
+
+const SectionTitle = ({ title }: { title: string }) => (
+  <Text style={{ fontSize: 13, fontWeight: "700", color: "#9ca3af", textTransform: "uppercase", letterSpacing: 0.8, marginBottom: 8 }}>{title}</Text>
+);
 
 const ConfirmRide = () => {
   const { t } = useTranslation();
   const { symbol } = useCurrency();
   const { userAddress, destinationAddress, selectedTariff, estimate } = useLocationStore();
-  const { drivers } = useDriverStore();
 
   const estimatedTime = estimate?.duration_min || 0;
   const estimatedDistance = estimate?.distance_km || 0;
   const estimatedPrice = estimate?.price || 0;
-
-  const formatPrice = (price: number) => {
-    return `${symbol}${price.toFixed(2)}`;
-  };
-
-  const formatDistance = (km: number) => {
-    return `${km.toFixed(1)} km`;
-  };
-
-  const formatTime = (min: number) => {
-    return `${Math.round(min)} min`;
-  };
-
   const isCalculating = !estimate;
+
+  const formatPrice = (price: number) =>
+    `${symbol}${price.toFixed(2)}`;
 
   return (
     <RideLayout title={t.confirmRide.confirmRide} snapPoints={["60%"]}>
-      <View className="flex flex-col w-full px-5">
-        <Text className="text-xl font-JakartaSemiBold mb-4">{t.confirmRide.rideSummary}</Text>
+      {/* Route card */}
+      <Card>
+        <SectionTitle title={t.confirmRide.rideSummary} />
 
-        {/* Откуда */}
-        <View className="flex flex-row items-center border-b border-gray-200 py-3">
-          <Image source={icons.point} className="w-5 h-5 mr-3" />
-          <View className="flex-1">
-            <Text className="text-sm text-gray-500">{t.confirmRide.pickup}</Text>
-            <Text className="text-lg font-JakartaMedium">{userAddress || t.confirmRide.notSet}</Text>
+        <View style={{ flexDirection: "row", alignItems: "flex-start", marginBottom: 12 }}>
+          <Image source={icons.point} style={{ width: 18, height: 18, marginTop: 2, marginRight: 10 }} resizeMode="contain" />
+          <View style={{ flex: 1 }}>
+            <Text style={{ fontSize: 11, color: "#9ca3af", marginBottom: 2 }}>{t.confirmRide.pickup}</Text>
+            <Text style={{ fontSize: 15, fontWeight: "600", color: "#111827" }}>{userAddress || t.confirmRide.notSet}</Text>
           </View>
         </View>
 
-        {/* Куда */}
-        <View className="flex flex-row items-center border-b border-gray-200 py-3">
-          <Image source={icons.to} className="w-5 h-5 mr-3" />
-          <View className="flex-1">
-            <Text className="text-sm text-gray-500">{t.confirmRide.destination}</Text>
-            <Text className="text-lg font-JakartaMedium">{destinationAddress || t.confirmRide.notSet}</Text>
+        <View style={{ flexDirection: "row", alignItems: "flex-start" }}>
+          <Image source={icons.to} style={{ width: 18, height: 18, marginTop: 2, marginRight: 10 }} resizeMode="contain" />
+          <View style={{ flex: 1 }}>
+            <Text style={{ fontSize: 11, color: "#9ca3af", marginBottom: 2 }}>{t.confirmRide.destination}</Text>
+            <Text style={{ fontSize: 15, fontWeight: "600", color: "#111827" }}>{destinationAddress || t.confirmRide.notSet}</Text>
           </View>
         </View>
+      </Card>
 
-        {/* Тариф */}
-        <View className="flex flex-row items-center border-b border-gray-200 py-3">
-          <Image source={icons.dollar} className="w-5 h-5 mr-3" />
-          <View className="flex-1">
-            <Text className="text-sm text-gray-500">{t.confirmRide.tariff}</Text>
-            <Text className="text-lg font-JakartaMedium capitalize">
-              {selectedTariff?.code || t.confirmRide.notSelected}
-            </Text>
-          </View>
-          <Text className="text-lg font-JakartaBold text-[#0CC25F]">
-            {formatPrice(selectedTariff?.base_price ? parseFloat(selectedTariff.base_price) : 0)}
-          </Text>
+      {/* Price hero */}
+      <Card>
+        <View style={{ alignItems: "center", paddingVertical: 8 }}>
+          <Text style={{ fontSize: 13, color: "#9ca3af", marginBottom: 4 }}>{t.confirmRide.estimatedPrice}</Text>
+          {isCalculating ? (
+            <ActivityIndicator size="large" color="#0CC25F" />
+          ) : (
+            <Text style={{ fontSize: 40, fontWeight: "800", color: "#0CC25F" }}>{formatPrice(estimatedPrice)}</Text>
+          )}
+          {estimate?.is_estimate && (
+            <View style={{ backgroundColor: "#fef9c3", borderRadius: 8, paddingHorizontal: 10, paddingVertical: 4, marginTop: 8 }}>
+              <Text style={{ fontSize: 12, color: "#a16207" }}>⚠️ {t.confirmRide.priceEstimate}</Text>
+            </View>
+          )}
         </View>
+      </Card>
 
-        {/* Расстояние и время */}
-        <View className="flex flex-row items-center border-b border-gray-200 py-3">
-          <Image source={icons.point} className="w-5 h-5 mr-3" />
-          <View className="flex-1">
-            <Text className="text-sm text-gray-500">{t.confirmRide.distance}</Text>
-            {isCalculating ? (
-              <ActivityIndicator size="small" color="#0CC25F" />
-            ) : (
-              <Text className="text-lg font-JakartaMedium">
-                {formatDistance(estimatedDistance)}
-              </Text>
-            )}
-          </View>
-          <View className="flex items-end">
-            <Text className="text-sm text-gray-500">{t.confirmRide.duration}</Text>
-            {isCalculating ? (
-              <ActivityIndicator size="small" color="#0CC25F" />
-            ) : (
-              <Text className="text-lg font-JakartaMedium">
-                {formatTime(estimatedTime)}
-              </Text>
-            )}
-          </View>
-        </View>
+      {/* Trip details */}
+      <Card>
+        <SectionTitle title={t.confirmRide.tariff} />
+        <Row
+          label={t.confirmRide.tariff}
+          value={selectedTariff?.code ? selectedTariff.code.charAt(0).toUpperCase() + selectedTariff.code.slice(1) : t.confirmRide.notSelected}
+        />
+        <View style={{ height: 1, backgroundColor: "#f3f4f6" }} />
+        <Row
+          label={t.confirmRide.distance}
+          value={isCalculating ? <ActivityIndicator size="small" color="#0CC25F" /> : `${estimatedDistance.toFixed(1)} km`}
+        />
+        <View style={{ height: 1, backgroundColor: "#f3f4f6" }} />
+        <Row
+          label={t.confirmRide.duration}
+          value={isCalculating ? <ActivityIndicator size="small" color="#0CC25F" /> : `${Math.round(estimatedTime)} min`}
+        />
+      </Card>
 
-        {/* Цена */}
-        <View className="flex flex-row items-center py-3 mt-2">
-          <Image source={icons.dollar} className="w-5 h-5 mr-3" />
-          <View className="flex-1">
-            <Text className="text-sm text-gray-500">{t.confirmRide.estimatedPrice}</Text>
-            {isCalculating ? (
-              <ActivityIndicator size="small" color="#0CC25F" />
-            ) : (
-              <Text className="text-2xl font-JakartaBold text-[#0CC25F]">
-                {formatPrice(estimatedPrice)}
-              </Text>
-            )}
+      {/* Driver info */}
+      <Card>
+        <SectionTitle title={t.confirmRide.driver} />
+        <View style={{ flexDirection: "row", alignItems: "center" }}>
+          <View style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: "#f3f4f6", justifyContent: "center", alignItems: "center", marginRight: 12 }}>
+            <Image source={icons.person} style={{ width: 24, height: 24 }} resizeMode="contain" />
+          </View>
+          <View>
+            <Text style={{ fontSize: 14, fontWeight: "600", color: "#111827" }}>{t.confirmRide.willBeAssigned}</Text>
+            <Text style={{ fontSize: 12, color: "#9ca3af", marginTop: 2 }}>{t.confirmRide.driverAssigned}</Text>
           </View>
         </View>
+      </Card>
 
-        {/* Предупреждение про примерную цену */}
-        {estimate?.is_estimate && (
-          <View className="bg-yellow-50 p-3 rounded-lg mt-2">
-            <Text className="text-sm text-yellow-600">
-              ⚠️ {t.confirmRide.priceEstimate}
-            </Text>
-          </View>
-        )}
-
-        {/* Водитель (назначится после подтверждения) */}
-        <View className="flex flex-row items-center py-3 mt-2">
-          <Image source={icons.person} className="w-5 h-5 mr-3" />
-          <View className="flex-1">
-            <Text className="text-sm text-gray-500">{t.confirmRide.driver}</Text>
-            <Text className="text-lg font-JakartaMedium">
-              {t.confirmRide.willBeAssigned}
-            </Text>
-          </View>
-        </View>
-
-        {/* Подсказка */}
-        <View className="bg-blue-50 p-3 rounded-lg mt-4">
-          <Text className="text-sm text-blue-600">
-            ℹ️ {t.confirmRide.driverAssigned}
-          </Text>
-        </View>
-
-        {/* Кнопка подтверждения */}
-        <View className="mt-6">
-          <CustomButton
-            title={t.confirmRide.confirmRide}
-            onPress={() => router.push("/(root)/book-ride")}
-            disabled={isCalculating}
-          />
-        </View>
+      {/* Confirm button */}
+      <View style={{ marginTop: 4 }}>
+        <CustomButton
+          title={t.confirmRide.confirmRide}
+          onPress={() => router.push("/(root)/book-ride")}
+          disabled={isCalculating}
+        />
       </View>
     </RideLayout>
   );

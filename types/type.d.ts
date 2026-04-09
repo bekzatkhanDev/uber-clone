@@ -101,6 +101,7 @@ declare interface PaymentProps {
   amount: string;
   driverId: number; // = user.id водителя
   rideTime: number;
+  tripId: string;
 }
 
 declare interface Tariff {

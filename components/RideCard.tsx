@@ -6,15 +6,15 @@ import { formatDate, formatTime } from "@/lib/utils";
 import { Ride } from "@/types/type";
 
 const RideCard = ({ ride }: { ride: Ride }) => {
-  const googleApiKey = process.env.EXPO_PUBLIC_GOOGLE_API_KEY;
-
   const driverName = ride.driver
     ? `${ride.driver.first_name} ${ride.driver.last_name}`
     : "—";
   const carSeats = ride.driver?.car_seats ?? "—";
 
-  const mapUrl = googleApiKey
-    ? `https://maps.googleapis.com/maps/api/staticmap?center=${ride.destination_latitude},${ride.destination_longitude}&zoom=14&size=600x400&markers=color:red%7C${ride.destination_latitude},${ride.destination_longitude}&key=${googleApiKey}`
+  const hasCoords =
+    ride.destination_latitude != null && ride.destination_longitude != null;
+  const mapUrl = hasCoords
+    ? `https://staticmap.openstreetmap.de/staticmap.php?center=${ride.destination_latitude},${ride.destination_longitude}&zoom=14&size=600x400&markers=${ride.destination_latitude},${ride.destination_longitude},red-pushpin`
     : null;
 
   const getPaymentStatusColor = (status: string) => {

@@ -12,6 +12,7 @@ interface RideLayoutProps {
   children: React.ReactNode;
   showLocationInputs?: boolean;
   locationInputs?: React.ReactNode;
+  snapPoints?: string[]; // ignored on web, kept for native API compat
 }
 
 const RideLayout = ({ title, children, showLocationInputs, locationInputs }: RideLayoutProps) => {
@@ -23,31 +24,40 @@ const RideLayout = ({ title, children, showLocationInputs, locationInputs }: Rid
   };
 
   return (
-    <View className="flex-1 bg-white">
-      {/* Map area */}
-      <View className="relative flex-1 min-h-[45vh]">
-        <View className="absolute z-10 top-6 left-5 flex flex-row items-center">
+    <View style={{ flex: 1, backgroundColor: "#f9fafb" }}>
+      {/* Map — fixed height, never shrinks */}
+      <View style={{ height: "40vh" as any, position: "relative", flexShrink: 0 }}>
+        <View style={{ position: "absolute", zIndex: 10, top: 24, left: 20, flexDirection: "row", alignItems: "center" }}>
           <TouchableOpacity onPress={handleBack} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
-            <View className="w-10 h-10 bg-white rounded-full items-center justify-center shadow">
+            <View style={{ width: 40, height: 40, backgroundColor: "white", borderRadius: 20, alignItems: "center", justifyContent: "center", shadowColor: "#000", shadowOpacity: 0.15, shadowRadius: 4, elevation: 4 }}>
               <Image source={icons.backArrow} style={{ width: 24, height: 24 }} resizeMode="contain" />
             </View>
           </TouchableOpacity>
-          <Text className="text-xl font-JakartaSemiBold text-white ml-4">
+          <Text style={{ fontSize: 18, fontFamily: "Jakarta-SemiBold", color: "white", marginLeft: 12, textShadowColor: "rgba(0,0,0,0.5)", textShadowOffset: { width: 0, height: 1 }, textShadowRadius: 3 }}>
             {title || "Go Back"}
           </Text>
         </View>
 
         {showLocationInputs && locationInputs && (
-          <View className="absolute z-30 top-20 left-5 right-5 pointer-events-none">{locationInputs}</View>
+          <View style={{ position: "absolute", zIndex: 30, top: 80, left: 20, right: 20 }}>
+            {locationInputs}
+          </View>
         )}
 
         <Map />
       </View>
 
-      {/* Content (mobile-first, centered on wide screens) */}
-      <View className="bg-white border-t border-gray-100">
-        <ScrollView contentContainerStyle={{ padding: 20 }} keyboardShouldPersistTaps="handled">
-          <View className="w-full max-w-2xl self-center pointer-events-auto">{children}</View>
+      {/* Content panel — fills remaining space, scrollable */}
+      <View style={{ flex: 1, backgroundColor: "white", borderTopLeftRadius: 24, borderTopRightRadius: 24, marginTop: -16, shadowColor: "#000", shadowOpacity: 0.08, shadowRadius: 12, elevation: 8, overflow: "hidden" }}>
+        <ScrollView
+          contentContainerStyle={{ padding: 20, paddingBottom: 40 }}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={true}
+          style={{ flex: 1 }}
+        >
+          <View style={{ width: "100%", maxWidth: 680, alignSelf: "center" }}>
+            {children}
+          </View>
         </ScrollView>
       </View>
     </View>
@@ -55,4 +65,3 @@ const RideLayout = ({ title, children, showLocationInputs, locationInputs }: Rid
 };
 
 export default RideLayout;
-

@@ -1,7 +1,30 @@
+// Native map utilities — OSRM for routing (free, no API key required)
 import { Driver, MarkerData } from "@/types/type";
 import { DEFAULT_LATITUDE, DEFAULT_LONGITUDE } from "@/constants/location";
 
-const GOOGLE_API_KEY = process.env.EXPO_PUBLIC_GOOGLE_API_KEY || '';
+const OSRM_BASE = "https://router.project-osrm.org/route/v1/driving";
+
+const osrmRoute = async (
+  fromLat: number,
+  fromLng: number,
+  toLat: number,
+  toLng: number
+): Promise<{ durationSec: number; coordinates: number[][] } | null> => {
+  try {
+    const url = `${OSRM_BASE}/${fromLng},${fromLat};${toLng},${toLat}?overview=full&geometries=geojson`;
+    const res = await fetch(url);
+    if (!res.ok) return null;
+    const data = await res.json();
+    const route = data?.routes?.[0];
+    if (!route) return null;
+    return {
+      durationSec: route.duration,
+      coordinates: route.geometry.coordinates, // [[lng, lat], ...]
+    };
+  } catch {
+    return null;
+  }
+};
 
 // Маркеры водителей по данным с бэка (для демо — небольшой случайный сдвиг)
 export const generateMarkersFromData = ({
@@ -77,7 +100,7 @@ export const calculateRegion = ({
   };
 };
 
-// Время и примерная цена по каждому водителю через Google Directions
+// Время по каждому водителю через OSRM (free, no API key)
 export const calculateDriverTimes = async ({
   markers,
   userLatitude,
@@ -90,162 +113,40 @@ export const calculateDriverTimes = async ({
   userLongitude: number | null;
   destinationLatitude: number | null;
   destinationLongitude: number | null;
-}) => {
-  const missingCoords = !userLatitude || !userLongitude || !destinationLatitude || !destinationLongitude;
-  const missingApiKey = !GOOGLE_API_KEY;
-
-  if (missingCoords || missingApiKey) {
-    if (__DEV__) {
-      if (missingCoords) console.log("Driver times: ждём координаты...");
-      if (missingApiKey) console.log("Driver times: нет ключа Google, подставляем заглушки");
-    }
-    return markers.map(marker => ({
-      ...marker,
-      time: 5,
-      price: '$5.00',
-    }));
+}): Promise<MarkerData[]> => {
+  if (!userLatitude || !userLongitude || !destinationLatitude || !destinationLongitude) {
+    return markers.map((m) => ({ ...m, time: 5, price: "$5.00" }));
   }
 
-  try {
-    const timesPromises = markers.map(async (marker) => {
-      const originDriver = `${marker.latitude},${marker.longitude}`;
-      const destinationUser = `${userLatitude},${userLongitude}`;
-      const originUser = `${userLatitude},${userLongitude}`;
-      const destinationDest = `${destinationLatitude},${destinationLongitude}`;
-
-      const toUserUrl = `https://maps.googleapis.com/maps/api/directions/json?origin=${originDriver}&destination=${destinationUser}&mode=driving&key=${GOOGLE_API_KEY}`;
-      const toDestUrl = `https://maps.googleapis.com/maps/api/directions/json?origin=${originUser}&destination=${destinationDest}&mode=driving&key=${GOOGLE_API_KEY}`;
-
-      const [resToUser, resToDest] = await Promise.all([
-        fetch(toUserUrl),
-        fetch(toDestUrl),
+  const results = await Promise.allSettled(
+    markers.map(async (marker) => {
+      const [toUser, toDest] = await Promise.all([
+        osrmRoute(marker.latitude, marker.longitude, userLatitude, userLongitude),
+        osrmRoute(userLatitude, userLongitude, destinationLatitude, destinationLongitude),
       ]);
 
-      const [dataToUser, dataToDest] = await Promise.all([
-        resToUser.json(),
-        resToDest.json(),
-      ]);
+      const driverToUserMin = (toUser?.durationSec ?? 300) / 60;
+      const userToDestMin = (toDest?.durationSec ?? 300) / 60;
+      const totalMin = driverToUserMin + userToDestMin;
+      const price = (totalMin * 0.5).toFixed(2);
 
-      const routeToUser = dataToUser?.routes?.[0]?.legs?.[0];
-      const routeToDest = dataToDest?.routes?.[0]?.legs?.[0];
+      return { ...marker, time: Math.round(totalMin), price: `$${price}` };
+    })
+  );
 
-      if (!routeToUser?.duration?.value) {
-        console.warn("No route from driver to user");
-        return {
-          ...marker,
-          time: 5,
-          price: '$5.00',
-        };
-      }
-
-      if (!routeToDest?.duration?.value) {
-        console.warn("No route from user to destination");
-        return {
-          ...marker,
-          time: 5,
-          price: '$5.00',
-        };
-      }
-
-      const timeToUser = routeToUser.duration.value;
-      const timeToDestination = routeToDest.duration.value;
-      const totalTimeInMinutes = (timeToUser + timeToDestination) / 60;
-      const price = (totalTimeInMinutes * 0.5).toFixed(2);
-
-      return {
-        ...marker,
-        time: totalTimeInMinutes,
-        price: `$${price}`,
-      };
-    });
-
-    const results = await Promise.allSettled(timesPromises);
-    const validResults: MarkerData[] = [];
-
-    results.forEach((result) => {
-      if (result.status === "fulfilled" && result.value) {
-        validResults.push(result.value);
-      }
-    });
-
-    return validResults;
-  } catch (error) {
-    console.error("Ошибка расчёта времени водителей:", error);
-    return markers.map(marker => ({
-      ...marker,
-      time: 5,
-      price: '$5.00',
-    }));
-  }
+  return results
+    .filter((r) => r.status === "fulfilled")
+    .map((r) => (r as PromiseFulfilledResult<MarkerData>).value);
 };
 
-// Геометрия маршрута между двумя точками (Google Directions)
+// Геометрия маршрута между двумя точками через OSRM
+// Returns [lng, lat] pairs — same shape as before
 export const getRouteGeometry = async (
   fromLat: number,
   fromLng: number,
   toLat: number,
   toLng: number
 ): Promise<number[][] | null> => {
-  if (!GOOGLE_API_KEY) {
-    console.warn("Google API key is not configured");
-    return null;
-  }
-
-  try {
-    const origin = `${fromLat},${fromLng}`;
-    const destination = `${toLat},${toLng}`;
-    const url = `https://maps.googleapis.com/maps/api/directions/json?origin=${origin}&destination=${destination}&mode=driving&key=${GOOGLE_API_KEY}`;
-    
-    const response = await fetch(url);
-    const data = await response.json();
-
-    if (data?.routes?.[0]?.overview_polyline?.points) {
-      const encoded = data.routes[0].overview_polyline.points;
-      return decodePolyline(encoded);
-    }
-
-    return null;
-  } catch (error) {
-    console.error("Error fetching route:", error);
-    return null;
-  }
-};
-
-// Декодирование полилинии Google в массив [lng, lat]
-const decodePolyline = (encoded: string): number[][] => {
-  const poly: number[][] = [];
-  let index = 0;
-  let lat = 0;
-  let lng = 0;
-
-  while (index < encoded.length) {
-    let b: number;
-    let shift = 0;
-    let result = 0;
-
-    do {
-      b = encoded.charCodeAt(index++) - 63;
-      result |= (b & 0x1f) << shift;
-      shift += 5;
-    } while (b >= 0x20);
-
-    const dlat = (result & 1) !== 0 ? ~(result >> 1) : result >> 1;
-    lat += dlat;
-
-    shift = 0;
-    result = 0;
-
-    do {
-      b = encoded.charCodeAt(index++) - 63;
-      result |= (b & 0x1f) << shift;
-      shift += 5;
-    } while (b >= 0x20);
-
-    const dlng = (result & 1) !== 0 ? ~(result >> 1) : result >> 1;
-    lng += dlng;
-
-    poly.push([lng / 1e5, lat / 1e5]);
-  }
-
-  return poly;
+  const result = await osrmRoute(fromLat, fromLng, toLat, toLng);
+  return result?.coordinates ?? null;
 };

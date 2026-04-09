@@ -116,12 +116,21 @@ export const fetchWithAuth = async (endpoint: string, options: RequestInit = {})
   }
 
   if (!response.ok) {
-    const error = new Error(
+    // Try to extract the most useful human-readable message from DRF responses
+    let message =
       responseData?.detail ||
       responseData?.error ||
-      responseData?.message ||
-      `HTTP ${response.status}: ${response.statusText}`
-    );
+      responseData?.message;
+
+    // DRF field-level errors: { field: ["msg", ...], non_field_errors: [...] }
+    if (!message && responseData && typeof responseData === 'object') {
+      const allMessages = Object.values(responseData as Record<string, any>)
+        .flat()
+        .filter((v) => typeof v === 'string');
+      if (allMessages.length > 0) message = allMessages.join(' ');
+    }
+
+    const error = new Error(message || `HTTP ${response.status}: ${response.statusText}`);
     (error as any).status = response.status;
     (error as any).responseData = responseData;
     throw error;

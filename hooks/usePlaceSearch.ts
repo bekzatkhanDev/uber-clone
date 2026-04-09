@@ -23,10 +23,13 @@ const searchPlaces = async ({ query }: SearchParams): Promise<PlaceSearchResult[
     return [];
   }
 
+  // Astana bounding box for more accurate local results
+  const viewbox = '71.2,51.0,71.8,51.4'; // lon_min,lat_min,lon_max,lat_max
   const fullQuery = `${DEFAULT_CITY}, ${query}`;
+  
   const url = `https://maps.googleapis.com/maps/api/place/autocomplete/json?input=${encodeURIComponent(
     fullQuery
-  )}&types=address&components=country:kz&key=${googleApiKey}`;
+  )}&types=address&components=locality:Astana|country:kz&key=${googleApiKey}`;
 
   const response = await fetch(url);
   
@@ -40,8 +43,8 @@ const searchPlaces = async ({ query }: SearchParams): Promise<PlaceSearchResult[
   if (data.predictions && Array.isArray(data.predictions)) {
     const items: PlaceSearchResult[] = [];
 
-    for (const prediction of data.predictions.slice(0, 5)) {
-      const detailsUrl = `https://maps.googleapis.com/maps/api/place/details/json?place_id=${prediction.place_id}&fields=geometry&key=${googleApiKey}`;
+    for (const prediction of data.predictions.slice(0, 8)) {
+      const detailsUrl = `https://maps.googleapis.com/maps/api/place/details/json?place_id=${prediction.place_id}&fields=geometry,formatted_address&key=${googleApiKey}`;
       
       try {
         const detailsResponse = await fetch(detailsUrl);
@@ -51,7 +54,7 @@ const searchPlaces = async ({ query }: SearchParams): Promise<PlaceSearchResult[
           items.push({
             id: prediction.place_id,
             name: prediction.structured_formatting?.main_text || prediction.description,
-            address: prediction.description || '',
+            address: detailsData.result.formatted_address || prediction.description || '',
             point: {
               lat: detailsData.result.geometry.location.lat,
               lon: detailsData.result.geometry.location.lng,

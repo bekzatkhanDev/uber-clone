@@ -38,7 +38,7 @@ const RideLayout = ({ title, children, showLocationInputs, locationInputs }: Rid
         </View>
 
         {showLocationInputs && locationInputs && (
-          <View className="absolute z-20 top-20 left-5 right-5">{locationInputs}</View>
+          <View className="absolute z-30 top-20 left-5 right-5 pointer-events-none">{locationInputs}</View>
         )}
 
         <Map />
@@ -46,8 +46,8 @@ const RideLayout = ({ title, children, showLocationInputs, locationInputs }: Rid
 
       {/* Content (mobile-first, centered on wide screens) */}
       <View className="bg-white border-t border-gray-100">
-        <ScrollView contentContainerStyle={{ padding: 20 }}>
-          <View className="w-full max-w-2xl self-center">{children}</View>
+        <ScrollView contentContainerStyle={{ padding: 20 }} keyboardShouldPersistTaps="handled">
+          <View className="w-full max-w-2xl self-center pointer-events-auto">{children}</View>
         </ScrollView>
       </View>
     </View>

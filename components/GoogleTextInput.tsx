@@ -76,7 +76,7 @@ const GoogleTextInput = ({
     >
       <Text style={{ fontSize: 15, fontWeight: "600", color: "#1f2937" }}>{item.name}</Text>
       {item.address ? (
-        <Text style={{ fontSize: 13, color: "#6b7280", marginTop: 2 }}>{item.address}</Text>
+        <Text style={{ fontSize: 13, color: "#6b7280", marginTop: 2 }} numberOfLines={1}>{item.address}</Text>
       ) : null}
     </TouchableOpacity>
   );
@@ -84,7 +84,7 @@ const GoogleTextInput = ({
   return (
     // overflow:visible is critical on web so the dropdown isn't clipped
     <View
-      style={{ position: "relative", zIndex: 50, overflow: "visible" }}
+      style={{ position: "relative", zIndex: 50, overflow: "visible", flex: 1 }}
       className={`rounded-xl ${containerStyle ?? ""}`}
     >
       {/* Input row */}
@@ -128,7 +128,7 @@ const GoogleTextInput = ({
         {isLoading && <ActivityIndicator size="small" color="#0286FF" style={{ marginLeft: 8 }} />}
       </View>
 
-      {/* Dropdown — absolutely positioned below input */}
+      {/* Dropdown — absolutely positioned below input with higher z-index */}
       {showResults && displayResults.length > 0 && (
         <View
           style={{
@@ -140,7 +140,7 @@ const GoogleTextInput = ({
             borderRadius: 16,
             backgroundColor: "white",
             boxShadow: "0 4px 12px rgba(0,0,0,0.12)",
-            zIndex: 9999,
+            zIndex: 10000,
             maxHeight: 220,
             overflow: "hidden",
           }}
@@ -169,7 +169,7 @@ const GoogleTextInput = ({
             backgroundColor: "white",
             padding: 16,
             boxShadow: "0 4px 12px rgba(0,0,0,0.12)",
-            zIndex: 9999,
+            zIndex: 10000,
           }}
         >
           <Text style={{ color: "#9ca3af", textAlign: "center", fontSize: 14 }}>No results found</Text>

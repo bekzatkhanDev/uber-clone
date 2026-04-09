@@ -1,47 +1,155 @@
-# Learn more https://docs.github.com/en/get-started/getting-started-with-git/ignoring-files
-
-# dependencies
+```
+# Dependencies
 node_modules/
 
-
+# Environment variables
 .env
-# Expo
-.expo/
+.env.local
+.env.*
+
+# Build outputs
 dist/
-web-build/
-expo-env.d.ts
+build/
+*.js.map
 
-# Native
-.kotlin/
-*.orig.*
-*.jks
-*.p8
-*.p12
-*.key
-*.mobileprovision
+# Cache directories
+.cache/
+.next/
+.nuxt/
+public/
+coverage/
 
-# Metro
-.metro-health-check*
+# Logs
+*.log
 
-# debug
-npm-debug.*
-yarn-debug.*
-yarn-error.*
-
-# macOS
+# OS generated files
 .DS_Store
-*.pem
+Thumbs.db
 
-# local env files
-.env 
-.env.example
-.env*.local
+# Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*.tmp
 
-# typescript
+# Python specific
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.so
+.coverage
+coverage/
+htmlcov/
+.mypy_cache/
+.pytest_cache/
+.tox/
+.eggs/
+*.egg-info/
+.wafpickle-*
+pip-log.txt
+pip-delete-this-directory.txt
+.pyre/
+.pytype/
+.ipynb_checkpoints/
+
+# Node.js specific
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+node_modules/
+jspm_packages/
+web_modules/
 *.tsbuildinfo
+.next/
+.nuxt/
+.vuepress/dist
+.serverless/
+.fusebox/
+.dynamodb/
 
-app-example
+# Go specific
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.prof
+*.out
+vendor/
 
-# generated native folders
-/ios
-/android
+# Java specific
+*.class
+*.jar
+*.war
+*.ear
+*.nar
+hs_err_pid*
+.recommenders
+target/
+.gradle/
+!gradle/wrapper/gradle-wrapper.jar
+
+# C/C++ specific
+*.o
+*.a
+*.la
+*.lo
+*.so
+*.so.*
+*.dll
+*.dylib
+*.plist
+*.dmg
+*.nib
+*.lproj/
+*.mode1v3
+*.mode2v3
+*.perspectivev3
+*.xcworkspace
+xcuserdata/
+*.xccheckout
+*.moved-aside
+*.pbxuser
+*.hmap
+*.ipa
+*.car
+*.mobileprovision
+DerivedData/
+build/
+*.gem
+*.rbc
+*.rbo
+*.rbi
+*.bundle
+.bundle
+vendor/bundle
+*.so
+*.o
+*.pyc
+*.pyo
+*.pyd
+__pycache__/
+*.cpcache/
+*.egg-info/
+.eggs/
+.installed.cfg
+*.egg
+*.egg-info/
+.eggs/
+*.egg-link
+*.egg-cache/
+*.dist-info/
+*.whl
+*.pth
+*.egg-info/
+.eggs/
+*.egg-link
+*.egg-cache/
+*.dist-info/
+*.whl
+*.pth
+```

@@ -1,3 +1,6 @@
+// Disable static rendering for pages using react-leaflet
+export const dynamic = 'force-dynamic';
+
 import { router } from "expo-router";
 import { useEffect, useState } from "react";
 import { ActivityIndicator, Image, Modal, Text, TouchableOpacity, View, FlatList } from "react-native";

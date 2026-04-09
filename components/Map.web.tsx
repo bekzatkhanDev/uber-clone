@@ -1,4 +1,8 @@
 // Web map — Leaflet + OpenStreetMap (no API key required)
+// Disable static rendering for this component - required for react-leaflet
+export const dynamic = 'force-dynamic';
+export const runtime = 'edge';
+
 import React, { useEffect, useMemo, useRef, lazy, Suspense } from "react";
 import { ActivityIndicator, Text, View } from "react-native";
 

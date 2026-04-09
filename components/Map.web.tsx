@@ -72,8 +72,12 @@ const makeDestIcon = () =>
 const MapController = ({ lat, lng }: { lat: number; lng: number }) => {
   const map = useMap();
   useEffect(() => {
+    // Guard against NaN or invalid coordinates
+    if (typeof lat !== 'number' || typeof lng !== 'number' || isNaN(lat) || isNaN(lng)) {
+      return;
+    }
     map.flyTo([lat, lng], map.getZoom(), { animate: true, duration: 0.8 });
-  }, [lat, lng]);
+  }, [lat, lng, map]);
   return null;
 };
 
@@ -134,11 +138,18 @@ const Map = () => {
   }, [userLatitude, userLongitude, destinationLatitude, destinationLongitude]);
 
   const center: [number, number] = useMemo(
-    () => [userLatitude ?? DEFAULT_LATITUDE, userLongitude ?? DEFAULT_LONGITUDE],
+    () => [
+      userLatitude ?? DEFAULT_LATITUDE, 
+      userLongitude ?? DEFAULT_LONGITUDE
+    ],
     [userLatitude, userLongitude]
   );
 
-  if (isLoading || (!userLatitude && !userLongitude)) {
+  // Guard: ensure center coordinates are valid numbers before rendering map
+  const isValidCenter = typeof center[0] === 'number' && typeof center[1] === 'number' && 
+                        !isNaN(center[0]) && !isNaN(center[1]);
+
+  if (isLoading || (!userLatitude && !userLongitude) || !isValidCenter) {
     return (
       <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
         <ActivityIndicator size="large" color="#0286FF" />

@@ -83,4 +83,6 @@ module.exports = {
         },
   },
   plugins: [],
-}
+  // Use class-based dark mode for react-native-css-interop compatibility
+  darkMode: 'class',
+};

@@ -42,6 +42,8 @@ const DriverHome = () => {
   const cars: any[] = dashboard?.cars ?? [];
   const availableCars = cars.filter((c: any) => !c.is_active);
 
+  const isInitialLoading = isLoading && !dashboard;
+
   const handleGoOnline = () => {
     if (cars.length === 0) {
       Alert.alert('No Cars', 'Please add a car to your account before going online.', [
@@ -54,7 +56,11 @@ const DriverHome = () => {
       return;
     }
     if (availableCars.length === 1) {
-      activateCar(availableCars[0].id);
+      activateCar(availableCars[0].id, {
+        onError: (error: any) => {
+          Alert.alert('Error', error?.message || 'Failed to go online. Please try again.');
+        },
+      });
     } else {
       setShowCarPicker(true);
     }
@@ -63,7 +69,14 @@ const DriverHome = () => {
   const handleGoOffline = () => {
     Alert.alert('Go Offline', 'You will stop receiving ride requests.', [
       { text: 'Cancel', style: 'cancel' },
-      { text: 'Go Offline', onPress: () => goOffline() },
+      { 
+        text: 'Go Offline', 
+        onPress: () => goOffline(undefined, {
+          onError: (error: any) => {
+            Alert.alert('Error', error?.message || 'Failed to go offline. Please try again.');
+          },
+        }) 
+      },
     ]);
   };
 
@@ -80,7 +93,7 @@ const DriverHome = () => {
     });
   };
 
-  if (isLoading) {
+  if (isInitialLoading) {
     return (
       <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
         <ActivityIndicator size="large" color="#0CC25F" />
@@ -175,7 +188,11 @@ const DriverHome = () => {
                   className="flex-row items-center p-4 border-b border-gray-100"
                   onPress={() => {
                     setShowCarPicker(false);
-                    activateCar(item.id);
+                    activateCar(item.id, {
+                      onError: (error: any) => {
+                        Alert.alert('Error', error?.message || 'Failed to go online. Please try again.');
+                      },
+                    });
                   }}
                 >
                   <View className="flex-1">

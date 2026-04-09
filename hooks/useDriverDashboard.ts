@@ -28,6 +28,9 @@ export const useActivateCar = () => {
       queryClient.invalidateQueries({ queryKey: ['driver', 'online-status'] });
       queryClient.invalidateQueries({ queryKey: ['cars', 'my'] });
     },
+    onError: (error: any) => {
+      console.error('Failed to activate car:', error);
+    },
   });
 };
 
@@ -39,6 +42,9 @@ export const useGoOffline = () => {
       queryClient.invalidateQueries({ queryKey: ['driver', 'dashboard'] });
       queryClient.invalidateQueries({ queryKey: ['driver', 'online-status'] });
       queryClient.invalidateQueries({ queryKey: ['cars', 'my'] });
+    },
+    onError: (error: any) => {
+      console.error('Failed to go offline:', error);
     },
   });
 };

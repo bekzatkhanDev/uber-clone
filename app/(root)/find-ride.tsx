@@ -159,8 +159,8 @@ const FindRide = () => {
   };
 
   const locationInputs = (
-    <>
-      <View className="my-2">
+    <View className="flex-1">
+      <View className="mb-2">
         <GoogleTextInput
           icon={icons.target}
           initialLocation={userAddress!}
@@ -170,7 +170,7 @@ const FindRide = () => {
         />
       </View>
 
-      <View className="my-2">
+      <View className="mb-2">
         <GoogleTextInput
           icon={icons.map}
           initialLocation={destinationAddress!}
@@ -179,7 +179,7 @@ const FindRide = () => {
           handlePress={(location) => setDestinationLocation(location)}
         />
       </View>
-    </>
+    </View>
   );
 
   return (

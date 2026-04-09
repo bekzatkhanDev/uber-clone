@@ -11,10 +11,16 @@ export interface PlaceSearchResult {
 const searchPlaces = async (query: string): Promise<PlaceSearchResult[]> => {
   if (query.length < 3) return [];
 
+  // Astana coordinates and bounding box for prioritization
+  const astanaLat = 51.1694;
+  const astanaLon = 71.4491;
+  const viewbox = `${astanaLon - 0.5},${astanaLat + 0.5},${astanaLon + 0.5},${astanaLat - 0.5}`;
+
   const url =
     `https://nominatim.openstreetmap.org/search` +
     `?q=${encodeURIComponent(query)}` +
     `&format=json&addressdetails=1&limit=6&countrycodes=kz` +
+    `&viewbox=${viewbox}&bounded=1` +
     `&accept-language=ru,en`;
 
   const response = await fetch(url, {

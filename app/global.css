@@ -2,6 +2,16 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Explicitly set dark mode to use class strategy for react-native-css-interop */
+@layer base {
+  :root {
+    color-scheme: light;
+  }
+  :root.dark {
+    color-scheme: dark;
+  }
+}
+
 @layer base {
   /* Ensure full-height layout for Expo Router web */
   html,

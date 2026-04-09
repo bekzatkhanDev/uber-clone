@@ -125,6 +125,19 @@ const Map = () => {
       setRouteCoords([]);
       return;
     }
+    
+    // Validate coordinates are actual numbers and not NaN
+    const isValidCoords = 
+      typeof userLatitude === 'number' && !isNaN(userLatitude) &&
+      typeof userLongitude === 'number' && !isNaN(userLongitude) &&
+      typeof destinationLatitude === 'number' && !isNaN(destinationLatitude) &&
+      typeof destinationLongitude === 'number' && !isNaN(destinationLongitude);
+    
+    if (!isValidCoords) {
+      setRouteCoords([]);
+      return;
+    }
+    
     getRouteGeometry(userLatitude, userLongitude, destinationLatitude, destinationLongitude).then(
       (coords) => {
         if (coords) {

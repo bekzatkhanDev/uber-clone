@@ -167,19 +167,20 @@ const Map = ({
     );
   }, [userLatitude, userLongitude, destinationLatitude, destinationLongitude]);
 
+  // Ensure center coordinates are valid numbers, fallback to defaults
+  const safeUserLat = (typeof userLatitude === 'number' && !isNaN(userLatitude)) ? userLatitude : DEFAULT_LATITUDE;
+  const safeUserLng = (typeof userLongitude === 'number' && !isNaN(userLongitude)) ? userLongitude : DEFAULT_LONGITUDE;
+  
   const center: [number, number] = useMemo(
-    () => [
-      userLatitude ?? DEFAULT_LATITUDE, 
-      userLongitude ?? DEFAULT_LONGITUDE
-    ],
-    [userLatitude, userLongitude]
+    () => [safeUserLat, safeUserLng],
+    [safeUserLat, safeUserLng]
   );
 
   // Guard: ensure center coordinates are valid numbers before rendering map
   const isValidCenter = typeof center[0] === 'number' && typeof center[1] === 'number' && 
                         !isNaN(center[0]) && !isNaN(center[1]);
 
-  if (isLoading || (!userLatitude && !userLongitude) || !isValidCenter) {
+  if (isLoading || (!safeUserLat && !safeUserLng) || !isValidCenter) {
     return (
       <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
         <ActivityIndicator size="large" color="#0286FF" />
@@ -203,6 +204,10 @@ const Map = ({
       </View>
     );
   }
+
+  // Safe values for markers
+  const safeDestLat = (typeof destinationLatitude === 'number' && !isNaN(destinationLatitude)) ? destinationLatitude : null;
+  const safeDestLng = (typeof destinationLongitude === 'number' && !isNaN(destinationLongitude)) ? destinationLongitude : null;
 
   return (
     <div style={{ width: "100%", height: "100%" }}>
@@ -230,17 +235,17 @@ const Map = ({
         ))}
 
         {/* User location */}
-        {showUserLocation && userLatitude && userLongitude && (
+        {showUserLocation && safeUserLat && safeUserLng && (
           <Marker
-            position={[userLatitude, userLongitude]}
+            position={[safeUserLat, safeUserLng]}
             icon={makeCircleIcon("#0286FF", "#ffffff", 18)}
           />
         )}
 
         {/* Destination */}
-        {showDestination && destinationLatitude && destinationLongitude && (
+        {showDestination && safeDestLat && safeDestLng && (
           <Marker
-            position={[destinationLatitude, destinationLongitude]}
+            position={[safeDestLat, safeDestLng]}
             icon={makeDestIcon()}
           />
         )}

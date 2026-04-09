@@ -54,9 +54,14 @@ const Map = ({
 
   const [markers, setMarkers] = useState<MarkerData[]>([]);
   const [routeCoordinates, setRouteCoordinates] = useState<{latitude: number; longitude: number}[]>([]);
+  
+  // Ensure region uses valid coordinates or defaults
+  const safeUserLat = (typeof userLatitude === 'number' && !isNaN(userLatitude)) ? userLatitude : DEFAULT_LATITUDE;
+  const safeUserLng = (typeof userLongitude === 'number' && !isNaN(userLongitude)) ? userLongitude : DEFAULT_LONGITUDE;
+  
   const [region, setRegion] = useState<Region>({
-    latitude: userLatitude ?? DEFAULT_LATITUDE,
-    longitude: userLongitude ?? DEFAULT_LONGITUDE,
+    latitude: safeUserLat,
+    longitude: safeUserLng,
     latitudeDelta: 0.02,
     longitudeDelta: 0.02,
   });
@@ -64,7 +69,7 @@ const Map = ({
   // Update markers when drivers data changes
   useEffect(() => {
     if (drivers && Array.isArray(drivers)) {
-      if (!userLatitude || !userLongitude) return;
+      if (!safeUserLat || !safeUserLng) return;
       const newMarkers: MarkerData[] = drivers.map((driver: NearbyDriver) => ({
         id: driver.id,
         latitude: driver.lat,
@@ -80,77 +85,77 @@ const Map = ({
 
       setMarkers(newMarkers);
     }
-  }, [drivers, userLatitude, userLongitude]);
+  }, [drivers, safeUserLat, safeUserLng]);
 
   // Calculate driver times when markers or destination changes
   useEffect(() => {
     if (
       markers.length > 0 &&
-      destinationLatitude !== undefined &&
-      destinationLongitude !== undefined &&
-      userLatitude &&
-      userLongitude
+      safeDestLat !== null &&
+      safeDestLng !== null &&
+      safeUserLat &&
+      safeUserLng
     ) {
       calculateDriverTimes({
         markers,
-        userLatitude,
-        userLongitude,
-        destinationLatitude,
-        destinationLongitude,
+        userLatitude: safeUserLat,
+        userLongitude: safeUserLng,
+        destinationLatitude: safeDestLat,
+        destinationLongitude: safeDestLng,
       }).then((drivers) => {
         setDrivers(drivers as MarkerData[]);
       });
     }
-  }, [markers, destinationLatitude, destinationLongitude, userLatitude, userLongitude, setDrivers]);
+  }, [markers, safeDestLat, safeDestLng, safeUserLat, safeUserLng, setDrivers]);
 
   // Animate to user location when it changes
   useEffect(() => {
-    if (userLatitude && userLongitude && mapRef.current && mapReady) {
+    if (safeUserLat && safeUserLng && mapRef.current && mapReady) {
       mapRef.current.animateToRegion({
-        latitude: userLatitude,
-        longitude: userLongitude,
+        latitude: safeUserLat,
+        longitude: safeUserLng,
         latitudeDelta: 0.02,
         longitudeDelta: 0.02,
       }, 500);
     }
-  }, [userLatitude, userLongitude, mapReady]);
+  }, [safeUserLat, safeUserLng, mapReady]);
 
   // Fit region to show both user and destination
   useEffect(() => {
     if (
-      userLatitude && 
-      userLongitude && 
-      destinationLatitude && 
-      destinationLongitude &&
+      safeUserLat && 
+      safeUserLng && 
+      safeDestLat && 
+      safeDestLng &&
       mapRef.current &&
       mapReady
     ) {
       const newRegion = calculateRegion({
-        userLatitude,
-        userLongitude,
-        destinationLatitude,
-        destinationLongitude,
+        userLatitude: safeUserLat,
+        userLongitude: safeUserLng,
+        destinationLatitude: safeDestLat,
+        destinationLongitude: safeDestLng,
       });
       
       mapRef.current.animateToRegion(newRegion, 500);
     }
-  }, [userLatitude, userLongitude, destinationLatitude, destinationLongitude, mapReady]);
+  }, [safeUserLat, safeUserLng, safeDestLat, safeDestLng, mapReady]);
 
   // Fetch route geometry
   useEffect(() => {
     const fetchRoute = async () => {
       if (
-        userLatitude && 
-        userLongitude && 
-        destinationLatitude && 
-        destinationLongitude &&
+        safeUserLat && 
+        safeUserLng && 
+        safeDestLat && 
+        safeDestLng &&
         showRoute
       ) {
         const coordinates = await getRouteGeometry(
-          userLatitude,
-          userLongitude,
-          destinationLatitude,
-          destinationLongitude
+          safeUserLat,
+          safeUserLng,
+          safeDestLat,
+          safeDestLng
         );
         
         if (coordinates) {
@@ -166,18 +171,18 @@ const Map = ({
     };
 
     fetchRoute();
-  }, [userLatitude, userLongitude, destinationLatitude, destinationLongitude, showRoute]);
+  }, [safeUserLat, safeUserLng, safeDestLat, safeDestLng, showRoute]);
 
   // Update region state when coordinates change
   useEffect(() => {
-    if (userLatitude && userLongitude) {
+    if (safeUserLat && safeUserLng) {
       setRegion(prev => ({
         ...prev,
-        latitude: userLatitude,
-        longitude: userLongitude,
+        latitude: safeUserLat,
+        longitude: safeUserLng,
       }));
     }
-  }, [userLatitude, userLongitude]);
+  }, [safeUserLat, safeUserLng]);
 
   const handleMapReady = () => {
     setMapReady(true);
@@ -185,21 +190,24 @@ const Map = ({
   };
 
   // Use calculated region if destination is set, otherwise use user location
-  const displayRegion: Region = (userLatitude && userLongitude && destinationLatitude && destinationLongitude)
+  const safeDestLat = (typeof destinationLatitude === 'number' && !isNaN(destinationLatitude)) ? destinationLatitude : null;
+  const safeDestLng = (typeof destinationLongitude === 'number' && !isNaN(destinationLongitude)) ? destinationLongitude : null;
+  
+  const displayRegion: Region = (safeUserLat && safeUserLng && safeDestLat && safeDestLng)
     ? calculateRegion({
-        userLatitude,
-        userLongitude,
-        destinationLatitude,
-        destinationLongitude,
+        userLatitude: safeUserLat,
+        userLongitude: safeUserLng,
+        destinationLatitude: safeDestLat,
+        destinationLongitude: safeDestLng,
       })
     : {
-        latitude: userLatitude ?? DEFAULT_LATITUDE,
-        longitude: userLongitude ?? DEFAULT_LONGITUDE,
+        latitude: safeUserLat,
+        longitude: safeUserLng,
         latitudeDelta: 0.02,
         longitudeDelta: 0.02,
       };
 
-  if (isLoading || (!userLatitude && !userLongitude))
+  if (isLoading || (!safeUserLat && !safeUserLng))
     return (
       <View className="flex justify-center items-center w-full h-full">
         <ActivityIndicator size="large" color="#0286FF" />
@@ -230,11 +238,11 @@ const Map = ({
       }}
     >
       {/* Nearby drivers circle */}
-      {showNearbyCircle && userLatitude && userLongitude && (
+      {showNearbyCircle && safeUserLat && safeUserLng && (
         <Circle
           center={{
-            latitude: userLatitude,
-            longitude: userLongitude,
+            latitude: safeUserLat,
+            longitude: safeUserLng,
           }}
           radius={5000} // 5km radius
           strokeColor="#0286FF"
@@ -294,11 +302,11 @@ const Map = ({
       })}
 
       {/* User location marker */}
-      {showUserLocation && userLatitude && userLongitude && (
+      {showUserLocation && safeUserLat && safeUserLng && (
         <Marker
           coordinate={{
-            latitude: userLatitude,
-            longitude: userLongitude,
+            latitude: safeUserLat,
+            longitude: safeUserLng,
           }}
           anchor={{ x: 0.5, y: 0.5 }}
         >
@@ -331,11 +339,11 @@ const Map = ({
       )}
 
       {/* Destination marker */}
-      {showDestination && destinationLatitude && destinationLongitude && (
+      {showDestination && safeDestLat && safeDestLng && (
         <Marker
           coordinate={{
-            latitude: destinationLatitude,
-            longitude: destinationLongitude,
+            latitude: safeDestLat,
+            longitude: safeDestLng,
           }}
           anchor={{ x: 0.5, y: 0.5 }}
         >

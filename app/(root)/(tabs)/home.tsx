@@ -1,4 +1,7 @@
 // Главная: карта, поиск назначения, выход
+// Disable static rendering for pages using react-leaflet
+export const dynamic = 'force-dynamic';
+
 import { router } from "expo-router";
 import {
   Text,

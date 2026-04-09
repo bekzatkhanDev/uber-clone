@@ -81,7 +81,23 @@ const MapController = ({ lat, lng }: { lat: number; lng: number }) => {
   return null;
 };
 
-const Map = () => {
+interface MapProps {
+  showUserLocation?: boolean;
+  showDestination?: boolean;
+  showRoute?: boolean;
+  showDrivers?: boolean;
+  showNearbyCircle?: boolean;
+  onMapReady?: () => void;
+}
+
+const Map = ({ 
+  showUserLocation = true, 
+  showDestination = true, 
+  showRoute = true,
+  showDrivers = true,
+  showNearbyCircle = false,
+  onMapReady
+}: MapProps) => {
   const { userLongitude, userLatitude, destinationLatitude, destinationLongitude, selectedTariff } =
     useLocationStore();
   const { selectedDriver, setDrivers } = useDriverStore();
@@ -89,7 +105,8 @@ const Map = () => {
   const { data: drivers, isLoading, error } = useNearbyDrivers(
     userLatitude ?? 0,
     userLongitude ?? 0,
-    selectedTariff?.code
+    selectedTariff?.code,
+    showDrivers
   );
 
   const [markers, setMarkers] = React.useState<MarkerData[]>([]);
@@ -204,7 +221,7 @@ const Map = () => {
         <MapController lat={center[0]} lng={center[1]} />
 
         {/* Nearby drivers */}
-        {markers.map((m) => (
+        {showDrivers && markers.map((m) => (
           <Marker
             key={`driver-${m.id}`}
             position={[m.latitude, m.longitude]}
@@ -213,7 +230,7 @@ const Map = () => {
         ))}
 
         {/* User location */}
-        {userLatitude && userLongitude && (
+        {showUserLocation && userLatitude && userLongitude && (
           <Marker
             position={[userLatitude, userLongitude]}
             icon={makeCircleIcon("#0286FF", "#ffffff", 18)}
@@ -221,7 +238,7 @@ const Map = () => {
         )}
 
         {/* Destination */}
-        {destinationLatitude && destinationLongitude && (
+        {showDestination && destinationLatitude && destinationLongitude && (
           <Marker
             position={[destinationLatitude, destinationLongitude]}
             icon={makeDestIcon()}
@@ -229,7 +246,7 @@ const Map = () => {
         )}
 
         {/* Route polyline */}
-        {routeCoords.length > 0 && (
+        {showRoute && routeCoords.length > 0 && (
           <Polyline
             positions={routeCoords}
             pathOptions={{ color: "#0286FF", weight: 5, opacity: 0.9 }}

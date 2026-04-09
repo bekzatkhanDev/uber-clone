@@ -44,7 +44,8 @@ export interface NearbyDriver {
 export const useNearbyDrivers = (
   lat: number | null,
   lng: number | null,
-  tariffCode?: string
+  tariffCode?: string,
+  enabled: boolean = true
 ) => {
   const hasValidLocation = lat !== null && lng !== null && lat !== 0 && lng !== 0;
 
@@ -59,7 +60,7 @@ export const useNearbyDrivers = (
   return useQuery<NearbyDriver[]>({
     queryKey: ["drivers", "nearby", lat, lng, tariffCode],
     queryFn: () => fetchAPI(`/locations/nearby/?${buildQueryString()}`),
-    enabled: hasValidLocation,
+    enabled: hasValidLocation && enabled,
     staleTime: 30000,
     refetchInterval: 15000, // Автообновление каждые 15 секунд
   });

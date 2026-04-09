@@ -48,7 +48,8 @@ const Map = ({
   const { data: drivers, isLoading, error } = useNearbyDrivers(
     userLatitude ?? 0,
     userLongitude ?? 0,
-    selectedTariff?.code
+    selectedTariff?.code,
+    showDrivers
   );
 
   const [markers, setMarkers] = useState<MarkerData[]>([]);

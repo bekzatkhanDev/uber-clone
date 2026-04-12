@@ -292,7 +292,7 @@ const Map = ({
                   borderRadius: 10,
                 }}>
                   <Text style={{ color: 'white', fontSize: 10, fontWeight: 'bold' }}>
-                    {marker.distance_km ? `${marker.distance_km.toFixed(1)} km` : ''}
+                    {marker.distance_km ? `${parseFloat(marker.distance_km).toFixed(1)} km` : ''}
                   </Text>
                 </View>
               )}

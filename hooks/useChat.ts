@@ -1,38 +1,39 @@
-// Chat hooks for real-time messaging between driver and customer
+// Chat hooks: WebSocket (primary) + REST polling (reliable fallback)
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { fetchWithAuth } from '@/lib/fetchWithAuth';
+import * as storage from '@/lib/storage';
+
+// ─── Types (matched exactly to backend serializer) ───────────────────────────
 
 export interface ChatMessage {
-  id: string;
+  id: number;
   text: string;
   sender: {
-    id: string;
+    id: number;
     phone: string;
     first_name: string;
+    last_name: string;
   };
   is_read: boolean;
-  timestamp: string;
+  created_at: string; // backend field name — was wrong "timestamp" before
 }
 
-export interface ChatRoomStatus {
-  id: string;
-  trip: string;
-  created_at: string;
-  is_active: boolean;
-}
-
-export interface WebSocketMessage {
-  type: 'chat_message' | 'typing_start' | 'typing_stop';
+// Shape the WebSocket consumer broadcasts (from chat_message event handler)
+interface WsIncomingMessage {
+  type: 'message' | 'connection_established' | 'error';
   message?: string;
-  sender_id?: string;
+  sender_id?: number;
   sender_phone?: string;
-  sender_type?: 'driver' | 'customer';
-  timestamp?: string;
+  created_at?: string;
+  message_id?: number;
 }
 
-// Get chat room status - checks if driver is assigned
-export const useChatRoomStatus = (tripUuid: string) => {
-  const [roomStatus, setRoomStatus] = useState<ChatRoomStatus | null>(null);
+// ─── useChatRoomStatus ────────────────────────────────────────────────────────
+// Checks whether a driver has been assigned (chat room only exists then).
+// Backend returns 400 (not 404) with { detail: "..." } when no driver yet.
+
+export const useChatRoomStatus = (tripUuid: string | undefined) => {
+  const [hasDriver, setHasDriver] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -42,226 +43,226 @@ export const useChatRoomStatus = (tripUuid: string) => {
       return;
     }
 
-    const fetchRoomStatus = async () => {
+    let cancelled = false;
+
+    const check = async () => {
       try {
         setIsLoading(true);
-        const data = await fetchWithAuth(`/trips/${tripUuid}/chat-room/`);
-        setRoomStatus(data);
-        setError(null);
+        await fetchWithAuth(`/trips/${tripUuid}/chat-room/`);
+        if (!cancelled) {
+          setHasDriver(true);
+          setError(null);
+        }
       } catch (err: any) {
-        if (err.status === 404) {
-          setRoomStatus(null);
-          setError('No driver assigned yet');
-        } else {
-          setError(err.message || 'Failed to load chat room');
+        if (!cancelled) {
+          // 400 = no driver yet (expected), 404 = trip not found
+          setHasDriver(false);
+          if (err?.status !== 400 && err?.status !== 404) {
+            setError(err?.message || 'Failed to load chat room');
+          }
         }
       } finally {
-        setIsLoading(false);
+        if (!cancelled) setIsLoading(false);
       }
     };
 
-    fetchRoomStatus();
+    check();
+    return () => { cancelled = true; };
   }, [tripUuid]);
 
-  return { roomStatus, isLoading, error, hasDriver: !!roomStatus };
+  return { hasDriver, isLoading, error };
 };
 
-// Get message history
-export const useChatHistory = (tripUuid: string, enabled: boolean = true) => {
+// ─── useChatMessages ──────────────────────────────────────────────────────────
+// Loads and polls message history. Merges incoming WS messages to avoid
+// duplicates. Poll interval applies only when WS is NOT connected.
+
+export const useChatMessages = (
+  tripUuid: string | undefined,
+  enabled: boolean,
+  wsConnected: boolean,
+  pollIntervalMs = 3000,
+) => {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const seenIdsRef = useRef<Set<number>>(new Set());
 
-  useEffect(() => {
-    if (!tripUuid || !enabled) {
-      setIsLoading(false);
-      return;
+  const fetchMessages = useCallback(async (initial = false) => {
+    if (!tripUuid || !enabled) return;
+    try {
+      if (initial) setIsLoading(true);
+      const data: ChatMessage[] = await fetchWithAuth(`/trips/${tripUuid}/messages/`);
+      const list = Array.isArray(data) ? data : [];
+      setMessages(list);
+      seenIdsRef.current = new Set(list.map((m) => m.id));
+      setError(null);
+    } catch (err: any) {
+      setError(err?.message || 'Failed to load messages');
+    } finally {
+      if (initial) setIsLoading(false);
     }
-
-    const fetchHistory = async () => {
-      try {
-        setIsLoading(true);
-        const data = await fetchWithAuth(`/trips/${tripUuid}/messages/`);
-        setMessages(Array.isArray(data) ? data : []);
-        setError(null);
-      } catch (err: any) {
-        setError(err.message || 'Failed to load messages');
-        setMessages([]);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchHistory();
   }, [tripUuid, enabled]);
 
-  return { messages, isLoading, error, setMessages };
+  // Initial load
+  useEffect(() => {
+    if (enabled) fetchMessages(true);
+  }, [enabled, fetchMessages]);
+
+  // Poll only while WS is not connected
+  useEffect(() => {
+    if (!enabled || wsConnected) return;
+    const id = setInterval(() => fetchMessages(false), pollIntervalMs);
+    return () => clearInterval(id);
+  }, [enabled, wsConnected, pollIntervalMs, fetchMessages]);
+
+  // Merge a single message received via WebSocket
+  const addWsMessage = useCallback((msg: ChatMessage) => {
+    if (seenIdsRef.current.has(msg.id)) return;
+    seenIdsRef.current.add(msg.id);
+    setMessages((prev) => [...prev, msg]);
+  }, []);
+
+  return { messages, isLoading, error, addWsMessage };
 };
 
-// WebSocket connection for real-time chat
+// ─── useChatWebSocket ─────────────────────────────────────────────────────────
+// Best-effort WebSocket connection. Falls back gracefully if auth fails.
+// Uses @/lib/storage for token so it works on both native and web.
+
 export const useChatWebSocket = (
-  tripUuid: string,
-  onMessageReceived: (message: WebSocketMessage) => void,
-  enabled: boolean = true
+  tripUuid: string | undefined,
+  onMessage: (msg: ChatMessage) => void,
+  enabled: boolean,
 ) => {
   const [isConnected, setIsConnected] = useState(false);
-  const [connectionError, setConnectionError] = useState<string | null>(null);
+  const [isConnecting, setIsConnecting] = useState(false);
   const wsRef = useRef<WebSocket | null>(null);
-  const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const reconnectTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const reconnectCountRef = useRef(0);
-  const MAX_RECONNECT_ATTEMPTS = 5;
-  const BASE_RECONNECT_DELAY = 1000;
+  const MAX_RETRIES = 5;
+  // Store callback in a ref so changing it never triggers reconnect
+  const onMessageRef = useRef(onMessage);
+  useEffect(() => { onMessageRef.current = onMessage; }, [onMessage]);
+
+  const disconnect = useCallback(() => {
+    if (reconnectTimerRef.current) {
+      clearTimeout(reconnectTimerRef.current);
+      reconnectTimerRef.current = null;
+    }
+    wsRef.current?.close();
+    wsRef.current = null;
+    setIsConnected(false);
+    setIsConnecting(false);
+  }, []);
 
   const connect = useCallback(() => {
-    if (!tripUuid || !enabled) {
-      return;
-    }
+    if (!tripUuid || !enabled) return;
 
-    const getToken = async () => {
-      try {
-        const baseUrl = process.env.EXPO_PUBLIC_API_BASE_URL || 'http://localhost:8000';
-        // Get token from storage
-        const token = await (async () => {
-          if (typeof window !== 'undefined' && window.localStorage) {
-            return localStorage.getItem('access-token');
-          }
-          return null;
-        })();
+    setIsConnecting(true);
 
-        if (!token) {
-          setConnectionError('Authentication required');
-          setIsConnected(false);
-          return;
-        }
-
-        const wsUrl = `${baseUrl.replace('http', 'ws')}/ws/chat/${tripUuid}/?token=${token}`;
-        
-        try {
-          const ws = new WebSocket(wsUrl);
-
-          ws.onopen = () => {
-            console.log('[WebSocket] Connected');
-            setIsConnected(true);
-            setConnectionError(null);
-            reconnectCountRef.current = 0;
-          };
-
-          ws.onmessage = (event) => {
-            try {
-              const data = JSON.parse(event.data);
-              onMessageReceived(data);
-            } catch (err) {
-              console.error('[WebSocket] Failed to parse message:', err);
-            }
-          };
-
-          ws.onerror = () => {
-            console.error('[WebSocket] Error occurred');
-            setConnectionError('Connection error');
-          };
-
-          ws.onclose = (event) => {
-            console.log('[WebSocket] Closed', event.code, event.reason);
-            setIsConnected(false);
-
-            // Attempt reconnection with exponential backoff
-            if (enabled && reconnectCountRef.current < MAX_RECONNECT_ATTEMPTS) {
-              const delay = Math.min(
-                BASE_RECONNECT_DELAY * Math.pow(2, reconnectCountRef.current),
-                30000
-              );
-              reconnectCountRef.current += 1;
-              console.log(`[WebSocket] Reconnecting in ${delay}ms (attempt ${reconnectCountRef.current})`);
-              
-              reconnectTimeoutRef.current = setTimeout(() => {
-                connect();
-              }, delay);
-            }
-          };
-
-          wsRef.current = ws;
-        } catch (err) {
-          console.error('[WebSocket] Failed to create connection:', err);
-          setConnectionError('Failed to connect');
-        }
-      } catch (err: any) {
-        setConnectionError(err.message || 'Connection failed');
-        setIsConnected(false);
+    storage.getItem('access-token').then((token) => {
+      if (!token) {
+        setIsConnecting(false);
+        return;
       }
-    };
 
-    getToken();
-  }, [tripUuid, enabled, onMessageReceived]);
+      const baseUrl = process.env.EXPO_PUBLIC_API_BASE_URL || 'http://localhost:8000';
+      const wsBase = baseUrl.replace(/^http/, 'ws');
+      const wsUrl = `${wsBase}/ws/chat/${tripUuid}/?token=${token}`;
+
+      try {
+        const ws = new WebSocket(wsUrl);
+
+        ws.onopen = () => {
+          setIsConnected(true);
+          setIsConnecting(false);
+          reconnectCountRef.current = 0;
+        };
+
+        ws.onmessage = (event) => {
+          try {
+            const data: WsIncomingMessage = JSON.parse(event.data);
+            // Backend chat_message event handler sends type: "message"
+            if (data.type === 'message' && data.message_id && data.message) {
+              const msg: ChatMessage = {
+                id: data.message_id,
+                text: data.message,
+                sender: {
+                  id: data.sender_id ?? 0,
+                  phone: data.sender_phone ?? '',
+                  first_name: '',
+                  last_name: '',
+                },
+                is_read: false,
+                created_at: data.created_at ?? new Date().toISOString(),
+              };
+              onMessageRef.current(msg);
+            }
+          } catch {}
+        };
+
+        ws.onerror = () => {
+          setIsConnected(false);
+          setIsConnecting(false);
+        };
+
+        ws.onclose = () => {
+          setIsConnected(false);
+          setIsConnecting(false);
+          wsRef.current = null;
+
+          if (enabled && reconnectCountRef.current < MAX_RETRIES) {
+            const delay = Math.min(1000 * 2 ** reconnectCountRef.current, 30000);
+            reconnectCountRef.current += 1;
+            reconnectTimerRef.current = setTimeout(connect, delay);
+          }
+        };
+
+        wsRef.current = ws;
+      } catch {
+        setIsConnecting(false);
+      }
+    });
+  }, [tripUuid, enabled]); // onMessage intentionally excluded — stored in ref
 
   useEffect(() => {
-    if (enabled) {
-      connect();
-    }
+    if (enabled) connect();
+    return disconnect;
+  }, [enabled, connect, disconnect]);
 
-    return () => {
-      if (reconnectTimeoutRef.current) {
-        clearTimeout(reconnectTimeoutRef.current);
-      }
-      if (wsRef.current) {
-        wsRef.current.close();
-        wsRef.current = null;
-      }
-    };
-  }, [connect, enabled]);
-
-  const sendMessage = useCallback((message: string) => {
-    if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
-      wsRef.current.send(JSON.stringify({
-        message,
-        type: 'chat_message',
-      }));
+  const sendMessage = useCallback((text: string): boolean => {
+    if (wsRef.current?.readyState === WebSocket.OPEN) {
+      wsRef.current.send(JSON.stringify({ type: 'chat_message', message: text }));
       return true;
     }
     return false;
   }, []);
 
-  const disconnect = useCallback(() => {
-    if (reconnectTimeoutRef.current) {
-      clearTimeout(reconnectTimeoutRef.current);
-      reconnectTimeoutRef.current = null;
-    }
-    if (wsRef.current) {
-      wsRef.current.close();
-      wsRef.current = null;
-    }
-    setIsConnected(false);
-  }, []);
-
-  return {
-    isConnected,
-    connectionError,
-    sendMessage,
-    disconnect,
-    isConnecting: !isConnected && !connectionError && enabled,
-  };
+  return { isConnected, isConnecting, sendMessage, disconnect };
 };
 
-// Send message via REST API (fallback)
-export const useSendChatMessage = (tripUuid: string) => {
-  const [isPending, setIsPending] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+// ─── useSendMessage ───────────────────────────────────────────────────────────
+// REST fallback for sending. Always available even when WS is down.
 
-  const sendMessage = useCallback(async (text: string): Promise<boolean> => {
+export const useSendMessage = (tripUuid: string | undefined) => {
+  const [isPending, setIsPending] = useState(false);
+
+  const send = useCallback(async (text: string): Promise<ChatMessage | null> => {
+    if (!tripUuid) return null;
     try {
       setIsPending(true);
-      await fetchWithAuth(`/trips/${tripUuid}/messages/send/`, {
+      const data: ChatMessage = await fetchWithAuth(`/trips/${tripUuid}/messages/send/`, {
         method: 'POST',
         body: JSON.stringify({ text }),
       });
-      setError(null);
-      return true;
-    } catch (err: any) {
-      setError(err.message || 'Failed to send message');
-      return false;
+      return data;
+    } catch {
+      return null;
     } finally {
       setIsPending(false);
     }
   }, [tripUuid]);
 
-  return { sendMessage, isPending, error };
+  return { send, isPending };
 };

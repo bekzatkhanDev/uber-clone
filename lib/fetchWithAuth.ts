@@ -88,23 +88,21 @@ export const fetchWithAuth = async (endpoint: string, options: RequestInit = {})
     headers,
   });
 
-  if (response.status === 401 && token) {
-    console.log('[fetchWithAuth] 401, пробуем обновить токен...');
-
+  if (response.status === 401) {
+    // Always try to refresh — covers both expired and missing access tokens.
     const refreshSuccess = await refreshAccessToken();
 
     if (refreshSuccess) {
       token = await getAuthToken();
-      headers['Authorization'] = `Bearer ${token}`;
+      if (token) headers['Authorization'] = `Bearer ${token}`;
 
       response = await fetch(url, {
         ...options,
         headers,
       });
     } else {
-      console.log('[fetchWithAuth] Обновление не удалось, выход');
       await handleLogout();
-      throw new Error('Сессия истекла. Войдите снова.');
+      throw new Error('Session expired. Please sign in again.');
     }
   }
 

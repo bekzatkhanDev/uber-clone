@@ -5,6 +5,7 @@ import { router } from "expo-router";
 import { ActivityIndicator, Image, Text, View } from "react-native";
 
 import CustomButton from "@/components/CustomButton";
+import BankSelector, { BankId } from "@/components/BankSelector";
 import RideLayout from "@/components/RideLayout";
 import { icons } from "@/constants";
 import { useLocationStore } from "@/store";
@@ -34,15 +35,15 @@ const SectionTitle = ({ title }: { title: string }) => (
 const ConfirmRide = () => {
   const { t } = useTranslation();
   const { symbol } = useCurrency();
-  const { userAddress, destinationAddress, selectedTariff, estimate } = useLocationStore();
+  const { userAddress, destinationAddress, selectedTariff, estimate, selectedPaymentMethod, setSelectedPaymentMethod } = useLocationStore();
 
   const estimatedTime = estimate?.duration_min || 0;
   const estimatedDistance = estimate?.distance_km || 0;
   const estimatedPrice = estimate?.price || 0;
   const isCalculating = !estimate;
 
-  const formatPrice = (price: number) =>
-    `${symbol}${price.toFixed(2)}`;
+  const formatPrice = (price: number | string) =>
+    `${symbol}${parseFloat(price as string).toFixed(2)}`;
 
   return (
     <RideLayout title={t.confirmRide.confirmRide} snapPoints={["60%"]}>
@@ -115,6 +116,16 @@ const ConfirmRide = () => {
             <Text style={{ fontSize: 12, color: "#9ca3af", marginTop: 2 }}>{t.confirmRide.driverAssigned}</Text>
           </View>
         </View>
+      </Card>
+
+      {/* Payment method */}
+      <Card>
+        <SectionTitle title="Payment Method" />
+        <BankSelector
+          selectedBank={selectedPaymentMethod as BankId | null}
+          onSelect={(id) => setSelectedPaymentMethod(id)}
+          compact
+        />
       </Card>
 
       {/* Confirm button */}

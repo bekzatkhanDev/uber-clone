@@ -1,5 +1,6 @@
 // Профиль: данные пользователя, язык, выход
 import { router } from "expo-router";
+import React, { useState } from "react";
 import {
   Text,
   View,
@@ -16,8 +17,10 @@ import { useLogout } from "@/hooks/useAuth";
 import { useCurrentUser } from "@/hooks/useUser";
 import { useUserLocation } from "@/hooks/useUserLocation";
 import { useAuthStore } from "@/store/authStore";
+import { useLocationStore } from "@/store";
 import { useTranslation } from "@/i18n/I18nProvider";
 import { Language } from "@/i18n";
+import BankSelector, { BankId, getBankById } from "@/components/BankSelector";
 
 const Profile = () => {
   const { t, language, setLanguage } = useTranslation();
@@ -26,6 +29,8 @@ const Profile = () => {
   const { mutate: logout, isPending: isLoggingOut } = useLogout();
   const { location } = useUserLocation();
   const { clearAuth } = useAuthStore();
+  const { selectedPaymentMethod, setSelectedPaymentMethod } = useLocationStore();
+  const [paymentExpanded, setPaymentExpanded] = useState(false);
 
   const handleSignOut = () => {
     if (isLoggingOut) return;
@@ -173,12 +178,50 @@ const Profile = () => {
       {/* Оплаты */}
       <View className="bg-white rounded-xl p-5 mb-5">
         <Text className="text-lg font-JakartaSemiBold mb-3">{t.profile.payments}</Text>
-        
-        <TouchableOpacity className="flex flex-row items-center py-3 border-b border-gray-100">
+
+        {/* Payment Methods — expandable bank selector */}
+        <TouchableOpacity
+          className="flex flex-row items-center py-3 border-b border-gray-100"
+          onPress={() => setPaymentExpanded((v) => !v)}
+        >
           <Image source={icons.dollar} style={{ width: 20, height: 20 }} resizeMode="contain" />
-          <Text className="ml-3 flex-1">{t.profile.paymentMethods}</Text>
-          <Image source={icons.arrowUp} style={{ width: 16, height: 16, transform: [{ rotate: '90deg' }] }} resizeMode="contain" />
+          <View style={{ flex: 1, marginLeft: 12 }}>
+            <Text style={{ fontSize: 15, color: '#111827' }}>{t.profile.paymentMethods}</Text>
+            {selectedPaymentMethod && !paymentExpanded && (
+              <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 3 }}>
+                <View style={{
+                  width: 14, height: 14, borderRadius: 3,
+                  backgroundColor: getBankById(selectedPaymentMethod as BankId)?.bgColor ?? '#e5e7eb',
+                  alignItems: 'center', justifyContent: 'center', marginRight: 5,
+                }}>
+                  <Text style={{ color: '#fff', fontSize: 8, fontWeight: '900' }}>
+                    {getBankById(selectedPaymentMethod as BankId)?.initials}
+                  </Text>
+                </View>
+                <Text style={{ fontSize: 12, color: '#6b7280' }}>
+                  {getBankById(selectedPaymentMethod as BankId)?.name}
+                </Text>
+              </View>
+            )}
+          </View>
+          <Text style={{ fontSize: 16, color: '#9ca3af', transform: [{ rotate: paymentExpanded ? '-90deg' : '90deg' }] }}>›</Text>
         </TouchableOpacity>
+
+        {paymentExpanded && (
+          <View style={{ paddingTop: 14, paddingBottom: 4 }}>
+            <Text style={{ fontSize: 12, color: '#9ca3af', marginBottom: 10, fontWeight: '600' }}>
+              DEFAULT PAYMENT BANK
+            </Text>
+            <BankSelector
+              selectedBank={selectedPaymentMethod as BankId | null}
+              onSelect={(id) => {
+                setSelectedPaymentMethod(id);
+                setPaymentExpanded(false);
+              }}
+              compact
+            />
+          </View>
+        )}
 
         <TouchableOpacity className="flex flex-row items-center py-3">
           <Image source={icons.pin} style={{ width: 20, height: 20 }} resizeMode="contain" />

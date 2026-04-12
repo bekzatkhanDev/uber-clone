@@ -102,7 +102,7 @@ const ActiveTripPanel = ({ trip, onTripCompleted }: ActiveTripPanelProps) => {
             <View>
               <Text className="text-sm text-gray-500">Distance</Text>
               <Text className="text-base font-JakartaMedium">
-                {trip.distance_km.toFixed(1)} km
+                {parseFloat(trip.distance_km).toFixed(1)} km
               </Text>
             </View>
           )}
@@ -110,7 +110,7 @@ const ActiveTripPanel = ({ trip, onTripCompleted }: ActiveTripPanelProps) => {
             <View>
               <Text className="text-sm text-gray-500">Fare</Text>
               <Text className="text-base font-JakartaBold text-[#0CC25F]">
-                {trip.price.toFixed(2)} KZT
+                {parseFloat(trip.price).toFixed(2)} KZT
               </Text>
             </View>
           )}

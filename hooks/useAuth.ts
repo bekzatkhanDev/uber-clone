@@ -7,6 +7,7 @@ import { useAuthStore } from '@/store/authStore';
 const AUTH_TOKEN_KEY = 'access-token';
 const REFRESH_TOKEN_KEY = 'refresh-token';
 const USER_ROLES_KEY = 'user-roles';
+const USER_ID_KEY = 'user-id';
 
 // ─── Role helpers ────────────────────────────────────────────────────────────
 
@@ -28,6 +29,9 @@ export const removeUserRoles = async (): Promise<void> => {
 };
 
 // ─── Access token ─────────────────────────────────────────────────────────────
+
+export const getCurrentUserId = (): Promise<string | null> =>
+  storage.getItem(USER_ID_KEY);
 
 export const getAuthToken = (): Promise<string | null> =>
   storage.getItem(AUTH_TOKEN_KEY);
@@ -58,11 +62,13 @@ export const useRegister = () => {
       password,
       first_name,
       last_name,
+      role = 'customer',
     }: {
       phone: string;
       password: string;
       first_name?: string;
       last_name?: string;
+      role?: 'customer' | 'driver';
     }) =>
       fetchAPI('/auth/register/', {
         method: 'POST',
@@ -72,7 +78,7 @@ export const useRegister = () => {
           password2: password,
           first_name: first_name || '',
           last_name: last_name || '',
-          role: 'customer',
+          role,
         }),
       }),
   });
@@ -93,6 +99,9 @@ export const useLogin = () => {
       await setRefreshToken(data.refresh);
       if (data.user?.roles) {
         await saveUserRoles(data.user.roles);
+      }
+      if (data.user?.id) {
+        await storage.setItem(USER_ID_KEY, String(data.user.id));
       }
       setAuthenticated(true);
       queryClient.invalidateQueries({ queryKey: ['user'] });
@@ -132,6 +141,7 @@ export const useLogout = () => {
       await removeAuthToken();
       await removeRefreshToken();
       await removeUserRoles();
+      await storage.removeItem(USER_ID_KEY);
       setAuthenticated(false);
       queryClient.clear();
     },
@@ -139,6 +149,7 @@ export const useLogout = () => {
       await removeAuthToken();
       await removeRefreshToken();
       await removeUserRoles();
+      await storage.removeItem(USER_ID_KEY);
       setAuthenticated(false);
       queryClient.clear();
     },

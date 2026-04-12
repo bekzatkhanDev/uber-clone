@@ -50,23 +50,31 @@ const TripShare = () => {
     }
   };
   
+  // Build the frontend URL from the token so it always points to the Expo app,
+  // regardless of what the backend returns in share_url.
+  const getFrontendShareUrl = () => {
+    if (!shareToken) return null;
+    const base = process.env.EXPO_PUBLIC_FRONTEND_BASE_URL || 'http://localhost:8081';
+    return `${base}/tracks/${shareToken.token}`;
+  };
+
   const handleCopyLink = async () => {
-    if (shareToken?.share_url) {
-      const success = await copyToClipboard(shareToken.share_url);
-      if (success) {
-        Alert.alert('Success', 'Link copied to clipboard!');
-      } else {
-        Alert.alert('Error', 'Failed to copy link');
-      }
+    const url = getFrontendShareUrl();
+    if (!url) return;
+    const success = await copyToClipboard(url);
+    if (success) {
+      Alert.alert('Copied!', url);
+    } else {
+      Alert.alert('Error', 'Failed to copy link');
     }
   };
-  
+
   const handleShareNative = async () => {
-    if (shareToken?.share_url) {
-      const success = await shareViaNative(shareToken.share_url, 'Track my trip');
-      if (!success) {
-        Alert.alert('Info', 'Native sharing not available on this device');
-      }
+    const url = getFrontendShareUrl();
+    if (!url) return;
+    const success = await shareViaNative(url, 'Track my trip');
+    if (!success) {
+      Alert.alert('Info', 'Native sharing not available on this device');
     }
   };
   
@@ -128,7 +136,7 @@ const TripShare = () => {
                 Expires: {formatExpiresAt(shareToken.expires_at)}
               </Text>
               <Text className="text-green-600 text-xs mb-3">
-                Access count: {shareToken.access_count}
+                Access count: {shareToken.accessed_count}
               </Text>
             </View>
             
@@ -176,7 +184,7 @@ const TripShare = () => {
                   Created: {formatExpiresAt(token.expires_at)}
                 </Text>
                 <Text className="text-xs text-gray-500 mt-1">
-                  Accessed {token.access_count} times
+                  Accessed {token.accessed_count} times
                 </Text>
                 <Text className="text-xs text-red-500 mt-1">
                   ⚠️ Expired

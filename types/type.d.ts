@@ -131,6 +131,7 @@ declare interface LocationStore {
   destinationAddress: string | null;
   selectedTariff: Tariff | null;
   estimate: EstimateData | null;
+  selectedPaymentMethod: string | null;
   setUserLocation: ({
     latitude,
     longitude,
@@ -154,6 +155,7 @@ declare interface LocationStore {
   clearSelectedTariff: () => void;
   setEstimate: (estimate: EstimateData | null) => void;
   clearEstimate: () => void;
+  setSelectedPaymentMethod: (method: string | null) => void;
 }
 
 declare interface DriverStore {

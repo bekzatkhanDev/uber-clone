@@ -1,6 +1,7 @@
 // Оформление поездки: создаём заказ, показываем водителя и цену
 import { useEffect, useRef, useState } from "react";
-import { Image, Text, View, ActivityIndicator } from "react-native";
+import { Image, Text, View, ActivityIndicator, TouchableOpacity } from "react-native";
+import { useRouter } from "expo-router";
 
 import Payment from "@/components/Payment";
 import RideLayout from "@/components/RideLayout";
@@ -34,6 +35,7 @@ const POLL_TIMEOUT_MS = 45000;
 const BookRide = () => {
   const { t } = useTranslation();
   const { symbol } = useCurrency();
+  const router = useRouter();
   const { data: currentUser } = useCurrentUser();
   const {
     userAddress,
@@ -180,6 +182,25 @@ const BookRide = () => {
           <View style={{ backgroundColor: '#0CC25F', borderRadius: 999, paddingHorizontal: 14, paddingVertical: 4, marginTop: 10 }}>
             <Text style={{ color: 'white', fontSize: 13, fontWeight: '600' }}>Driver assigned</Text>
           </View>
+          {/* Chat with Driver button */}
+          <TouchableOpacity
+            onPress={() => router.push(`/(root)/chat/${tripData.id}` as any)}
+            style={{
+              marginTop: 14,
+              flexDirection: 'row',
+              alignItems: 'center',
+              backgroundColor: '#fff',
+              borderWidth: 1.5,
+              borderColor: '#0CC25F',
+              borderRadius: 999,
+              paddingHorizontal: 18,
+              paddingVertical: 8,
+              gap: 6,
+            }}
+          >
+            <Text style={{ fontSize: 16 }}>💬</Text>
+            <Text style={{ color: '#0CC25F', fontSize: 14, fontWeight: '700' }}>Chat with Driver</Text>
+          </TouchableOpacity>
         </View>
       ) : noDriverFound ? (
         <View style={{ alignItems: 'center', paddingVertical: 20, backgroundColor: '#fef9c3', borderRadius: 16, marginBottom: 16 }}>

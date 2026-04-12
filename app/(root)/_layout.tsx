@@ -22,6 +22,8 @@ const Layout = () => {
       <Stack.Screen name="find-ride" options={{ headerShown: false }} />
       <Stack.Screen name="confirm-ride" options={{ headerShown: false }} />
       <Stack.Screen name="book-ride" options={{ headerShown: false }} />
+      <Stack.Screen name="chat/[tripId]" options={{ headerShown: false }} />
+      <Stack.Screen name="trip-share/index" options={{ headerShown: false }} />
     </Stack>
   );
 };

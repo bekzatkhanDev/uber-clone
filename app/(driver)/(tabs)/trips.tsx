@@ -52,14 +52,14 @@ const TripRow = ({ item }: { item: TripItem }) => {
 
       <View className="flex-row justify-between">
         {item.distance_km != null && (
-          <Text className="text-sm text-gray-500">{item.distance_km.toFixed(1)} km</Text>
+          <Text className="text-sm text-gray-500">{parseFloat(item.distance_km).toFixed(1)} km</Text>
         )}
         {item.tariff?.code && (
           <Text className="text-sm text-gray-500 capitalize">{item.tariff.code}</Text>
         )}
         {item.price != null && (
           <Text className="text-sm font-JakartaBold text-[#0CC25F]">
-            {item.price.toFixed(0)} KZT
+            {parseFloat(item.price).toFixed(0)} KZT
           </Text>
         )}
       </View>

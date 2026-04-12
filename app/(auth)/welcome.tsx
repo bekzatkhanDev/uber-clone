@@ -42,9 +42,7 @@ const Home = () => {
   return (
     <View style={{ flex: 1, alignItems: 'center', justifyContent: 'space-between', backgroundColor: 'white', paddingTop: insets.top, paddingBottom: insets.bottom }}>
       <TouchableOpacity
-        onPress={() => {
-          router.replace("/(auth)/sign-up");
-        }}
+        onPress={() => router.push("/(auth)/sign-in")}
         style={{ width: '100%', alignItems: 'flex-end', padding: 20 }}
       >
         <Text className="text-black text-md font-JakartaBold">{t.common.skip}</Text>
@@ -72,7 +70,7 @@ const Home = () => {
         title={isLastSlide ? t.onboarding.getStarted : t.common.next}
         onPress={() =>
           isLastSlide
-            ? router.replace("/(auth)/sign-up")
+            ? router.replace("/(auth)/role-select")
             : swiperRef.current?.scrollBy(1)
         }
         className="w-11/12 mt-10 mb-5"

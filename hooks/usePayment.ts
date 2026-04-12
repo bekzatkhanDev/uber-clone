@@ -17,7 +17,7 @@ export const useTripPayment = (tripId: string) => {
 export const useCreatePayment = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async ({ tripId, method = 'cash' }: { tripId: string; method?: 'cash' | 'card' }) => {
+    mutationFn: async ({ tripId, method = 'cash' }: { tripId: string; method?: PaymentMethod }) => {
       const response = await fetchWithAuth('/payments/', {
         method: 'POST',
         body: JSON.stringify({
@@ -33,7 +33,7 @@ export const useCreatePayment = () => {
   });
 };
 
-export type PaymentMethod = 'cash' | 'card';
+export type PaymentMethod = 'cash' | 'card' | 'kaspi' | 'halyk' | 'freedom';
 
 // Заказ поездки и оплата после завершения
 export const usePaymentFlow = () => {

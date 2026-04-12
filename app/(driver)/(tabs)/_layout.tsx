@@ -73,6 +73,13 @@ export default function DriverTabLayout() {
         }}
       />
       <Tabs.Screen
+        name="chat"
+        options={{
+          title: 'Chat',
+          tabBarIcon: ({ focused }) => <TabIcon source={icons.chat} focused={focused} />,
+        }}
+      />
+      <Tabs.Screen
         name="earnings"
         options={{
           title: 'Earnings',

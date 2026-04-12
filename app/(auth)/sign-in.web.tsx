@@ -84,14 +84,9 @@ const SignInWeb = () => {
               disabled={loading}
             />
 
-            <Link href="/(auth)/sign-up" className="text-lg text-center text-general-200 mt-10">
+            <Link href="/(auth)/role-select" className="text-lg text-center text-general-200 mt-10">
               {t.auth.dontHaveAccount}{" "}
               <Text className="text-primary-500">{t.auth.signUp}</Text>
-            </Link>
-
-            <Link href="/(auth)/driver-register" className="text-lg text-center text-general-200 mt-4">
-              {t.auth.wantToDrive || "Want to drive?"}{" "}
-              <Text className="text-primary-500">{t.auth.registerAsDriver || "Register as Driver"}</Text>
             </Link>
           </View>
         </View>

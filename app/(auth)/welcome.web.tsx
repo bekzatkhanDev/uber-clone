@@ -45,7 +45,7 @@ const WelcomeWeb = () => {
       }}
     >
       <TouchableOpacity
-        onPress={() => router.replace("/(auth)/sign-up")}
+        onPress={() => router.push("/(auth)/sign-in")}
         style={{ width: "100%", alignItems: "flex-end", padding: 20 }}
       >
         <Text className="text-black text-md font-JakartaBold">{t.common.skip}</Text>
@@ -76,7 +76,7 @@ const WelcomeWeb = () => {
         <CustomButton
           title={isLastSlide ? t.onboarding.getStarted : t.common.next}
           onPress={() => {
-            if (isLastSlide) router.replace("/(auth)/sign-up");
+            if (isLastSlide) router.replace("/(auth)/role-select");
             else setActiveIndex((v) => Math.min(v + 1, onboardingSlides.length - 1));
           }}
           className="w-11/12 mt-3 mb-5 max-w-xl"

@@ -1,83 +1,63 @@
-// Public trip tracking page - no authentication required
-// Recipients view this page when clicking a share link
+// Public trip tracking page — no authentication required
+// Recipients open this page by following a share link
 import React, { useEffect } from 'react';
 import {
   View,
   Text,
   ActivityIndicator,
   ScrollView,
+  TouchableOpacity,
   Linking,
   Platform,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useLocalSearchParams } from 'expo-router';
 import { usePublicTripData } from '@/hooks/useTripSharing';
+
+const LABEL: Record<string, string> = {
+  requested: 'Looking for driver…',
+  accepted: 'Driver assigned — Heading to pickup',
+  on_route: 'On route to destination',
+  completed: 'Trip completed',
+  cancelled: 'Trip cancelled',
+};
+
+const STATUS_COLOR: Record<string, string> = {
+  on_route: '#3b82f6',
+  completed: '#22c55e',
+  cancelled: '#ef4444',
+};
 
 const PublicTrackPage = () => {
   const insets = useSafeAreaInsets();
-  const router = useRouter();
   const { token } = useLocalSearchParams<{ token?: string }>();
-  
+
   const { tripData, isLoading, error, isExpired, refreshData } = usePublicTripData(
     token || null,
-    !!token
+    !!token,
   );
-  
-  // Auto-refresh every 10 seconds when trip is in progress
+
+  // Auto-refresh every 10 s while trip is active
   useEffect(() => {
-    if (!tripData || tripData.trip_status === 'completed') {
-      return;
-    }
-    
-    const interval = setInterval(() => {
-      refreshData();
-    }, 10000);
-    
-    return () => clearInterval(interval);
+    if (!tripData || tripData.status === 'completed' || tripData.status === 'cancelled') return;
+    const id = setInterval(refreshData, 10_000);
+    return () => clearInterval(id);
   }, [tripData, refreshData]);
-  
-  const getStatusLabel = (status: string) => {
-    switch (status) {
-      case 'requested':
-        return 'Looking for driver...';
-      case 'accepted':
-        return 'Driver assigned - Heading to pickup';
-      case 'on_route':
-        return 'On route to destination';
-      case 'completed':
-        return 'Trip completed';
-      case 'cancelled':
-        return 'Trip cancelled';
-      default:
-        return status;
-    }
-  };
-  
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'on_route':
-        return 'bg-blue-500';
-      case 'completed':
-        return 'bg-green-500';
-      case 'cancelled':
-        return 'bg-red-500';
-      default:
-        return 'bg-[#0CC25F]';
-    }
-  };
-  
+
   const handleCallDriver = () => {
-    if (tripData?.driver?.phone) {
-      const phoneNumber = tripData.driver.phone.replace(/[^0-9+]/g, '');
-      if (Platform.OS === 'web') {
-        window.open(`tel:${phoneNumber}`, '_blank');
-      } else {
-        Linking.openURL(`tel:${phoneNumber}`);
-      }
+    const phone = tripData?.driver?.phone?.replace(/[^0-9+]/g, '');
+    if (!phone) return;
+    if (Platform.OS === 'web') {
+      window.open(`tel:${phone}`, '_blank');
+    } else {
+      Linking.openURL(`tel:${phone}`);
     }
   };
-  
-  // Loading state
+
+  const formatCoords = (lat: number, lng: number) =>
+    `${lat.toFixed(5)}, ${lng.toFixed(5)}`;
+
+  // ── Loading ──────────────────────────────────────────────────────────────────
   if (isLoading && !tripData) {
     return (
       <View
@@ -85,16 +65,16 @@ const PublicTrackPage = () => {
         style={{ paddingTop: insets.top, paddingBottom: insets.bottom }}
       >
         <ActivityIndicator size="large" color="#0CC25F" />
-        <Text className="mt-4 text-gray-500">Loading trip details...</Text>
+        <Text className="mt-4 text-gray-500">Loading trip details…</Text>
       </View>
     );
   }
-  
-  // Error states
+
+  // ── Error / expired ───────────────────────────────────────────────────────────
   if (error || isExpired || !tripData) {
     return (
       <View
-        className="flex-1 bg-white items-center justify-center p-5"
+        className="flex-1 bg-white items-center justify-center p-6"
         style={{ paddingTop: insets.top, paddingBottom: insets.bottom }}
       >
         <Text className="text-2xl font-JakartaBold text-red-500 mb-2">
@@ -102,7 +82,7 @@ const PublicTrackPage = () => {
         </Text>
         <Text className="text-center text-gray-500 mb-6">
           {isExpired
-            ? 'This tracking link has expired. Please ask the sender to generate a new one.'
+            ? 'This tracking link has expired. Ask the sender to generate a new one.'
             : error || 'Unable to load trip information.'}
         </Text>
         <View className="bg-gray-100 rounded-xl p-4 w-full max-w-sm">
@@ -113,137 +93,123 @@ const PublicTrackPage = () => {
       </View>
     );
   }
-  
+
+  const statusColor = STATUS_COLOR[tripData.status] ?? '#0CC25F';
+  const statusLabel = LABEL[tripData.status] ?? tripData.status;
+  const driverName =
+    [tripData.driver?.first_name, tripData.driver?.last_name].filter(Boolean).join(' ') ||
+    tripData.driver?.phone ||
+    '—';
+  const vehicleLabel = tripData.car
+    ? `${tripData.car.brand.name} · ${tripData.car.car_type.code}`
+    : null;
+
   return (
     <ScrollView
       className="flex-1 bg-gray-50"
-      style={{ paddingTop: insets.top, paddingBottom: insets.bottom }}
+      contentContainerStyle={{ paddingBottom: insets.bottom + 24 }}
     >
       {/* Status Banner */}
-      <View className={`${getStatusColor(tripData.trip_status)} px-5 py-4`}>
-        <Text className="text-white text-lg font-JakartaBold">
-          {getStatusLabel(tripData.trip_status)}
-        </Text>
-        {tripData.eta_minutes != null && tripData.trip_status !== 'completed' && (
-          <Text className="text-white text-sm mt-1">
-            ETA: {tripData.eta_minutes} minutes
+      <View style={{ backgroundColor: statusColor, paddingTop: insets.top + 16, paddingHorizontal: 20, paddingBottom: 20 }}>
+        <Text className="text-white text-lg font-JakartaBold">{statusLabel}</Text>
+        {tripData.distance_km != null && (
+          <Text className="text-white text-sm mt-1 opacity-90">
+            {tripData.distance_km.toFixed(1)} km
+            {tripData.price ? ` · ${tripData.price} ₸` : ''}
           </Text>
         )}
       </View>
-      
-      {/* Map Placeholder */}
-      <View className="bg-gray-200 h-64 w-full items-center justify-center">
-        <Text className="text-gray-500 font-JakartaMedium">
-          🗺️ Live Map View
-        </Text>
-        <Text className="text-gray-400 text-sm mt-1">
-          Driver location updates every 10s
-        </Text>
-        {tripData.current_location && (
-          <Text className="text-gray-400 text-xs mt-2">
-            Last update: {new Date().toLocaleTimeString()}
-          </Text>
-        )}
+
+      {/* Map placeholder */}
+      <View className="bg-gray-200 h-52 w-full items-center justify-center">
+        <Text className="text-gray-500 font-JakartaMedium text-base">🗺️ Live Map View</Text>
+        <Text className="text-gray-400 text-sm mt-1">Updates every 10 s</Text>
       </View>
-      
-      {/* Driver Info Card */}
-      <View className="bg-white mx-5 mt-[-30px] rounded-2xl shadow-lg p-5 relative z-10">
-        <Text className="text-sm text-gray-500 mb-3">Your Driver</Text>
-        
-        <View className="flex-row items-center justify-between mb-4">
-          <View>
-            <Text className="text-xl font-JakartaBold">
-              {tripData.driver.first_name}
+
+      {/* Driver / vehicle card */}
+      <View
+        className="bg-white mx-4 rounded-2xl p-5 shadow-sm border border-gray-100"
+        style={{ marginTop: -24, zIndex: 10, position: 'relative' }}
+      >
+        {tripData.driver ? (
+          <>
+            <Text className="text-xs text-gray-400 mb-1 font-JakartaMedium uppercase tracking-wide">
+              Your Driver
             </Text>
-            {tripData.driver.vehicle_model && (
-              <Text className="text-gray-600 mt-1">
-                {tripData.driver.vehicle_model}
-              </Text>
-            )}
-            {tripData.driver.vehicle_plate && (
-              <Text className="text-gray-800 font-JakartaSemiBold bg-gray-100 px-2 py-1 rounded mt-1 inline-block">
-                {tripData.driver.vehicle_plate}
-              </Text>
-            )}
-          </View>
-          
-          {tripData.driver.phone && (
-            <View className="flex-row gap-2">
-              <TouchableOpacity
-                className="bg-[#0CC25F] w-12 h-12 rounded-full items-center justify-center"
-                onPress={handleCallDriver}
-              >
-                <Text className="text-white text-xl">📞</Text>
-              </TouchableOpacity>
+            <View className="flex-row items-center justify-between">
+              <View className="flex-1">
+                <Text className="text-xl font-JakartaBold">{driverName}</Text>
+                {vehicleLabel && (
+                  <Text className="text-gray-500 mt-0.5">{vehicleLabel}</Text>
+                )}
+                {tripData.car?.plate_number && (
+                  <View className="bg-gray-100 rounded-lg px-3 py-1 mt-2 self-start">
+                    <Text className="text-gray-800 font-JakartaSemiBold text-sm">
+                      {tripData.car.plate_number}
+                    </Text>
+                  </View>
+                )}
+              </View>
+              {tripData.driver.phone && (
+                <TouchableOpacity
+                  className="bg-[#0CC25F] w-12 h-12 rounded-full items-center justify-center ml-3"
+                  onPress={handleCallDriver}
+                >
+                  <Text className="text-xl">📞</Text>
+                </TouchableOpacity>
+              )}
             </View>
-          )}
-        </View>
-        
-        {/* Trip Locations */}
-        <View className="border-t border-gray-200 pt-4 mt-2">
-          <View className="flex-row items-start mb-4">
-            <View className="w-3 h-3 rounded-full bg-green-500 mt-1.5 mr-3" />
-            <View className="flex-1">
-              <Text className="text-xs text-gray-500">Pickup</Text>
-              <Text className="text-sm font-JakartaMedium">
-                {tripData.pickup_location.address}
-              </Text>
-            </View>
+          </>
+        ) : (
+          <View className="items-center py-4">
+            <ActivityIndicator size="small" color="#0CC25F" />
+            <Text className="text-gray-500 mt-2">Waiting for driver…</Text>
           </View>
-          
-          <View className="flex-row items-start">
-            <View className="w-3 h-3 rounded-full bg-red-500 mt-1.5 mr-3" />
-            <View className="flex-1">
-              <Text className="text-xs text-gray-500">Dropoff</Text>
-              <Text className="text-sm font-JakartaMedium">
-                {tripData.dropoff_location.address}
-              </Text>
-            </View>
-          </View>
-        </View>
+        )}
       </View>
-      
-      {/* Safety Notice */}
-      <View className="mx-5 mt-5 mb-10 bg-yellow-50 rounded-xl p-4 border border-yellow-200">
-        <Text className="text-yellow-800 font-JakartaSemiBold mb-1">
-          ℹ️ About This Page
+
+      {/* Trip Locations */}
+      <View className="bg-white mx-4 mt-3 rounded-2xl p-5 border border-gray-100">
+        <Text className="text-xs text-gray-400 mb-3 font-JakartaMedium uppercase tracking-wide">
+          Route
         </Text>
+        <View className="flex-row items-start mb-4">
+          <View className="w-3 h-3 rounded-full bg-green-500 mt-1 mr-3 flex-shrink-0" />
+          <View className="flex-1">
+            <Text className="text-xs text-gray-400">Pickup</Text>
+            <Text className="text-sm font-JakartaMedium text-gray-800">
+              {formatCoords(tripData.start_lat, tripData.start_lng)}
+            </Text>
+          </View>
+        </View>
+        <View className="flex-row items-start">
+          <View className="w-3 h-3 rounded-full bg-red-500 mt-1 mr-3 flex-shrink-0" />
+          <View className="flex-1">
+            <Text className="text-xs text-gray-400">Drop-off</Text>
+            <Text className="text-sm font-JakartaMedium text-gray-800">
+              {formatCoords(tripData.end_lat, tripData.end_lng)}
+            </Text>
+          </View>
+        </View>
+        {tripData.tariff && (
+          <View className="border-t border-gray-100 mt-4 pt-3">
+            <Text className="text-xs text-gray-400">Tariff</Text>
+            <Text className="text-sm font-JakartaMedium text-gray-700 capitalize">
+              {tripData.tariff.code}
+            </Text>
+          </View>
+        )}
+      </View>
+
+      {/* Safety notice */}
+      <View className="mx-4 mt-3 bg-yellow-50 rounded-xl p-4 border border-yellow-200">
+        <Text className="text-yellow-800 font-JakartaSemiBold mb-1">ℹ️ About This Page</Text>
         <Text className="text-yellow-700 text-sm">
-          You're viewing a shared trip location. The driver's position updates automatically. 
-          This link will expire in 24 hours.
+          You're viewing a shared trip. The page refreshes automatically every 10 s. This link
+          expires in 24 hours.
         </Text>
       </View>
     </ScrollView>
-  );
-};
-
-// Simple TouchableOpacity wrapper for web compatibility
-const TouchableOpacity = ({ 
-  onPress, 
-  children, 
-  className, 
-  disabled 
-}: { 
-  onPress: () => void; 
-  children: React.ReactNode; 
-  className?: string;
-  disabled?: boolean;
-}) => {
-  const handleClick = () => {
-    if (!disabled && onPress) {
-      onPress();
-    }
-  };
-  
-  return (
-    <View
-      className={className}
-      onStartShouldSetResponder={() => true}
-      onPressIn={Platform.OS !== 'web' ? undefined : handleClick}
-      onPress={Platform.OS !== 'web' ? handleClick : undefined}
-    >
-      {children}
-    </View>
   );
 };
 

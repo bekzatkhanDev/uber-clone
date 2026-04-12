@@ -6,32 +6,30 @@ export interface ShareToken {
   token: string;
   share_url: string;
   expires_at: string;
-  access_count: number;
+  accessed_count: number;
 }
 
+// Matches TripSharePublicSerializer / TripDetailSerializer on the backend
 export interface PublicTripData {
-  trip_status: string;
-  driver: {
-    first_name: string;
-    vehicle_model: string;
-    vehicle_plate: string;
-    phone?: string;
-  };
-  pickup_location: {
-    address: string;
-    lat: number;
-    lng: number;
-  };
-  dropoff_location: {
-    address: string;
-    lat: number;
-    lng: number;
-  };
-  eta_minutes: number;
-  current_location: {
-    lat: number;
-    lng: number;
-  };
+  id: string;
+  status: string;
+  customer: { id: number; phone: string; first_name: string; last_name: string } | null;
+  driver: { id: number; phone: string; first_name: string; last_name: string } | null;
+  car: {
+    id: number;
+    brand: { name: string; manufacturer: string };
+    car_type: { code: string; description: string };
+    plate_number: string;
+    year: number;
+  } | null;
+  tariff: { code: string; base_price: string } | null;
+  start_lat: number;
+  start_lng: number;
+  end_lat: number;
+  end_lng: number;
+  distance_km: number | null;
+  price: string | null;
+  created_at: string;
 }
 
 // Create a new share token

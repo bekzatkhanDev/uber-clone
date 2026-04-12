@@ -20,6 +20,7 @@ export const useLocationStore = create<LocationStore>((set) => ({
   destinationAddress: null,
   selectedTariff: null,
   estimate: null,
+  selectedPaymentMethod: null,
 
   setUserLocation: ({ latitude, longitude, address }) => {
     set({
@@ -57,4 +58,5 @@ export const useLocationStore = create<LocationStore>((set) => ({
   clearSelectedTariff: () => set({ selectedTariff: null, estimate: null }),
   setEstimate: (estimate: EstimateData | null) => set({ estimate }),
   clearEstimate: () => set({ estimate: null }),
+  setSelectedPaymentMethod: (method: string | null) => set({ selectedPaymentMethod: method }),
 }));

@@ -1,290 +1,196 @@
-// Chat screen for real-time messaging between driver and customer
-import React, { useState, useRef, useEffect } from 'react';
+import React from 'react';
 import {
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  ScrollView,
-  ActivityIndicator,
-  Alert,
-  Platform,
+  View, Text, TouchableOpacity, ScrollView, ActivityIndicator,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useLocalSearchParams, useRouter } from 'expo-router';
-import {
-  useChatRoomStatus,
-  useChatHistory,
-  useChatWebSocket,
-  useSendChatMessage,
-  ChatMessage,
-  WebSocketMessage,
-} from '@/hooks/useChat';
-import { useActiveTrip } from '@/hooks/useTrips';
+import { useRouter } from 'expo-router';
 
-const Chat = () => {
-  const insets = useSafeAreaInsets();
-  const router = useRouter();
-  const { tripId } = useLocalSearchParams<{ tripId?: string }>();
-  
-  // Get active trip if no tripId provided
-  const { data: activeTrip } = useActiveTrip();
-  const currentTripId = tripId || (activeTrip?.id as string);
-  
-  const [messageText, setMessageText] = useState('');
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
-  const scrollViewRef = useRef<ScrollView>(null);
-  
-  // Check if chat room exists (driver assigned)
-  const { hasDriver, isLoading: checkingRoom, error: roomError } = useChatRoomStatus(currentTripId);
-  
-  // Load message history
-  const {
-    messages: historyMessages,
-    isLoading: loadingHistory,
-    setMessages: setHistoryMessages,
-  } = useChatHistory(currentTripId, hasDriver);
-  
-  // Handle incoming WebSocket messages
-  const handleWebSocketMessage = (wsMessage: WebSocketMessage) => {
-    if (wsMessage.type === 'chat_message') {
-      const newMessage: ChatMessage = {
-        id: `${Date.now()}`,
-        text: wsMessage.message || '',
-        sender: {
-          id: wsMessage.sender_id || '',
-          phone: wsMessage.sender_phone || '',
-          first_name: wsMessage.sender_type === 'driver' ? 'Driver' : 'Customer',
-        },
-        is_read: false,
-        timestamp: wsMessage.timestamp || new Date().toISOString(),
-      };
-      
-      setMessages((prev) => [...prev, newMessage]);
-    }
-  };
-  
-  // WebSocket connection
-  const {
-    isConnected,
-    connectionError,
-    sendMessage: sendWsMessage,
-    isConnecting,
-  } = useChatWebSocket(currentTripId, handleWebSocketMessage, hasDriver);
-  
-  // REST API fallback for sending
-  const { sendMessage: sendRestMessage, isPending } = useSendChatMessage(currentTripId);
-  
-  // Sync history messages
-  useEffect(() => {
-    if (historyMessages.length > 0) {
-      setMessages(historyMessages);
-    }
-  }, [historyMessages]);
-  
-  // Auto-scroll to bottom when new message arrives
-  useEffect(() => {
-    if (scrollViewRef.current && messages.length > 0) {
-      setTimeout(() => {
-        scrollViewRef.current?.scrollToEnd({ animated: true });
-      }, 100);
-    }
-  }, [messages]);
-  
-  const handleSendMessage = async () => {
-    if (!messageText.trim() || !hasDriver) return;
-    
-    const text = messageText.trim();
-    setMessageText('');
-    
-    // Try WebSocket first
-    const wsSuccess = sendWsMessage(text);
-    
-    // Fallback to REST if WebSocket not available
-    if (!wsSuccess) {
-      const restSuccess = await sendRestMessage(text);
-      if (restSuccess) {
-        // Add optimistic update
-        const newMessage: ChatMessage = {
-          id: `${Date.now()}`,
-          text,
-          sender: {
-            id: 'me',
-            phone: '',
-            first_name: 'Me',
-          },
-          is_read: true,
-          timestamp: new Date().toISOString(),
-        };
-        setMessages((prev) => [...prev, newMessage]);
-      } else {
-        Alert.alert('Error', 'Failed to send message. Please try again.');
-        setMessageText(text);
-      }
-    }
-  };
-  
-  // Render message bubble
-  const renderMessage = (msg: ChatMessage, index: number) => {
-    const isMe = msg.sender.id === 'me' || msg.sender.phone === ''; // Simplified check
-    const time = new Date(msg.timestamp).toLocaleTimeString([], {
-      hour: '2-digit',
-      minute: '2-digit',
-    });
-    
-    return (
-      <View
-        key={msg.id || index}
-        className={`flex mb-2 ${isMe ? 'items-end' : 'items-start'}`}
-      >
-        <View
-          className={`max-w-[75%] px-4 py-2 rounded-2xl ${
-            isMe
-              ? 'bg-[#0CC25F] rounded-br-md'
-              : 'bg-gray-200 rounded-bl-md'
-          }`}
-        >
-          <Text className={`text-base ${isMe ? 'text-white' : 'text-gray-800'}`}>
-            {msg.text}
-          </Text>
-          <Text
-            className={`text-xs mt-1 ${isMe ? 'text-green-100' : 'text-gray-500'}`}
-          >
-            {time}
-          </Text>
-        </View>
-      </View>
-    );
-  };
-  
-  // Loading state
-  if (checkingRoom || loadingHistory) {
-    return (
-      <View
-        className="flex-1 bg-white items-center justify-center"
-        style={{ paddingTop: insets.top, paddingBottom: insets.bottom }}
-      >
-        <ActivityIndicator size="large" color="#0CC25F" />
-        <Text className="mt-4 text-gray-500">Loading chat...</Text>
-      </View>
-    );
+import { useActiveTrip, useTripHistory } from '@/hooks/useTrips';
+
+interface TripItem {
+  id: string;
+  status: string;
+  driver?: { id: number; first_name?: string; phone?: string } | null;
+  car?: { brand?: string; plate_number?: string } | null;
+  created_at?: string;
+  start_address?: string;
+  end_address?: string;
+}
+
+const formatDate = (iso?: string) => {
+  if (!iso) return '';
+  const d = new Date(iso);
+  return d.toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' });
+};
+
+const statusLabel = (status: string) => {
+  switch (status) {
+    case 'accepted': return { label: 'In Progress', color: '#0CC25F', bg: '#dcfce7' };
+    case 'completed': return { label: 'Completed', color: '#6b7280', bg: '#f3f4f6' };
+    case 'cancelled': return { label: 'Cancelled', color: '#ef4444', bg: '#fee2e2' };
+    default: return { label: status, color: '#6b7280', bg: '#f3f4f6' };
   }
-  
-  // No driver assigned
-  if (!hasDriver) {
-    return (
-      <View
-        className="flex-1 bg-white items-center justify-center p-5"
-        style={{ paddingTop: insets.top, paddingBottom: insets.bottom }}
-      >
-        <Text className="text-2xl font-JakartaBold text-gray-700 mb-2">
-          No Driver Assigned Yet
-        </Text>
-        <Text className="text-center text-gray-500 mb-6">
-          Waiting for a driver to be assigned to your trip. Chat will be available
-          once a driver accepts your ride.
-        </Text>
-        <TouchableOpacity
-          className="bg-[#0CC25F] px-6 py-3 rounded-xl"
-          onPress={() => router.push('/(root)/(tabs)/home')}
-        >
-          <Text className="text-white font-JakartaSemiBold">Back to Home</Text>
-        </TouchableOpacity>
-      </View>
-    );
-  }
-  
-  // Connection error
-  if (connectionError || roomError) {
-    return (
-      <View
-        className="flex-1 bg-white items-center justify-center p-5"
-        style={{ paddingTop: insets.top, paddingBottom: insets.bottom }}
-      >
-        <Text className="text-xl font-JakartaBold text-red-500 mb-2">
-          Connection Error
-        </Text>
-        <Text className="text-center text-gray-500 mb-6">
-          {connectionError || roomError}
-        </Text>
-        <TouchableOpacity
-          className="bg-[#0CC25F] px-6 py-3 rounded-xl"
-          onPress={() => router.replace('/(root)/(tabs)/chat')}
-        >
-          <Text className="text-white font-JakartaSemiBold">Retry</Text>
-        </TouchableOpacity>
-      </View>
-    );
-  }
-  
+};
+
+const ChatListItem = ({
+  trip,
+  isActive,
+  onPress,
+}: {
+  trip: TripItem;
+  isActive?: boolean;
+  onPress: () => void;
+}) => {
+  const { label, color, bg } = statusLabel(trip.status);
+  const driverName = trip.driver?.first_name || trip.driver?.phone || 'Driver';
+
   return (
-    <View
-      className="flex-1 bg-white"
-      style={{ paddingTop: insets.top, paddingBottom: insets.bottom }}
+    <TouchableOpacity
+      onPress={onPress}
+      className="flex-row items-center bg-white rounded-2xl mx-4 mb-3 p-4"
+      style={{
+        borderWidth: isActive ? 1.5 : 1,
+        borderColor: isActive ? '#0CC25F' : '#e5e7eb',
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.06,
+        shadowRadius: 4,
+        elevation: 2,
+      }}
     >
-      {/* Header */}
-      <View className="px-5 py-3 border-b border-gray-200 bg-white">
-        <Text className="text-xl font-JakartaBold">Trip Chat</Text>
-        <View className="flex-row items-center mt-1">
-          <View
-            className={`w-2 h-2 rounded-full mr-2 ${
-              isConnected ? 'bg-green-500' : isConnecting ? 'bg-yellow-500' : 'bg-red-500'
-            }`}
-          />
-          <Text className="text-sm text-gray-500">
-            {isConnected ? 'Connected' : isConnecting ? 'Connecting...' : 'Disconnected'}
+      {/* Avatar / Icon */}
+      <View
+        className="w-12 h-12 rounded-full items-center justify-center mr-3"
+        style={{ backgroundColor: isActive ? '#dcfce7' : '#f3f4f6' }}
+      >
+        <Text style={{ fontSize: 22 }}>{isActive ? '🚗' : '💬'}</Text>
+      </View>
+
+      {/* Info */}
+      <View className="flex-1 min-w-0">
+        <View className="flex-row items-center justify-between mb-0.5">
+          <Text className="font-JakartaBold text-gray-900 text-base flex-1 mr-2" numberOfLines={1}>
+            {isActive ? `Ride with ${driverName}` : `Trip — ${driverName}`}
+          </Text>
+          <Text className="text-xs text-gray-400 font-Jakarta flex-shrink-0">
+            {formatDate(trip.created_at)}
           </Text>
         </View>
-      </View>
-      
-      {/* Messages */}
-      <ScrollView
-        ref={scrollViewRef}
-        className="flex-1 px-5 py-3"
-        contentContainerStyle={{ flexGrow: 1 }}
-        showsVerticalScrollIndicator={false}
-      >
-        {messages.length === 0 ? (
-          <View className="flex-1 items-center justify-center py-20">
-            <Text className="text-gray-400 text-center">
-              No messages yet{'\n'}Start the conversation!
+        <View className="flex-row items-center justify-between">
+          <Text className="text-xs text-gray-400 font-Jakarta flex-1 mr-2" numberOfLines={1}>
+            {trip.car
+              ? `${trip.car.brand ?? ''} • ${trip.car.plate_number ?? ''}`.trim().replace(/^•\s|•\s$/, '')
+              : 'Tap to open chat'}
+          </Text>
+          <View className="px-2 py-0.5 rounded-full flex-shrink-0" style={{ backgroundColor: bg }}>
+            <Text className="text-xs font-JakartaSemiBold" style={{ color }}>
+              {label}
             </Text>
           </View>
-        ) : (
-          messages.map((msg, index) => renderMessage(msg, index))
-        )}
-      </ScrollView>
-      
-      {/* Input */}
-      <View className="px-5 py-3 border-t border-gray-200 bg-white flex-row items-center gap-3">
-        <TextInput
-          className="flex-1 bg-gray-100 rounded-full px-4 py-3 text-base"
-          placeholder="Type a message..."
-          value={messageText}
-          onChangeText={setMessageText}
-          multiline
-          maxLength={500}
-          editable={!isPending}
-          onSubmitEditing={handleSendMessage}
-        />
-        <TouchableOpacity
-          className={`w-12 h-12 rounded-full items-center justify-center ${
-            messageText.trim() && !isPending
-              ? 'bg-[#0CC25F]'
-              : 'bg-gray-300'
-          }`}
-          onPress={handleSendMessage}
-          disabled={!messageText.trim() || isPending}
-        >
-          {isPending ? (
-            <ActivityIndicator size="small" color="white" />
-          ) : (
-            <Text className="text-white text-xl font-JakartaBold">›</Text>
-          )}
-        </TouchableOpacity>
+        </View>
       </View>
+
+      {/* Chevron */}
+      <Text className="text-gray-300 ml-2 text-lg">›</Text>
+    </TouchableOpacity>
+  );
+};
+
+const ChatList = () => {
+  const insets = useSafeAreaInsets();
+  const router = useRouter();
+
+  const { data: activeTrip, isLoading: loadingActive } = useActiveTrip();
+  const { data: history, isLoading: loadingHistory } = useTripHistory({ limit: 20 });
+
+  const isLoading = loadingActive || loadingHistory;
+
+  // Active trip shown separately only when driver is assigned
+  const hasActiveDriver = activeTrip?.id && activeTrip?.status === 'accepted';
+
+  // History: all trips except the current active one
+  const pastTrips: TripItem[] = Array.isArray(history)
+    ? history.filter((t: TripItem) => t.id !== activeTrip?.id)
+    : [];
+
+  const openChat = (tripId: string) => {
+    router.push(`/(root)/chat/${tripId}` as any);
+  };
+
+  return (
+    <View className="flex-1 bg-gray-50" style={{ paddingTop: insets.top }}>
+      {/* Header */}
+      <View className="px-5 py-4 bg-white border-b border-gray-100">
+        <Text className="text-2xl font-JakartaBold text-gray-900">Messages</Text>
+      </View>
+
+      {isLoading ? (
+        <View className="flex-1 items-center justify-center">
+          <ActivityIndicator size="large" color="#0CC25F" />
+          <Text className="mt-3 text-gray-400 font-Jakarta">Loading chats...</Text>
+        </View>
+      ) : (
+        <ScrollView
+          className="flex-1"
+          contentContainerStyle={{
+            paddingTop: 16,
+            paddingBottom: insets.bottom + 100,
+            flexGrow: !hasActiveDriver && pastTrips.length === 0 ? 1 : undefined,
+          }}
+          showsVerticalScrollIndicator={false}
+        >
+          {/* Active trip section */}
+          {hasActiveDriver && (
+            <View className="mb-4">
+              <Text className="px-5 mb-2 text-xs font-JakartaSemiBold text-gray-400 uppercase tracking-wide">
+                Active Ride
+              </Text>
+              <ChatListItem
+                trip={activeTrip as TripItem}
+                isActive
+                onPress={() => openChat(activeTrip.id)}
+              />
+            </View>
+          )}
+
+          {/* History section */}
+          {pastTrips.length > 0 && (
+            <View>
+              <Text className="px-5 mb-2 text-xs font-JakartaSemiBold text-gray-400 uppercase tracking-wide">
+                Recent Trips
+              </Text>
+              {pastTrips.map((trip) => (
+                <ChatListItem
+                  key={trip.id}
+                  trip={trip}
+                  onPress={() => openChat(trip.id)}
+                />
+              ))}
+            </View>
+          )}
+
+          {/* Empty state */}
+          {!hasActiveDriver && pastTrips.length === 0 && (
+            <View className="flex-1 items-center justify-center px-8 py-20">
+              <Text className="text-5xl mb-4">💬</Text>
+              <Text className="text-xl font-JakartaBold text-gray-700 mb-2 text-center">
+                No conversations yet
+              </Text>
+              <Text className="text-center text-gray-400 font-Jakarta leading-6">
+                Your chat history will appear here after you complete a trip.
+              </Text>
+              <TouchableOpacity
+                className="mt-6 bg-[#0CC25F] px-6 py-3 rounded-xl"
+                onPress={() => router.push('/(root)/(tabs)/home')}
+              >
+                <Text className="text-white font-JakartaSemiBold">Book a Ride</Text>
+              </TouchableOpacity>
+            </View>
+          )}
+        </ScrollView>
+      )}
     </View>
   );
 };
 
-export default Chat;
+export default ChatList;

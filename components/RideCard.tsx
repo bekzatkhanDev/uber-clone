@@ -1,11 +1,14 @@
 // Карточка поездки в истории
 import { Image, Text, View } from "react-native";
+import { useRouter } from "expo-router";
 
 import { icons } from "@/constants";
 import { formatDate, formatTime } from "@/lib/utils";
 import { Ride } from "@/types/type";
 
 const RideCard = ({ ride }: { ride: Ride }) => {
+  const router = useRouter();
+  
   const driverName = ride.driver
     ? `${ride.driver.first_name} ${ride.driver.last_name}`
     : "—";
@@ -30,8 +33,16 @@ const RideCard = ({ ride }: { ride: Ride }) => {
     }
   };
 
+  // Generate trip ID for sharing (use origin_address as fallback identifier)
+  const tripId = ride.id || ride.origin_address;
+
+  const handleShareTrip = () => {
+    // Navigate to share screen with trip ID
+    router.push(`/(root)/trip-share?tripId=${tripId}`);
+  };
+
   return (
-    <View className="flex flex-row items-center justify-center bg-white rounded-lg shadow-sm shadow-neutral-300 mb-3">
+    <View className="flex flex-col items-center justify-center bg-white rounded-lg shadow-sm shadow-neutral-300 mb-3">
       <View className="flex flex-col items-start justify-center p-3 w-full">
         <View className="flex flex-row items-start justify-between w-full">
           {mapUrl ? (
@@ -99,6 +110,21 @@ const RideCard = ({ ride }: { ride: Ride }) => {
               </Text>
             </View>
           )}
+        </View>
+
+        {/* Share Button */}
+        <View className="flex flex-row items-center justify-end w-full mt-3">
+          <View
+            className="flex flex-row items-center gap-x-2 bg-blue-50 px-3 py-2 rounded-lg"
+            onStartShouldSetResponder={() => {
+              handleShareTrip();
+              return true;
+            }}
+          >
+            <Text className="text-blue-600 font-JakartaSemiBold text-sm">
+              📤 Share Trip
+            </Text>
+          </View>
         </View>
       </View>
     </View>

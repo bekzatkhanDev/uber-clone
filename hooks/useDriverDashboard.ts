@@ -10,6 +10,15 @@ export const useDriverDashboard = () => {
   });
 };
 
+export const useDriverProfile = () => {
+  return useQuery({
+    queryKey: ['driver', 'profile'],
+    queryFn: () => fetchWithAuth('/drivers/profile/me/'),
+    staleTime: 60 * 1000,
+    retry: false,
+  });
+};
+
 export const useDriverOnlineStatus = () => {
   return useQuery({
     queryKey: ['driver', 'online-status'],

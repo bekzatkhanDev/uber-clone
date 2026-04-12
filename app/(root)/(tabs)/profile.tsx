@@ -148,7 +148,10 @@ const Profile = () => {
       <View className="bg-white rounded-xl p-5 mb-5">
         <Text className="text-lg font-JakartaSemiBold mb-3">{t.profile.account}</Text>
         
-        <TouchableOpacity className="flex flex-row items-center py-3 border-b border-gray-100">
+        <TouchableOpacity 
+          className="flex flex-row items-center py-3 border-b border-gray-100"
+          onPress={() => router.push('/profile/edit')}
+        >
           <Image source={icons.person} style={{ width: 20, height: 20 }} resizeMode="contain" />
           <Text className="ml-3 flex-1">{t.profile.editProfile}</Text>
           <Image source={icons.arrowUp} style={{ width: 16, height: 16, transform: [{ rotate: '90deg' }] }} resizeMode="contain" />

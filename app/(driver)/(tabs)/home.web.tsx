@@ -12,7 +12,7 @@ import { router } from 'expo-router';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
 import DriverMap, { ActiveTrip } from '@/components/DriverMap.web';
-import { useDriverDashboard, useActivateCar, useGoOffline } from '@/hooks/useDriverDashboard';
+import { useDriverDashboard, useDriverProfile, useActivateCar, useGoOffline } from '@/hooks/useDriverDashboard';
 import { useAuthStore } from '@/store/authStore';
 import { useLogout } from '@/hooks/useAuth';
 import { fetchWithAuth } from '@/lib/fetchWithAuth';
@@ -204,10 +204,18 @@ const TripCard = ({ trip, onStatusUpdate, onCancel, isUpdating }: TripCardProps)
 const DriverHomeWeb = () => {
   const queryClient = useQueryClient();
   const { data: dashboard, isLoading, refetch } = useDriverDashboard();
+  const { data: driverProfile } = useDriverProfile();
   const { mutate: activateCar, isPending: isActivating } = useActivateCar();
   const { mutate: goOffline, isPending: isGoingOffline } = useGoOffline();
   const { mutate: logout } = useLogout();
   const { clearAuth } = useAuthStore();
+
+  // Check if driver is approved, redirect to pending approval if not
+  React.useEffect(() => {
+    if (driverProfile && (driverProfile.status !== 'active' || driverProfile.approval_status !== 'approved')) {
+      router.replace('/driver/pending-approval');
+    }
+  }, [driverProfile]);
 
   const [showCarPicker, setShowCarPicker] = useState(false);
   const [driverPos, setDriverPos] = useState<{ lat: number; lng: number }>({

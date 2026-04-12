@@ -61,7 +61,15 @@ const DriverProfile = () => {
       {/* Driver profile */}
       {driverProfile && (
         <View className="bg-white rounded-2xl p-5 mb-4 shadow-sm">
-          <Text className="text-base font-JakartaSemiBold mb-3">Driver Details</Text>
+          <View className="flex-row justify-between items-center mb-3">
+            <Text className="text-base font-JakartaSemiBold">Driver Details</Text>
+            <TouchableOpacity
+              onPress={() => router.push('/profile/edit')}
+              className="bg-blue-50 px-3 py-1 rounded-lg"
+            >
+              <Text className="text-blue-600 text-sm font-JakartaMedium">Edit</Text>
+            </TouchableOpacity>
+          </View>
           <View className="flex-row justify-between mb-2">
             <Text className="text-gray-500">License</Text>
             <Text className="font-JakartaMedium">{driverProfile.license_number ?? '—'}</Text>

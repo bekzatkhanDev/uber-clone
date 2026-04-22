@@ -59,6 +59,7 @@ export default function RootLayout() {
             <Stack.Screen name="(root)" options={{ headerShown: false }} />
             <Stack.Screen name="(driver)" options={{ headerShown: false }} />
             <Stack.Screen name="(public)" options={{ headerShown: false }} />
+            <Stack.Screen name="(admin)" options={{ headerShown: false }} />
             <Stack.Screen name="+not-found" />
           </Stack>
         </I18nProvider>

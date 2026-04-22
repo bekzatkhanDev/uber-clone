@@ -3,6 +3,7 @@ import React from "react";
 import { ImageSourcePropType, Platform, View } from "react-native";
 
 import TintedImage from "@/components/TintedImage";
+import LanguageSwitcher from "@/components/LanguageSwitcher";
 import { icons } from "@/constants";
 
 const TabIcon = ({
@@ -60,7 +61,11 @@ export default function TabLayout() {
           ? { fontSize: 11, marginTop: 2, color: "white" }
           : undefined,
         tabBarStyle: isWeb ? webTabBarStyle : nativeTabBarStyle,
-        headerShown: false,
+        headerShown: true,
+      headerTransparent: true,
+      headerTitle: '',
+      headerRight: () => <LanguageSwitcher />,
+      headerLeft: () => null,
       }}
     >
       <Tabs.Screen

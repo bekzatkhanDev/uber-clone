@@ -1,8 +1,9 @@
 import { Ride } from "@/types/type";
 import { router } from "expo-router";
 
-// Priority: driver > customer (admin falls back to customer for now)
+// Priority: admin > driver > customer
 export function getHomeRouteForRoles(roles: string[]): string {
+  if (roles.includes('admin')) return '/(admin)/(tabs)/dashboard';
   if (roles.includes('driver')) return '/(driver)/(tabs)/home';
   return '/(root)/(tabs)/home';
 }

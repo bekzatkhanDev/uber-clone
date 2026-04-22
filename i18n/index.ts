@@ -4,7 +4,6 @@ import * as storage from '@/lib/storage';
 import en from './en.json';
 import ru from './ru.json';
 import kk from './kk.json';
-import { ReactNode } from 'react';
 
 export type Language = 'en' | 'ru' | 'kk';
 
@@ -52,6 +51,38 @@ export interface Translations {
     registrationFailed: string;
     phoneAlreadyRegistered: string;
     loginFailed: string;
+    chooseRole: string;
+    chooseRoleSubtitle: string;
+    iAmRider: string;
+    riderDescription: string;
+    iAmDriver: string;
+    driverDescription: string;
+    createDriverAccount: string;
+    driverAccountCreated: string;
+    driverRegistrationSuccess: string;
+    goToDashboard: string;
+    wantToDrive: string;
+    registerAsDriver: string;
+    step: string;
+    of: string;
+    accountInfo: string;
+    driverLicense: string;
+    vehicleInfo: string;
+    licenseNumber: string;
+    licenseNumberPlaceholder: string;
+    experienceYears: string;
+    experienceYearsPlaceholder: string;
+    selectBrand: string;
+    selectCarType: string;
+    carYear: string;
+    carYearPlaceholder: string;
+    plateNumber: string;
+    plateNumberPlaceholder: string;
+    continue: string;
+    back: string;
+    completeRegistration: string;
+    profileCreating: string;
+    carRegistering: string;
   };
   onboarding: {
     title1: string;
@@ -67,7 +98,7 @@ export interface Translations {
     whereTo: string;
   };
   findRide: {
-    distance: ReactNode;
+    distance: string;
     from: string;
     to: string;
     selectTariff: string;
@@ -117,6 +148,35 @@ export interface Translations {
     savedPlaces: string;
     signOut: string;
     language: string;
+    firstName: string;
+    lastName: string;
+    phone: string;
+    changePhoto: string;
+    emailReadOnly: string;
+    nameRequired: string;
+    updateSuccess: string;
+    updateError: string;
+    imagePickError: string;
+  };
+  driver: {
+    editProfile: string;
+    goOnline: string;
+    onlineStatus: string;
+    offlineStatus: string;
+    licenseInfo: string;
+    licenseNumber: string;
+    licenseExpiry: string;
+    licenseExpiringSoon: string;
+    yearsOfExperience: string;
+    vehicleInfo: string;
+    vehicleModel: string;
+    vehiclePlate: string;
+    vehicleColor: string;
+    licenseNumberRequired: string;
+    vehicleModelRequired: string;
+    vehiclePlateRequired: string;
+    profileUpdateSuccess: string;
+    profileUpdateError: string;
   };
   currency: {
     symbol: string;

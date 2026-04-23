@@ -4,6 +4,7 @@ import { Image, Text, TouchableOpacity, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import CustomButton from "@/components/CustomButton";
+import LanguageSwitcher from "@/components/LanguageSwitcher";
 import { useTranslation } from "@/i18n/I18nProvider";
 
 const WelcomeWeb = () => {
@@ -44,12 +45,12 @@ const WelcomeWeb = () => {
         paddingBottom: insets.bottom,
       }}
     >
-      <TouchableOpacity
-        onPress={() => router.push("/(auth)/sign-in")}
-        style={{ width: "100%", alignItems: "flex-end", padding: 20 }}
-      >
-        <Text className="text-black text-md font-JakartaBold">{t.common.skip}</Text>
-      </TouchableOpacity>
+      <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 20, paddingTop: 12 }}>
+        <LanguageSwitcher variant="dark" />
+        <TouchableOpacity onPress={() => router.push("/(auth)/sign-in")}>
+          <Text className="text-black text-md font-JakartaBold">{t.common.skip}</Text>
+        </TouchableOpacity>
+      </View>
 
       <View className="flex-1 items-center justify-center px-5">
         <View className="w-full max-w-xl self-center">

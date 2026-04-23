@@ -6,6 +6,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { images } from '@/constants';
 import { useTripHistory } from '@/hooks/useTrips';
 import { formatDate } from '@/lib/utils';
+import { useTranslation } from '@/i18n/I18nProvider';
 
 const STATUS_COLOR: Record<string, string> = {
   completed: '#0CC25F',
@@ -68,8 +69,8 @@ const TripRow = ({ item }: { item: TripItem }) => {
 };
 
 const DriverTrips = () => {
+  const { t } = useTranslation();
   const insets = useSafeAreaInsets();
-  // role=driver fetches trips where this user is the driver
   const { data: trips = [], isLoading } = useTripHistory({ limit: 50 });
 
   return (
@@ -84,7 +85,7 @@ const DriverTrips = () => {
           paddingHorizontal: 20,
         }}
         ListHeaderComponent={
-          <Text className="text-2xl font-JakartaBold mb-5">My Trips</Text>
+          <Text className="text-2xl font-JakartaBold mb-5">{t.driver.myTrips}</Text>
         }
         ListEmptyComponent={
           <View className="items-center py-16">
@@ -93,7 +94,7 @@ const DriverTrips = () => {
             ) : (
               <>
                 <Image source={images.noResult} style={{ width: 140, height: 140 }} resizeMode="contain" />
-                <Text className="text-gray-500 mt-3">No trips yet</Text>
+                <Text className="text-gray-500 mt-3">{t.driver.noTrips}</Text>
               </>
             )}
           </View>

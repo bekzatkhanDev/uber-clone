@@ -4,6 +4,7 @@ import { ImageSourcePropType, Platform, View } from 'react-native';
 import TintedImage from '@/components/TintedImage';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
 import { icons } from '@/constants';
+import { useTranslation } from '@/i18n/I18nProvider';
 
 const TabIcon = ({
   source,
@@ -43,6 +44,7 @@ const nativeTabBarStyle = {
 };
 
 export default function DriverTabLayout() {
+  const { t } = useTranslation();
   const isWeb = Platform.OS === 'web';
 
   return (
@@ -57,44 +59,46 @@ export default function DriverTabLayout() {
           : undefined,
         tabBarStyle: isWeb ? webTabBarStyle : nativeTabBarStyle,
         headerShown: true,
-        headerTransparent: true,
+        headerTransparent: false,
         headerTitle: '',
-        headerRight: () => <LanguageSwitcher />,
+        headerStyle: { backgroundColor: '#ffffff', shadowOpacity: 0, elevation: 0 },
+        headerRight: () => <LanguageSwitcher variant="dark" />,
         headerLeft: () => null,
       }}
     >
       <Tabs.Screen
         name="home"
         options={{
-          title: 'Home',
+          title: t.tabs.home,
+          headerShown: false,
           tabBarIcon: ({ focused }) => <TabIcon source={icons.home} focused={focused} />,
         }}
       />
       <Tabs.Screen
         name="trips"
         options={{
-          title: 'Trips',
+          title: t.tabs.trips,
           tabBarIcon: ({ focused }) => <TabIcon source={icons.list} focused={focused} />,
         }}
       />
       <Tabs.Screen
         name="chat"
         options={{
-          title: 'Chat',
+          title: t.tabs.chat,
           tabBarIcon: ({ focused }) => <TabIcon source={icons.chat} focused={focused} />,
         }}
       />
       <Tabs.Screen
         name="earnings"
         options={{
-          title: 'Earnings',
+          title: t.tabs.earnings,
           tabBarIcon: ({ focused }) => <TabIcon source={icons.dollar} focused={focused} />,
         }}
       />
       <Tabs.Screen
         name="profile"
         options={{
-          title: 'Profile',
+          title: t.tabs.profile,
           tabBarIcon: ({ focused }) => <TabIcon source={icons.profile} focused={focused} />,
         }}
       />

@@ -7,8 +7,10 @@ import { router } from 'expo-router';
 import { useDriverDashboard } from '@/hooks/useDriverDashboard';
 import { useLogout } from '@/hooks/useAuth';
 import { useAuthStore } from '@/store/authStore';
+import { useTranslation } from '@/i18n/I18nProvider';
 
 const DriverProfile = () => {
+  const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   const { data: dashboard, isLoading } = useDriverDashboard();
   const { mutate: logout, isPending: isLoggingOut } = useLogout();
@@ -43,7 +45,7 @@ const DriverProfile = () => {
         paddingHorizontal: 20,
       }}
     >
-      <Text className="text-2xl font-JakartaBold mb-6">Driver Profile</Text>
+      <Text className="text-2xl font-JakartaBold mb-6">{t.driver.profileTitle}</Text>
 
       {/* User info */}
       <View className="bg-white rounded-2xl p-5 mb-4 shadow-sm">
@@ -62,26 +64,26 @@ const DriverProfile = () => {
       {driverProfile && (
         <View className="bg-white rounded-2xl p-5 mb-4 shadow-sm">
           <View className="flex-row justify-between items-center mb-3">
-            <Text className="text-base font-JakartaSemiBold">Driver Details</Text>
+            <Text className="text-base font-JakartaSemiBold">{t.driver.driverDetails}</Text>
             <TouchableOpacity
               onPress={() => router.push('/profile/edit')}
               className="bg-blue-50 px-3 py-1 rounded-lg"
             >
-              <Text className="text-blue-600 text-sm font-JakartaMedium">Edit</Text>
+              <Text className="text-blue-600 text-sm font-JakartaMedium">{t.common.edit}</Text>
             </TouchableOpacity>
           </View>
           <View className="flex-row justify-between mb-2">
-            <Text className="text-gray-500">License</Text>
+            <Text className="text-gray-500">{t.driver.license}</Text>
             <Text className="font-JakartaMedium">{driverProfile.license_number ?? '—'}</Text>
           </View>
           <View className="flex-row justify-between mb-2">
-            <Text className="text-gray-500">Experience</Text>
+            <Text className="text-gray-500">{t.driver.experience}</Text>
             <Text className="font-JakartaMedium">
-              {driverProfile.experience_years ?? 0} yr{driverProfile.experience_years === 1 ? '' : 's'}
+              {driverProfile.experience_years ?? 0} {t.driver.yearsOfExperience}
             </Text>
           </View>
           <View className="flex-row justify-between">
-            <Text className="text-gray-500">Rating</Text>
+            <Text className="text-gray-500">{t.driver.rating}</Text>
             <Text className="font-JakartaBold text-[#0CC25F]">
               ★ {driverProfile.rating_avg ?? '—'}
             </Text>
@@ -91,9 +93,9 @@ const DriverProfile = () => {
 
       {/* Cars */}
       <View className="bg-white rounded-2xl p-5 mb-4 shadow-sm">
-        <Text className="text-base font-JakartaSemiBold mb-3">My Cars</Text>
+        <Text className="text-base font-JakartaSemiBold mb-3">{t.driver.myCars}</Text>
         {cars.length === 0 ? (
-          <Text className="text-gray-400">No cars registered yet.</Text>
+          <Text className="text-gray-400">{t.driver.noCars}</Text>
         ) : (
           cars.map((car: any) => (
             <View key={car.id} className="flex-row justify-between items-center py-3 border-b border-gray-100 last:border-0">
@@ -111,7 +113,7 @@ const DriverProfile = () => {
                 <Text
                   className={`text-xs font-JakartaMedium ${car.is_active ? 'text-green-600' : 'text-gray-500'}`}
                 >
-                  {car.is_active ? 'Active' : 'Inactive'}
+                  {car.is_active ? t.driver.carActive : t.driver.carInactive}
                 </Text>
               </View>
             </View>
@@ -124,7 +126,7 @@ const DriverProfile = () => {
         onPress={() => router.replace('/(root)/(tabs)/home')}
         className="bg-gray-800 rounded-2xl p-4 items-center mb-3"
       >
-        <Text className="text-white font-JakartaSemiBold">Switch to Passenger Mode</Text>
+        <Text className="text-white font-JakartaSemiBold">{t.driver.switchToPassenger}</Text>
       </TouchableOpacity>
 
       {/* Sign out */}
@@ -134,7 +136,7 @@ const DriverProfile = () => {
         className="bg-red-500 rounded-2xl p-4 items-center"
       >
         <Text className="text-white font-JakartaSemiBold">
-          {isLoggingOut ? 'Signing out...' : 'Sign Out'}
+          {isLoggingOut ? t.driver.signingOut : t.auth.signOut}
         </Text>
       </TouchableOpacity>
     </ScrollView>

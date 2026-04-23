@@ -210,7 +210,7 @@ const Profile = () => {
         {paymentExpanded && (
           <View style={{ paddingTop: 14, paddingBottom: 4 }}>
             <Text style={{ fontSize: 12, color: '#9ca3af', marginBottom: 10, fontWeight: '600' }}>
-              DEFAULT PAYMENT BANK
+              {t.profile.defaultPaymentBank}
             </Text>
             <BankSelector
               selectedBank={selectedPaymentMethod as BankId | null}
@@ -236,7 +236,7 @@ const Profile = () => {
           onPress={() => router.replace('/(driver)/(tabs)/home')}
           className="bg-[#1a1a2e] rounded-xl p-5 items-center mb-3"
         >
-          <Text className="text-white font-JakartaSemiBold">Switch to Driver Mode</Text>
+          <Text className="text-white font-JakartaSemiBold">{t.profile.switchToDriverMode}</Text>
         </TouchableOpacity>
       )}
 

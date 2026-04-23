@@ -17,9 +17,11 @@ import { useAuthStore } from '@/store/authStore';
 import { useLogout } from '@/hooks/useAuth';
 import { fetchWithAuth } from '@/lib/fetchWithAuth';
 import { DEFAULT_LATITUDE, DEFAULT_LONGITUDE } from '@/constants/location';
+import { useTranslation } from '@/i18n/I18nProvider';
+import LanguageSwitcher from '@/components/LanguageSwitcher';
 
-const POLL_INTERVAL_MS = 5000; // poll dashboard every 5s while online
-const LOCATION_INTERVAL_MS = 10000; // send GPS every 10s
+const POLL_INTERVAL_MS = 5000;
+const LOCATION_INTERVAL_MS = 10000;
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
 
@@ -38,9 +40,10 @@ interface StatusPanelProps {
   onGoOnline: () => void;
   onGoOffline: () => void;
   isLoading: boolean;
+  labels: { online: string; offline: string; activeAcceptingRides: string; notAcceptingRides: string; goOffline: string; goOnline: string };
 }
 
-const StatusPanel = ({ isOnline, activeCar, onGoOnline, onGoOffline, isLoading }: StatusPanelProps) => (
+const StatusPanel = ({ isOnline, activeCar, onGoOnline, onGoOffline, isLoading, labels }: StatusPanelProps) => (
   <View style={{
     backgroundColor: 'white',
     borderRadius: 20,
@@ -57,15 +60,15 @@ const StatusPanel = ({ isOnline, activeCar, onGoOnline, onGoOffline, isLoading }
       <View style={{ flexDirection: 'row', alignItems: 'center' }}>
         <StatusDot online={isOnline} />
         <Text style={{ fontSize: 17, fontWeight: '700', color: '#111827' }}>
-          {isOnline ? 'Online' : 'Offline'}
+          {isOnline ? labels.online : labels.offline}
         </Text>
       </View>
       <Text style={{ fontSize: 13, color: '#6b7280', marginTop: 2 }}>
         {isOnline && activeCar
           ? `${activeCar.brand?.name ?? ''} · ${activeCar.plate_number} · ${activeCar.car_type?.code ?? ''}`
           : isOnline
-          ? 'Active — accepting rides'
-          : 'Not accepting ride requests'}
+          ? labels.activeAcceptingRides
+          : labels.notAcceptingRides}
       </Text>
     </View>
 
@@ -86,7 +89,7 @@ const StatusPanel = ({ isOnline, activeCar, onGoOnline, onGoOffline, isLoading }
         <ActivityIndicator size="small" color="white" />
       ) : (
         <Text style={{ color: 'white', fontWeight: '700', fontSize: 14 }}>
-          {isOnline ? 'Go Offline' : 'Go Online'}
+          {isOnline ? labels.goOffline : labels.goOnline}
         </Text>
       )}
     </TouchableOpacity>
@@ -103,6 +106,17 @@ interface TripCardProps {
   onStatusUpdate: (status: string) => void;
   onCancel: () => void;
   isUpdating: boolean;
+  labels: {
+    headToPickup: string;
+    enRouteToDestination: string;
+    passenger: string;
+    distanceLabel: string;
+    fareLabel: string;
+    tariffLabel: string;
+    pickedUp: string;
+    completeRide: string;
+    cancel: string;
+  };
 }
 
 const STATUS_COLORS: Record<string, string> = {
@@ -110,28 +124,25 @@ const STATUS_COLORS: Record<string, string> = {
   on_route: '#3B82F6',
 };
 
-const STATUS_LABEL: Record<string, string> = {
-  accepted: 'Head to pickup',
-  on_route: 'En route to destination',
-};
-
-const TripCard = ({ trip, onStatusUpdate, onCancel, isUpdating }: TripCardProps) => {
+const TripCard = ({ trip, onStatusUpdate, onCancel, isUpdating, labels }: TripCardProps) => {
+  const statusLabel: Record<string, string> = {
+    accepted: labels.headToPickup,
+    on_route: labels.enRouteToDestination,
+  };
   const barColor = STATUS_COLORS[trip.status] ?? '#0CC25F';
 
   return (
     <View style={{ backgroundColor: 'white', borderRadius: 20, overflow: 'hidden', shadowColor: '#000', shadowOpacity: 0.12, shadowRadius: 12, elevation: 8 }}>
-      {/* Colored status bar */}
       <View style={{ backgroundColor: barColor, paddingHorizontal: 16, paddingVertical: 10 }}>
         <Text style={{ color: 'white', fontWeight: '700', fontSize: 14 }}>
-          {STATUS_LABEL[trip.status] ?? trip.status}
+          {statusLabel[trip.status] ?? trip.status}
         </Text>
       </View>
 
       <View style={{ padding: 16 }}>
-        {/* Customer info */}
         {trip.customer && (
           <View style={{ marginBottom: 12 }}>
-            <Text style={{ fontSize: 13, color: '#9ca3af' }}>Passenger</Text>
+            <Text style={{ fontSize: 13, color: '#9ca3af' }}>{labels.passenger}</Text>
             <Text style={{ fontSize: 16, fontWeight: '700', color: '#111827' }}>
               {trip.customer.first_name} {trip.customer.last_name}
             </Text>
@@ -141,29 +152,27 @@ const TripCard = ({ trip, onStatusUpdate, onCancel, isUpdating }: TripCardProps)
           </View>
         )}
 
-        {/* Stats row */}
         <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 14 }}>
           {trip.distance_km != null && (
             <View>
-              <Text style={{ fontSize: 12, color: '#9ca3af' }}>Distance</Text>
+              <Text style={{ fontSize: 12, color: '#9ca3af' }}>{labels.distanceLabel}</Text>
               <Text style={{ fontSize: 15, fontWeight: '600', color: '#111827' }}>{parseFloat(trip.distance_km).toFixed(1)} km</Text>
             </View>
           )}
           {trip.price != null && (
             <View>
-              <Text style={{ fontSize: 12, color: '#9ca3af' }}>Fare</Text>
+              <Text style={{ fontSize: 12, color: '#9ca3af' }}>{labels.fareLabel}</Text>
               <Text style={{ fontSize: 15, fontWeight: '700', color: '#0CC25F' }}>{parseFloat(trip.price).toFixed(2)} KZT</Text>
             </View>
           )}
           {trip.tariff?.code && (
             <View>
-              <Text style={{ fontSize: 12, color: '#9ca3af' }}>Tariff</Text>
+              <Text style={{ fontSize: 12, color: '#9ca3af' }}>{labels.tariffLabel}</Text>
               <Text style={{ fontSize: 15, fontWeight: '600', color: '#111827', textTransform: 'capitalize' }}>{trip.tariff.code}</Text>
             </View>
           )}
         </View>
 
-        {/* Action buttons */}
         {isUpdating ? (
           <ActivityIndicator size="small" color="#0CC25F" />
         ) : (
@@ -173,7 +182,7 @@ const TripCard = ({ trip, onStatusUpdate, onCancel, isUpdating }: TripCardProps)
                 style={{ flex: 1, backgroundColor: '#3B82F6', paddingVertical: 12, borderRadius: 12, alignItems: 'center' }}
                 onPress={() => onStatusUpdate('on_route')}
               >
-                <Text style={{ color: 'white', fontWeight: '700' }}>Picked Up</Text>
+                <Text style={{ color: 'white', fontWeight: '700' }}>{labels.pickedUp}</Text>
               </TouchableOpacity>
             )}
             {trip.status === 'on_route' && (
@@ -181,7 +190,7 @@ const TripCard = ({ trip, onStatusUpdate, onCancel, isUpdating }: TripCardProps)
                 style={{ flex: 1, backgroundColor: '#0CC25F', paddingVertical: 12, borderRadius: 12, alignItems: 'center' }}
                 onPress={() => onStatusUpdate('completed')}
               >
-                <Text style={{ color: 'white', fontWeight: '700' }}>Complete Ride</Text>
+                <Text style={{ color: 'white', fontWeight: '700' }}>{labels.completeRide}</Text>
               </TouchableOpacity>
             )}
             {(trip.status === 'accepted' || trip.status === 'on_route') && (
@@ -189,7 +198,7 @@ const TripCard = ({ trip, onStatusUpdate, onCancel, isUpdating }: TripCardProps)
                 style={{ paddingHorizontal: 18, paddingVertical: 12, borderRadius: 12, borderWidth: 1, borderColor: '#fca5a5', alignItems: 'center' }}
                 onPress={onCancel}
               >
-                <Text style={{ color: '#ef4444', fontWeight: '700' }}>Cancel</Text>
+                <Text style={{ color: '#ef4444', fontWeight: '700' }}>{labels.cancel}</Text>
               </TouchableOpacity>
             )}
           </View>
@@ -202,6 +211,7 @@ const TripCard = ({ trip, onStatusUpdate, onCancel, isUpdating }: TripCardProps)
 // ─── Main screen ──────────────────────────────────────────────────────────────
 
 const DriverHomeWeb = () => {
+  const { t } = useTranslation();
   const queryClient = useQueryClient();
   const { data: dashboard, isLoading, refetch } = useDriverDashboard();
   const { mutate: activateCar, isPending: isActivating } = useActivateCar();
@@ -227,7 +237,6 @@ const DriverHomeWeb = () => {
   const cars: any[] = dashboard?.cars ?? [];
   const availableCars = cars.filter((c: any) => !c.is_active);
 
-  // Trip status mutation
   const { mutate: updateTripStatus, isPending: isUpdatingTrip } = useMutation({
     mutationFn: (newStatus: string) =>
       fetchWithAuth(`/trips/${activeTrip?.id}/`, {
@@ -256,7 +265,6 @@ const DriverHomeWeb = () => {
     },
   });
 
-  // Send GPS to backend
   const sendLocation = useCallback(
     async (lat: number, lng: number, carId: number) => {
       try {
@@ -269,10 +277,8 @@ const DriverHomeWeb = () => {
     []
   );
 
-  // Start watching GPS and sending to backend when online
   useEffect(() => {
     if (!isOnline || !activeCar?.id) {
-      // Stop geolocation
       if (watchIdRef.current !== null) {
         navigator.geolocation?.clearWatch(watchIdRef.current);
         watchIdRef.current = null;
@@ -288,7 +294,6 @@ const DriverHomeWeb = () => {
 
     if (!navigator.geolocation) return;
 
-    // Watch position for map updates
     watchIdRef.current = navigator.geolocation.watchPosition(
       (pos) => {
         setDriverPos({ lat: pos.coords.latitude, lng: pos.coords.longitude });
@@ -297,7 +302,6 @@ const DriverHomeWeb = () => {
       { enableHighAccuracy: true, maximumAge: 5000 }
     );
 
-    // Send to backend every 10s
     const doSend = () => {
       navigator.geolocation.getCurrentPosition(
         (pos) => sendLocation(pos.coords.latitude, pos.coords.longitude, carId),
@@ -319,7 +323,6 @@ const DriverHomeWeb = () => {
     };
   }, [isOnline, activeCar?.id, sendLocation]);
 
-  // Poll dashboard every 5s while online
   useEffect(() => {
     if (!isOnline) {
       if (pollTimerRef.current) { clearInterval(pollTimerRef.current); pollTimerRef.current = null; }
@@ -333,11 +336,11 @@ const DriverHomeWeb = () => {
 
   const handleGoOnline = () => {
     if (cars.length === 0) {
-      alert('No Cars\n\nPlease add a car to your account before going online.');
+      alert(t.driver.noCarsAvailable);
       return;
     }
     if (availableCars.length === 0) {
-      alert('No Available Cars\n\nAll your cars are already active or unavailable.');
+      alert(t.driver.noCarsAvailable);
       return;
     }
     if (availableCars.length === 1) {
@@ -348,13 +351,13 @@ const DriverHomeWeb = () => {
   };
 
   const handleGoOffline = () => {
-    if (window.confirm('Go Offline?\n\nYou will stop receiving ride requests.')) {
+    if (window.confirm(t.driver.waitingForRequests)) {
       goOffline();
     }
   };
 
   const handleCancel = () => {
-    if (window.confirm('Cancel Trip?\n\nAre you sure you want to cancel this trip?')) {
+    if (window.confirm(t.common.confirm)) {
       cancelTrip();
     }
   };
@@ -374,6 +377,27 @@ const DriverHomeWeb = () => {
     );
   }
 
+  const statusPanelLabels = {
+    online: t.driver.online,
+    offline: t.driver.offline,
+    activeAcceptingRides: t.driver.activeAcceptingRides,
+    notAcceptingRides: t.driver.notAcceptingRides,
+    goOffline: t.driver.goOffline,
+    goOnline: t.driver.goOnline,
+  };
+
+  const tripCardLabels = {
+    headToPickup: t.driver.headToPickup,
+    enRouteToDestination: t.driver.enRouteToDestination,
+    passenger: t.driver.passenger,
+    distanceLabel: t.driver.distanceLabel,
+    fareLabel: t.driver.fareLabel,
+    tariffLabel: t.driver.tariffLabel,
+    pickedUp: t.driver.pickedUp,
+    completeRide: t.driver.completeRide,
+    cancel: t.common.cancel,
+  };
+
   return (
     <View style={{ flex: 1 }}>
       {/* Full-screen map */}
@@ -391,25 +415,27 @@ const DriverHomeWeb = () => {
         flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
       }}>
         <View style={{ backgroundColor: '#1a1a2e', paddingHorizontal: 16, paddingVertical: 8, borderRadius: 999 }}>
-          <Text style={{ color: 'white', fontWeight: '700', fontSize: 14 }}>Driver Mode</Text>
+          <Text style={{ color: 'white', fontWeight: '700', fontSize: 14 }}>{t.driver.driverMode}</Text>
         </View>
-        <TouchableOpacity
-          onPress={handleSignOut}
-          style={{
-            width: 40, height: 40, backgroundColor: 'white', borderRadius: 20,
-            alignItems: 'center', justifyContent: 'center',
-            shadowColor: '#000', shadowOpacity: 0.15, shadowRadius: 4,
-          }}
-        >
-          <Text style={{ fontSize: 11, fontWeight: '800', color: '#374151' }}>OUT</Text>
-        </TouchableOpacity>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+          <LanguageSwitcher variant="light" />
+          <TouchableOpacity
+            onPress={handleSignOut}
+            style={{
+              width: 40, height: 40, backgroundColor: 'white', borderRadius: 20,
+              alignItems: 'center', justifyContent: 'center',
+              shadowColor: '#000', shadowOpacity: 0.15, shadowRadius: 4,
+            }}
+          >
+            <Text style={{ fontSize: 11, fontWeight: '800', color: '#374151' }}>OUT</Text>
+          </TouchableOpacity>
+        </View>
       </View>
 
       {/* Bottom panel */}
       <View style={{
         position: 'absolute', bottom: 24, left: 16, right: 16,
       }}>
-        {/* Active trip card */}
         {activeTrip && (
           <View style={{ marginBottom: 12 }}>
             <TripCard
@@ -417,11 +443,11 @@ const DriverHomeWeb = () => {
               onStatusUpdate={(s) => updateTripStatus(s)}
               onCancel={handleCancel}
               isUpdating={isUpdatingTrip || isCancelling}
+              labels={tripCardLabels}
             />
           </View>
         )}
 
-        {/* Waiting message when online but no trip */}
         {isOnline && !activeTrip && (
           <View style={{
             backgroundColor: 'white', borderRadius: 16, padding: 14, alignItems: 'center',
@@ -430,19 +456,19 @@ const DriverHomeWeb = () => {
             <View style={{ flexDirection: 'row', alignItems: 'center' }}>
               <ActivityIndicator size="small" color="#0CC25F" style={{ marginRight: 8 }} />
               <Text style={{ color: '#6b7280', fontWeight: '500', fontSize: 14 }}>
-                Waiting for ride requests...
+                {t.driver.waitingForRequests}
               </Text>
             </View>
           </View>
         )}
 
-        {/* Status toggle */}
         <StatusPanel
           isOnline={isOnline}
           activeCar={activeCar}
           onGoOnline={handleGoOnline}
           onGoOffline={handleGoOffline}
           isLoading={isActivating || isGoingOffline}
+          labels={statusPanelLabels}
         />
       </View>
 
@@ -456,7 +482,7 @@ const DriverHomeWeb = () => {
         <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'flex-end' }}>
           <View style={{ backgroundColor: 'white', borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: 20, maxHeight: '60%' }}>
             <Text style={{ fontSize: 18, fontWeight: '700', color: '#111827', marginBottom: 16 }}>
-              Select Car to Go Online
+              {t.driver.selectCarTitle}
             </Text>
             <FlatList
               data={availableCars}
@@ -482,7 +508,7 @@ const DriverHomeWeb = () => {
               )}
               ListEmptyComponent={
                 <Text style={{ textAlign: 'center', color: '#9ca3af', paddingVertical: 32 }}>
-                  No cars available
+                  {t.driver.noCarsAvailable}
                 </Text>
               }
             />
@@ -490,7 +516,7 @@ const DriverHomeWeb = () => {
               style={{ marginTop: 12, paddingVertical: 14, backgroundColor: '#f3f4f6', borderRadius: 12, alignItems: 'center' }}
               onPress={() => setShowCarPicker(false)}
             >
-              <Text style={{ fontWeight: '700', color: '#374151' }}>Cancel</Text>
+              <Text style={{ fontWeight: '700', color: '#374151' }}>{t.common.cancel}</Text>
             </TouchableOpacity>
           </View>
         </View>

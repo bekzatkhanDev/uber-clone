@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -15,10 +15,19 @@ const LANGUAGES: { code: Language; flag: string }[] = [
   { code: 'en', flag: '🇬🇧' },
 ];
 
-export default function LanguageSwitcher() {
+interface Props {
+  variant?: 'light' | 'dark';
+}
+
+export default function LanguageSwitcher({ variant = 'light' }: Props) {
   const { language, setLanguage } = useTranslation();
   const [open, setOpen] = useState(false);
   const current = LANGUAGES.find((l) => l.code === language);
+
+  const isLight = variant === 'light';
+  const triggerBg = isLight ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.06)';
+  const triggerBorder = isLight ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.15)';
+  const textColor = isLight ? '#fff' : '#333';
 
   const handleSelect = (code: Language) => {
     setLanguage(code);
@@ -30,12 +39,12 @@ export default function LanguageSwitcher() {
       {/* Trigger button */}
       <TouchableOpacity
         onPress={() => setOpen((v) => !v)}
-        style={styles.trigger}
+        style={[styles.trigger, { backgroundColor: triggerBg, borderColor: triggerBorder }]}
         activeOpacity={0.8}
       >
         <Text style={styles.flag}>{current?.flag}</Text>
-        <Text style={styles.code}>{language.toUpperCase()}</Text>
-        <Text style={styles.arrow}>{open ? '▲' : '▼'}</Text>
+        <Text style={[styles.code, { color: textColor }]}>{language.toUpperCase()}</Text>
+        <Text style={[styles.arrow, { color: textColor }]}>{open ? '▲' : '▼'}</Text>
       </TouchableOpacity>
 
       {/* Dropdown — absolutely positioned, no Modal */}
@@ -93,25 +102,20 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     paddingVertical: 6,
     borderRadius: 20,
-    backgroundColor: 'rgba(255,255,255,0.2)',
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.3)',
   },
   flag: {
     fontSize: 16,
   },
   code: {
-    color: '#fff',
     fontSize: 11,
     fontWeight: '700',
     letterSpacing: 0.5,
   },
   arrow: {
-    color: '#fff',
     fontSize: 8,
     marginLeft: 2,
   },
-  // Backdrop covers the full screen behind the dropdown
   backdrop: {
     position: 'absolute',
     top: -1000,
@@ -119,7 +123,6 @@ const styles = StyleSheet.create({
     right: -1000,
     bottom: -1000,
     zIndex: 9998,
-    // On web, extend to cover the viewport
     ...Platform.select({
       web: {
         position: 'fixed' as any,

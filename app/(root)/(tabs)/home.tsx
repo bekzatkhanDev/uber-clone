@@ -22,6 +22,7 @@ import { useCurrentUser } from "@/hooks/useUser";
 import { useUserLocation } from "@/hooks/useUserLocation";
 import { useAuthStore } from "@/store/authStore";
 import { useTranslation } from "@/i18n/I18nProvider";
+import LanguageSwitcher from "@/components/LanguageSwitcher";
 
 const Home = () => {
   const { t } = useTranslation();
@@ -87,12 +88,15 @@ const Home = () => {
               {t.home.welcome} {currentUser?.first_name}👋
             </Text>
           </View>
-          <TouchableOpacity
-            onPress={handleSignOut}
-            className="justify-center items-center w-10 h-10 rounded-full bg-white shadow-md"
-          >
-            <Image source={icons.out} style={{ width: 16, height: 16 }} resizeMode="contain" />
-          </TouchableOpacity>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+            <LanguageSwitcher variant="light" />
+            <TouchableOpacity
+              onPress={handleSignOut}
+              className="justify-center items-center w-10 h-10 rounded-full bg-white shadow-md"
+            >
+              <Image source={icons.out} style={{ width: 16, height: 16 }} resizeMode="contain" />
+            </TouchableOpacity>
+          </View>
         </View>
       </View>
 

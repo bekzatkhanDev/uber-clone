@@ -5,6 +5,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Swiper from "react-native-swiper";
 
 import CustomButton from "@/components/CustomButton";
+import LanguageSwitcher from "@/components/LanguageSwitcher";
 import { useTranslation } from "@/i18n/I18nProvider";
 
 const Home = () => {
@@ -41,12 +42,12 @@ const Home = () => {
 
   return (
     <View style={{ flex: 1, alignItems: 'center', justifyContent: 'space-between', backgroundColor: 'white', paddingTop: insets.top, paddingBottom: insets.bottom }}>
-      <TouchableOpacity
-        onPress={() => router.push("/(auth)/sign-in")}
-        style={{ width: '100%', alignItems: 'flex-end', padding: 20 }}
-      >
-        <Text className="text-black text-md font-JakartaBold">{t.common.skip}</Text>
-      </TouchableOpacity>
+      <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 20, paddingTop: 12 }}>
+        <LanguageSwitcher variant="dark" />
+        <TouchableOpacity onPress={() => router.push("/(auth)/sign-in")}>
+          <Text className="text-black text-md font-JakartaBold">{t.common.skip}</Text>
+        </TouchableOpacity>
+      </View>
 
       <Swiper
         ref={swiperRef}

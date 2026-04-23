@@ -20,6 +20,7 @@ import { useDriverDashboard, useActivateCar, useGoOffline } from '@/hooks/useDri
 import { useDriverLocationTracking } from '@/hooks/useUpdateLocation';
 import { useAuthStore } from '@/store/authStore';
 import { useLogout } from '@/hooks/useAuth';
+import LanguageSwitcher from '@/components/LanguageSwitcher';
 
 const DriverHome = () => {
   const insets = useSafeAreaInsets();
@@ -117,12 +118,15 @@ const DriverHome = () => {
           <View className="bg-[#1a1a2e] px-4 py-2 rounded-full">
             <Text className="text-white font-JakartaSemiBold text-sm">Driver Mode</Text>
           </View>
-          <TouchableOpacity
-            onPress={handleSignOut}
-            className="w-10 h-10 bg-white rounded-full items-center justify-center shadow-md"
-          >
-            <Text className="text-xs font-JakartaBold">OUT</Text>
-          </TouchableOpacity>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+            <LanguageSwitcher variant="light" />
+            <TouchableOpacity
+              onPress={handleSignOut}
+              className="w-10 h-10 bg-white rounded-full items-center justify-center shadow-md"
+            >
+              <Text className="text-xs font-JakartaBold">OUT</Text>
+            </TouchableOpacity>
+          </View>
         </View>
       </View>
 

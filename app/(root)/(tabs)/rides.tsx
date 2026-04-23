@@ -4,9 +4,11 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import RideCard from "@/components/RideCard";
 import { images } from "@/constants";
-import { useTripHistory } from "@/hooks/useTrips"; // ← custom hook
+import { useTripHistory } from "@/hooks/useTrips";
+import { useTranslation } from "@/i18n/I18nProvider";
 
 const Rides = () => {
+  const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   const { data: recentRides = [], isLoading, isError } = useTripHistory();
 
@@ -15,7 +17,7 @@ const Rides = () => {
       <FlatList
         data={recentRides}
         renderItem={({ item }) => <RideCard ride={item} />}
-        keyExtractor={(item) => item.id} // trip.id is UUID
+        keyExtractor={(item) => item.id}
         className="px-5"
         keyboardShouldPersistTaps="handled"
         contentContainerStyle={{
@@ -31,7 +33,7 @@ const Rides = () => {
                   resizeMode="contain"
                 />
                 <Text className="text-sm text-gray-500 mt-3">
-                  No recent rides found
+                  {t.rides.noRecentRides}
                 </Text>
               </>
             ) : (
@@ -40,7 +42,7 @@ const Rides = () => {
           </View>
         )}
         ListHeaderComponent={
-          <Text className="text-2xl font-JakartaBold my-5">All Rides</Text>
+          <Text className="text-2xl font-JakartaBold my-5">{t.rides.allRides}</Text>
         }
       />
     </View>

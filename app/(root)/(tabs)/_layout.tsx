@@ -5,6 +5,7 @@ import { ImageSourcePropType, Platform, View } from "react-native";
 import TintedImage from "@/components/TintedImage";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
 import { icons } from "@/constants";
+import { useTranslation } from "@/i18n/I18nProvider";
 
 const TabIcon = ({
   source,
@@ -22,7 +23,6 @@ const TabIcon = ({
   </View>
 );
 
-// Web: in-flow bottom bar (no position:fixed overlay → no aria-hidden conflicts)
 const webTabBarStyle = {
   backgroundColor: "#333333",
   height: 70,
@@ -31,7 +31,6 @@ const webTabBarStyle = {
   paddingTop: 0,
 };
 
-// Native: floating pill at the bottom
 const nativeTabBarStyle = {
   backgroundColor: "#333333",
   borderRadius: 50,
@@ -48,6 +47,7 @@ const nativeTabBarStyle = {
 };
 
 export default function TabLayout() {
+  const { t } = useTranslation();
   const isWeb = Platform.OS === "web";
 
   return (
@@ -62,37 +62,39 @@ export default function TabLayout() {
           : undefined,
         tabBarStyle: isWeb ? webTabBarStyle : nativeTabBarStyle,
         headerShown: true,
-      headerTransparent: true,
-      headerTitle: '',
-      headerRight: () => <LanguageSwitcher />,
-      headerLeft: () => null,
+        headerTransparent: false,
+        headerTitle: '',
+        headerStyle: { backgroundColor: '#ffffff', shadowOpacity: 0, elevation: 0 },
+        headerRight: () => <LanguageSwitcher variant="dark" />,
+        headerLeft: () => null,
       }}
     >
       <Tabs.Screen
         name="home"
         options={{
-          title: "Home",
+          title: t.tabs.home,
+          headerShown: false,
           tabBarIcon: ({ focused }) => <TabIcon source={icons.home} focused={focused} />,
         }}
       />
       <Tabs.Screen
         name="rides"
         options={{
-          title: "Rides",
+          title: t.tabs.rides,
           tabBarIcon: ({ focused }) => <TabIcon source={icons.list} focused={focused} />,
         }}
       />
       <Tabs.Screen
         name="chat"
         options={{
-          title: "Chat",
+          title: t.tabs.chat,
           tabBarIcon: ({ focused }) => <TabIcon source={icons.chat} focused={focused} />,
         }}
       />
       <Tabs.Screen
         name="profile"
         options={{
-          title: "Profile",
+          title: t.tabs.profile,
           tabBarIcon: ({ focused }) => <TabIcon source={icons.profile} focused={focused} />,
         }}
       />

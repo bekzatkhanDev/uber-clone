@@ -14,8 +14,10 @@ import {
 } from '@/hooks/useChat';
 import { useDriverDashboard } from '@/hooks/useDriverDashboard';
 import { getCurrentUserId } from '@/hooks/useAuth';
+import { useTranslation } from '@/i18n/I18nProvider';
 
 const DriverChat = () => {
+  const { t } = useTranslation();
   const insets = useSafeAreaInsets();
 
   const { data: dashboard } = useDriverDashboard();
@@ -67,7 +69,7 @@ const DriverChat = () => {
       if (saved) {
         addWsMessage(saved);
       } else {
-        Alert.alert('Error', 'Failed to send message. Please try again.');
+        Alert.alert(t.common.error, t.chat.failedToSend);
         setMessageText(text);
       }
     }
@@ -86,10 +88,10 @@ const DriverChat = () => {
         style={{ paddingTop: insets.top, paddingBottom: insets.bottom }}>
         <Text className="text-5xl mb-4">💬</Text>
         <Text className="text-2xl font-JakartaBold text-gray-700 mb-2 text-center">
-          No Active Trip
+          {t.chat.noActiveTripTitle}
         </Text>
         <Text className="text-center text-gray-500">
-          Chat becomes available when you accept a ride request.
+          {t.chat.noActiveTripDesc}
         </Text>
       </View>
     );
@@ -101,21 +103,21 @@ const DriverChat = () => {
       <View className="flex-1 bg-white items-center justify-center"
         style={{ paddingTop: insets.top, paddingBottom: insets.bottom }}>
         <ActivityIndicator size="large" color="#0CC25F" />
-        <Text className="mt-4 text-gray-500">Loading chat...</Text>
+        <Text className="mt-4 text-gray-500">{t.chat.loadingChat}</Text>
       </View>
     );
   }
 
-  // ── Waiting — shouldn't normally happen on driver side since driver creates the trip assignment ──
+  // ── Waiting ──
   if (!hasDriver) {
     return (
       <View className="flex-1 bg-white items-center justify-center p-6"
         style={{ paddingTop: insets.top, paddingBottom: insets.bottom }}>
         <Text className="text-xl font-JakartaBold text-gray-700 mb-2 text-center">
-          Chat Unavailable
+          {t.chat.chatUnavailableTitle}
         </Text>
         <Text className="text-center text-gray-500">
-          Chat will be available after the trip starts.
+          {t.chat.chatUnavailableDesc}
         </Text>
       </View>
     );
@@ -133,14 +135,14 @@ const DriverChat = () => {
       {/* Header */}
       <View className="px-5 py-3 border-b border-gray-100 bg-white">
         <Text className="text-xl font-JakartaBold">
-          {customer?.first_name ? `Chat with ${customer.first_name}` : 'Passenger Chat'}
+          {customer?.first_name ? `${t.chat.chatWith} ${customer.first_name}` : t.chat.passengerChat}
         </Text>
         <View className="flex-row items-center mt-0.5">
           <View className={`w-2 h-2 rounded-full mr-2 ${
             isConnected ? 'bg-green-500' : isConnecting ? 'bg-yellow-400' : 'bg-gray-400'
           }`} />
           <Text className="text-xs text-gray-400">
-            {isConnected ? 'Live' : isConnecting ? 'Connecting...' : 'Polling'}
+            {isConnected ? t.chat.live : isConnecting ? t.chat.connecting : t.chat.polling}
           </Text>
         </View>
       </View>
@@ -155,7 +157,7 @@ const DriverChat = () => {
         {messages.length === 0 ? (
           <View className="flex-1 items-center justify-center py-20">
             <Text className="text-gray-400 text-center font-Jakarta">
-              No messages yet{'\n'}Say hello to your passenger!
+              {t.chat.noMessagesYet}
             </Text>
           </View>
         ) : (
@@ -188,7 +190,7 @@ const DriverChat = () => {
       <View className="px-4 py-3 border-t border-gray-100 bg-white flex-row items-end gap-3">
         <TextInput
           className="flex-1 bg-gray-100 rounded-2xl px-4 py-3 text-base"
-          placeholder="Type a message..."
+          placeholder={t.chat.typeMessage}
           placeholderTextColor="#9ca3af"
           value={messageText}
           onChangeText={setMessageText}

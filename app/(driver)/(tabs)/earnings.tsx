@@ -5,6 +5,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import EarningsSummary from '@/components/EarningsSummary';
 import { useDriverEarnings } from '@/hooks/useDriverDashboard';
+import { useTranslation } from '@/i18n/I18nProvider';
 
 type Period = 'today' | 'week' | 'month' | 'all';
 
@@ -31,18 +32,19 @@ const getPeriodDates = (period: Period): { from?: string; to?: string } => {
   return {};
 };
 
-const PERIODS: { key: Period; label: string }[] = [
-  { key: 'today', label: 'Today' },
-  { key: 'week', label: '7 Days' },
-  { key: 'month', label: 'Month' },
-  { key: 'all', label: 'All Time' },
-];
-
 const Earnings = () => {
+  const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   const [period, setPeriod] = useState<Period>('week');
   const { from, to } = getPeriodDates(period);
   const { data, isLoading } = useDriverEarnings(from, to);
+
+  const PERIODS: { key: Period; label: string }[] = [
+    { key: 'today', label: t.driver.today },
+    { key: 'week', label: t.driver.sevenDays },
+    { key: 'month', label: t.driver.month },
+    { key: 'all', label: t.driver.allTime },
+  ];
 
   return (
     <ScrollView
@@ -53,7 +55,7 @@ const Earnings = () => {
         paddingHorizontal: 20,
       }}
     >
-      <Text className="text-2xl font-JakartaBold mb-6">Earnings</Text>
+      <Text className="text-2xl font-JakartaBold mb-6">{t.driver.earnings}</Text>
 
       {/* Period selector */}
       <View className="flex-row bg-white rounded-2xl p-1 shadow-sm mb-6">
@@ -80,16 +82,14 @@ const Earnings = () => {
       <EarningsSummary
         data={data}
         isLoading={isLoading}
-        title={PERIODS.find((p) => p.key === period)?.label ?? 'Earnings'}
+        title={PERIODS.find((p) => p.key === period)?.label ?? t.driver.earnings}
       />
 
       {/* Tips */}
       <View className="bg-blue-50 rounded-2xl p-4 mt-6">
-        <Text className="text-sm font-JakartaSemiBold text-blue-700 mb-1">Tips to earn more</Text>
+        <Text className="text-sm font-JakartaSemiBold text-blue-700 mb-1">{t.driver.tipsTitle}</Text>
         <Text className="text-sm text-blue-600">
-          • Stay online during peak hours (7-9 AM, 5-8 PM){'\n'}
-          • Maintain a high rating for priority dispatch{'\n'}
-          • Accept rides promptly to improve your score
+          {t.driver.tipsBody}
         </Text>
       </View>
     </ScrollView>

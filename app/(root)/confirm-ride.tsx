@@ -120,7 +120,7 @@ const ConfirmRide = () => {
 
       {/* Payment method */}
       <Card>
-        <SectionTitle title="Payment Method" />
+        <SectionTitle title={t.payment.paymentMethod} />
         <BankSelector
           selectedBank={selectedPaymentMethod as BankId | null}
           onSelect={(id) => setSelectedPaymentMethod(id)}

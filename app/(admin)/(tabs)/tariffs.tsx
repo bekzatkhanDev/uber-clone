@@ -20,6 +20,7 @@ import {
   useAdminUpdateTariff,
   useAdminToggleTariff,
 } from '@/hooks/useAdmin';
+import { useTranslation } from '@/i18n/I18nProvider';
 
 // ─── Form state ───────────────────────────────────────────────────────────────
 
@@ -81,7 +82,10 @@ const TariffCard = ({
   onEdit: (t: Tariff) => void;
   onToggle: (t: Tariff) => void;
   isToggling: boolean;
-}) => (
+}) => {
+  const { t } = useTranslation();
+  
+  return (
   <View
     style={{
       backgroundColor: 'white',
@@ -117,17 +121,17 @@ const TariffCard = ({
             color: tariff.is_active ? '#065f46' : '#64748b',
           }}
         >
-          {tariff.is_active ? 'Active' : 'Inactive'}
+          {tariff.is_active ? t.admin.tariffs.activeLabel : t.admin.tariffs.inactiveLabel}
         </Text>
       </View>
     </View>
 
     {/* Price grid */}
     <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 12 }}>
-      <PriceChip label="Base" value={tariff.base_price} />
-      <PriceChip label="Per km" value={tariff.price_per_km} />
-      <PriceChip label="Per min" value={tariff.price_per_min} />
-      <PriceChip label="Min price" value={tariff.min_price} />
+      <PriceChip label={t.admin.tariffs.base} value={tariff.base_price} />
+      <PriceChip label={t.admin.tariffs.perKm} value={tariff.price_per_km} />
+      <PriceChip label={t.admin.tariffs.perMin} value={tariff.price_per_min} />
+      <PriceChip label={t.admin.tariffs.minPrice} value={tariff.min_price} />
     </View>
 
     {/* Actions */}
@@ -142,7 +146,7 @@ const TariffCard = ({
           alignItems: 'center',
         }}
       >
-        <Text style={{ fontSize: 13, fontWeight: '600', color: '#2563eb' }}>Edit</Text>
+        <Text style={{ fontSize: 13, fontWeight: '600', color: '#2563eb' }}>{t.admin.tariffs.edit}</Text>
       </TouchableOpacity>
       <TouchableOpacity
         onPress={() => onToggle(tariff)}
@@ -162,12 +166,13 @@ const TariffCard = ({
             color: tariff.is_active ? '#dc2626' : '#16a34a',
           }}
         >
-          {isToggling ? '...' : tariff.is_active ? 'Deactivate' : 'Activate'}
+          {isToggling ? t.admin.tariffs.saving : tariff.is_active ? t.admin.tariffs.deactivate : t.admin.tariffs.activate}
         </Text>
       </TouchableOpacity>
     </View>
   </View>
 );
+}
 
 const PriceChip = ({ label, value }: { label: string; value: string }) => (
   <View
@@ -202,6 +207,7 @@ const TariffFormModal = ({
   onSave: (data: TariffPayload & { id?: number }) => void;
   isSaving: boolean;
 }) => {
+  const { t } = useTranslation();
   const [form, setForm] = useState<TariffPayload & { id?: number }>(initial);
 
   React.useEffect(() => {
@@ -239,14 +245,14 @@ const TariffFormModal = ({
           }}
         >
           <Text style={{ fontSize: 18, fontWeight: '700', color: '#0f172a', marginBottom: 16 }}>
-            {form.id ? 'Edit Tariff' : 'New Tariff'}
+            {form.id ? t.admin.tariffs.editTariff : t.admin.tariffs.newTariff}
           </Text>
 
-          <FormField label="Code" value={form.code} onChange={set('code')} placeholder="e.g. economy" />
-          <FormField label="Base price (₸)" value={form.base_price} onChange={set('base_price')} placeholder="500.00" keyboardType="decimal-pad" />
-          <FormField label="Price per km (₸)" value={form.price_per_km} onChange={set('price_per_km')} placeholder="100.00" keyboardType="decimal-pad" />
-          <FormField label="Price per minute (₸)" value={form.price_per_min} onChange={set('price_per_min')} placeholder="10.00" keyboardType="decimal-pad" />
-          <FormField label="Minimum price (₸)" value={form.min_price} onChange={set('min_price')} placeholder="500.00" keyboardType="decimal-pad" />
+          <FormField label={t.admin.tariffs.code} value={form.code} onChange={set('code')} placeholder={t.admin.tariffs.codePlaceholder} />
+          <FormField label={t.admin.tariffs.basePrice} value={form.base_price} onChange={set('base_price')} placeholder={t.admin.tariffs.basePricePlaceholder} keyboardType="decimal-pad" />
+          <FormField label={t.admin.tariffs.pricePerKm} value={form.price_per_km} onChange={set('price_per_km')} placeholder={t.admin.tariffs.pricePerKmPlaceholder} keyboardType="decimal-pad" />
+          <FormField label={t.admin.tariffs.pricePerMin} value={form.price_per_min} onChange={set('price_per_min')} placeholder={t.admin.tariffs.pricePerMinPlaceholder} keyboardType="decimal-pad" />
+          <FormField label={t.admin.tariffs.minimumPrice} value={form.min_price} onChange={set('min_price')} placeholder={t.admin.tariffs.minimumPricePlaceholder} keyboardType="decimal-pad" />
 
           <View style={{ flexDirection: 'row', gap: 10, marginTop: 4 }}>
             <TouchableOpacity
@@ -259,7 +265,7 @@ const TariffFormModal = ({
                 alignItems: 'center',
               }}
             >
-              <Text style={{ fontWeight: '600', color: '#64748b' }}>Cancel</Text>
+              <Text style={{ fontWeight: '600', color: '#64748b' }}>{t.admin.tariffs.cancel}</Text>
             </TouchableOpacity>
             <TouchableOpacity
               onPress={() => onSave(form)}
@@ -273,7 +279,7 @@ const TariffFormModal = ({
               }}
             >
               <Text style={{ fontWeight: '600', color: !isValid ? '#94a3b8' : 'white' }}>
-                {isSaving ? 'Saving…' : 'Save'}
+                {isSaving ? t.admin.tariffs.saving : t.admin.tariffs.save}
               </Text>
             </TouchableOpacity>
           </View>
@@ -286,6 +292,7 @@ const TariffFormModal = ({
 // ─── Main screen ──────────────────────────────────────────────────────────────
 
 export default function TariffsScreen() {
+  const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   const { data: tariffs = [], isLoading, refetch } = useAdminTariffs();
   const { mutate: createTariff, isPending: isCreating } = useAdminCreateTariff();
@@ -335,17 +342,20 @@ export default function TariffsScreen() {
 
   const handleToggle = (tariff: Tariff) => {
     const action = tariff.is_active ? 'deactivate' : 'activate';
+    const confirmMsg = tariff.is_active ? t.admin.tariffs.confirmDeactivate : t.admin.tariffs.confirmActivate;
+    const confirmDesc = tariff.is_active ? t.admin.tariffs.confirmDeactivateDesc : t.admin.tariffs.confirmActivateDesc;
+    
     if (Platform.OS === 'web') {
-      if (window.confirm(`${action.charAt(0).toUpperCase() + action.slice(1)} tariff "${tariff.code}"?`)) {
+      if (window.confirm(`${confirmMsg} "${tariff.code}"?`)) {
         toggleTariff(tariff.id);
       }
     } else {
       Alert.alert(
-        `${action.charAt(0).toUpperCase() + action.slice(1)} tariff`,
-        `Are you sure you want to ${action} "${tariff.code}"?`,
+        confirmMsg,
+        `${confirmDesc} "${tariff.code}"?`,
         [
-          { text: 'Cancel', style: 'cancel' },
-          { text: action.charAt(0).toUpperCase() + action.slice(1), onPress: () => toggleTariff(tariff.id) },
+          { text: t.common.cancel, style: 'cancel' },
+          { text: confirmMsg, onPress: () => toggleTariff(tariff.id) },
         ],
       );
     }
@@ -383,9 +393,9 @@ export default function TariffsScreen() {
           {/* Header */}
           <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
             <View>
-              <Text style={{ fontSize: 24, fontWeight: '700', color: '#0f172a' }}>Tariffs</Text>
+              <Text style={{ fontSize: 24, fontWeight: '700', color: '#0f172a' }}>{t.admin.tariffs.title}</Text>
               <Text style={{ fontSize: 13, color: '#64748b', marginTop: 2 }}>
-                {active.length} active · {inactive.length} inactive
+                {active.length} {t.admin.tariffs.active} · {inactive.length} {t.admin.tariffs.inactive}
               </Text>
             </View>
             <TouchableOpacity
@@ -400,7 +410,7 @@ export default function TariffsScreen() {
                 gap: 6,
               }}
             >
-              <Text style={{ color: 'white', fontWeight: '700', fontSize: 14 }}>+ New</Text>
+              <Text style={{ color: 'white', fontWeight: '700', fontSize: 14 }}>+ {t.admin.tariffs.new}</Text>
             </TouchableOpacity>
           </View>
 
@@ -408,7 +418,7 @@ export default function TariffsScreen() {
           {active.length > 0 && (
             <>
               <Text style={{ fontSize: 12, fontWeight: '700', color: '#94a3b8', letterSpacing: 0.8, textTransform: 'uppercase', marginBottom: 8 }}>
-                Active
+                {t.admin.tariffs.activeLabel}
               </Text>
               {active.map((t) => (
                 <TariffCard
@@ -426,7 +436,7 @@ export default function TariffsScreen() {
           {inactive.length > 0 && (
             <>
               <Text style={{ fontSize: 12, fontWeight: '700', color: '#94a3b8', letterSpacing: 0.8, textTransform: 'uppercase', marginTop: 12, marginBottom: 8 }}>
-                Inactive
+                {t.admin.tariffs.inactiveLabel}
               </Text>
               {inactive.map((t) => (
                 <TariffCard
@@ -443,8 +453,8 @@ export default function TariffsScreen() {
           {tariffs.length === 0 && (
             <View style={{ alignItems: 'center', paddingVertical: 60 }}>
               <Text style={{ fontSize: 40, marginBottom: 12 }}>💰</Text>
-              <Text style={{ fontSize: 16, fontWeight: '600', color: '#0f172a', marginBottom: 4 }}>No tariffs yet</Text>
-              <Text style={{ fontSize: 13, color: '#94a3b8' }}>Tap "+ New" to create your first tariff</Text>
+              <Text style={{ fontSize: 16, fontWeight: '600', color: '#0f172a', marginBottom: 4 }}>{t.admin.tariffs.noTariffs}</Text>
+              <Text style={{ fontSize: 13, color: '#94a3b8' }}>{t.admin.tariffs.noTariffsDesc}</Text>
             </View>
           )}
         </ScrollView>

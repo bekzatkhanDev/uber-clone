@@ -5,6 +5,7 @@ import { router } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useLogout } from '@/hooks/useAuth';
 import { useAuthStore } from '@/store/authStore';
+import { useTranslation } from '@/i18n/I18nProvider';
 
 const SettingRow = ({
   emoji,
@@ -61,6 +62,7 @@ const SettingRow = ({
 );
 
 export default function AdminSettingsScreen() {
+  const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   const { mutate: logout, isPending } = useLogout();
   const { clearAuth } = useAuthStore();
@@ -80,11 +82,11 @@ export default function AdminSettingsScreen() {
 
   const handleLogout = () => {
     if (Platform.OS === 'web') {
-      if (window.confirm('Are you sure you want to sign out?')) doLogout();
+      if (window.confirm(t.admin.settings.confirmSignOut)) doLogout();
     } else {
-      Alert.alert('Sign Out', 'Are you sure you want to sign out?', [
-        { text: 'Cancel', style: 'cancel' },
-        { text: 'Sign Out', style: 'destructive', onPress: doLogout },
+      Alert.alert(t.admin.settings.signOut, t.admin.settings.confirmSignOut, [
+        { text: t.common.cancel, style: 'cancel' },
+        { text: t.admin.settings.signOut, style: 'destructive', onPress: doLogout },
       ]);
     }
   };
@@ -101,46 +103,46 @@ export default function AdminSettingsScreen() {
           showsVerticalScrollIndicator={false}
         >
           <Text style={{ fontSize: 22, fontWeight: '700', color: '#0f172a', marginBottom: 24 }}>
-            Settings
+            {t.admin.settings.title}
           </Text>
 
           {/* Navigation shortcuts */}
           <Text style={{ fontSize: 12, fontWeight: '700', color: '#94a3b8', letterSpacing: 0.8, marginBottom: 8, textTransform: 'uppercase' }}>
-            Quick Access
+            {t.admin.settings.quickAccess}
           </Text>
           <SettingRow
             emoji="📊"
-            label="Dashboard"
-            description="Platform overview and stats"
+            label={t.admin.settings.dashboard}
+            description={t.admin.settings.dashboardDesc}
             onPress={() => router.push('/(admin)/(tabs)/dashboard')}
           />
           <SettingRow
             emoji="👤"
-            label="Manage Users"
-            description="View and manage all users"
+            label={t.admin.settings.manageUsers}
+            description={t.admin.settings.manageUsersDesc}
             onPress={() => router.push('/(admin)/(tabs)/users')}
           />
           <SettingRow
             emoji="🚗"
-            label="Manage Drivers"
-            description="Approve or suspend drivers"
+            label={t.admin.settings.manageDrivers}
+            description={t.admin.settings.manageDriversDesc}
             onPress={() => router.push('/(admin)/(tabs)/drivers')}
           />
           <SettingRow
             emoji="🗺️"
-            label="Manage Trips"
-            description="Monitor all trips"
+            label={t.admin.settings.manageTrips}
+            description={t.admin.settings.manageTripsDesc}
             onPress={() => router.push('/(admin)/(tabs)/trips')}
           />
 
           {/* Session */}
           <Text style={{ fontSize: 12, fontWeight: '700', color: '#94a3b8', letterSpacing: 0.8, marginTop: 16, marginBottom: 8, textTransform: 'uppercase' }}>
-            Session
+            {t.admin.settings.session}
           </Text>
           <SettingRow
             emoji="🚪"
-            label={isPending ? 'Signing out…' : 'Sign Out'}
-            description="End your admin session"
+            label={isPending ? t.admin.settings.signingOut : t.admin.settings.signOut}
+            description={t.admin.settings.signOutDesc}
             onPress={handleLogout}
             danger
           />

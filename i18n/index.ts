@@ -202,8 +202,24 @@ interface I18nStore {
   t: Translations;
 }
 
+// On web, localStorage is synchronous — read the saved language instantly
+// so components render with the correct language from the very first paint.
+const getInitialLanguage = (): Language => {
+  try {
+    if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
+      const saved = localStorage.getItem('language') as Language | null;
+      if (saved && translations[saved]) return saved;
+    }
+  } catch {
+    // localStorage unavailable (SSR, private mode, etc.)
+  }
+  return 'ru';
+};
+
+const initialLanguage = getInitialLanguage();
+
 export const useI18n = create<I18nStore>((set) => ({
-  language: 'ru', // Default to Russian for Kazakhstan
+  language: initialLanguage,
   setLanguage: async (language: Language) => {
     try {
       await storage.setItem('language', language);
@@ -212,7 +228,7 @@ export const useI18n = create<I18nStore>((set) => ({
     }
     set({ language, t: translations[language] });
   },
-  t: translations['ru'],
+  t: translations[initialLanguage],
 }));
 
 // Initialize language from storage

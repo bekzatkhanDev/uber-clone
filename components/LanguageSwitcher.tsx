@@ -1,10 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import {
   View,
   Text,
   TouchableOpacity,
-  Modal,
-  Pressable,
+  StyleSheet,
   Platform,
 } from 'react-native';
 import { useTranslation } from '@/i18n/I18nProvider';
@@ -19,69 +18,161 @@ const LANGUAGES: { code: Language; flag: string }[] = [
 export default function LanguageSwitcher() {
   const { language, setLanguage } = useTranslation();
   const [open, setOpen] = useState(false);
-
   const current = LANGUAGES.find((l) => l.code === language);
 
+  const handleSelect = (code: Language) => {
+    setLanguage(code);
+    setOpen(false);
+  };
+
   return (
-    <View>
+    <View style={styles.container}>
+      {/* Trigger button */}
       <TouchableOpacity
-        onPress={() => setOpen(true)}
-        className="flex-row items-center gap-1 px-3 py-1 rounded-full bg-white/20 border border-white/30"
-        style={{ marginRight: 12 }}
+        onPress={() => setOpen((v) => !v)}
+        style={styles.trigger}
+        activeOpacity={0.8}
       >
-        <Text style={{ fontSize: 16 }}>{current?.flag}</Text>
-        <Text className="text-white text-xs font-JakartaSemiBold uppercase">
-          {language}
-        </Text>
+        <Text style={styles.flag}>{current?.flag}</Text>
+        <Text style={styles.code}>{language.toUpperCase()}</Text>
+        <Text style={styles.arrow}>{open ? '▲' : '▼'}</Text>
       </TouchableOpacity>
 
-      <Modal
-        transparent
-        visible={open}
-        animationType="fade"
-        onRequestClose={() => setOpen(false)}
-      >
-        <Pressable
-          className="flex-1 bg-black/50 justify-center items-center"
-          onPress={() => setOpen(false)}
-        >
-          <Pressable
-            className="bg-white rounded-2xl overflow-hidden w-64"
-            onPress={(e) => e.stopPropagation()}
-          >
-            <Text className="text-center text-base font-JakartaBold py-4 border-b border-gray-100">
-              🌐 Language / Тіл / Язык
-            </Text>
+      {/* Dropdown — absolutely positioned, no Modal */}
+      {open && (
+        <>
+          {/* Invisible backdrop to close on outside tap */}
+          <TouchableOpacity
+            style={styles.backdrop}
+            onPress={() => setOpen(false)}
+            activeOpacity={1}
+          />
 
+          <View style={styles.dropdown}>
             {LANGUAGES.map(({ code, flag }) => (
               <TouchableOpacity
                 key={code}
-                onPress={() => {
-                  setLanguage(code);
-                  setOpen(false);
-                }}
-                className={`flex-row items-center gap-3 px-5 py-4 border-b border-gray-50 ${
-                  language === code ? 'bg-blue-50' : ''
-                }`}
+                onPress={() => handleSelect(code)}
+                style={[
+                  styles.option,
+                  language === code && styles.optionActive,
+                ]}
+                activeOpacity={0.7}
               >
-                <Text style={{ fontSize: 24 }}>{flag}</Text>
+                <Text style={styles.optionFlag}>{flag}</Text>
                 <Text
-                  className={`flex-1 text-base font-Jakarta ${
-                    language === code
-                      ? 'text-blue-600 font-JakartaBold'
-                      : 'text-gray-800'
-                  }`}
+                  style={[
+                    styles.optionLabel,
+                    language === code && styles.optionLabelActive,
+                  ]}
                 >
                   {languageNames[code]}
                 </Text>
                 {language === code && (
-                  <Text className="text-blue-500 text-lg">✓</Text>
+                  <Text style={styles.checkmark}>✓</Text>
                 )}
               </TouchableOpacity>
             ))}
-          </Pressable>
-        </Pressable>
-      </Modal>
+          </View>
+        </>
+      )}
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    position: 'relative',
+    marginRight: 12,
+    zIndex: 9999,
+  },
+  trigger: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 20,
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.3)',
+  },
+  flag: {
+    fontSize: 16,
+  },
+  code: {
+    color: '#fff',
+    fontSize: 11,
+    fontWeight: '700',
+    letterSpacing: 0.5,
+  },
+  arrow: {
+    color: '#fff',
+    fontSize: 8,
+    marginLeft: 2,
+  },
+  // Backdrop covers the full screen behind the dropdown
+  backdrop: {
+    position: 'absolute',
+    top: -1000,
+    left: -1000,
+    right: -1000,
+    bottom: -1000,
+    zIndex: 9998,
+    // On web, extend to cover the viewport
+    ...Platform.select({
+      web: {
+        position: 'fixed' as any,
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+      },
+    }),
+  },
+  dropdown: {
+    position: 'absolute',
+    top: 40,
+    right: 0,
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 12,
+    elevation: 20,
+    zIndex: 9999,
+    minWidth: 160,
+    overflow: 'hidden',
+  },
+  option: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    gap: 10,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: '#f0f0f0',
+  },
+  optionActive: {
+    backgroundColor: '#EFF6FF',
+  },
+  optionFlag: {
+    fontSize: 20,
+  },
+  optionLabel: {
+    flex: 1,
+    fontSize: 14,
+    color: '#374151',
+    fontWeight: '500',
+  },
+  optionLabelActive: {
+    color: '#2563EB',
+    fontWeight: '700',
+  },
+  checkmark: {
+    color: '#2563EB',
+    fontSize: 14,
+    fontWeight: '700',
+  },
+});

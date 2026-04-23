@@ -1,5 +1,5 @@
-import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
-import { useI18n, initializeLanguage, getTranslations, Language, Translations } from './index';
+import React, { createContext, useContext, useEffect, useMemo, useState, ReactNode } from 'react';
+import { useI18n, initializeLanguage, Language, Translations } from './index';
 
 interface I18nContextType {
   language: Language;
@@ -9,29 +9,29 @@ interface I18nContextType {
 
 const I18nContext = createContext<I18nContextType | undefined>(undefined);
 
-interface I18nProviderProps {
-  children: ReactNode;
-}
-
-export const I18nProvider: React.FC<I18nProviderProps> = ({ children }) => {
+export const I18nProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const { language, setLanguage, t } = useI18n();
   const [isReady, setIsReady] = useState(false);
 
   useEffect(() => {
-    const init = async () => {
-      const savedLanguage = await initializeLanguage();
-      await setLanguage(savedLanguage);
-      setIsReady(true);
-    };
-    init();
+    initializeLanguage().then((saved) => {
+      setLanguage(saved).then(() => setIsReady(true));
+    });
   }, []);
 
-  if (!isReady) {
-    return null;
-  }
+  // Stable reference — only recreates when language actually changes.
+  // Prevents unnecessary re-renders in consumers while still propagating
+  // real language changes.
+  const value = useMemo<I18nContextType>(
+    () => ({ language, setLanguage, t }),
+    [language, t],  // setLanguage is a stable Zustand action — safe to omit
+  );
 
+  // On web, render children immediately with the default language
+  // (Russian) instead of returning null, to avoid a blank-page flash.
+  // The language will correct itself after initializeLanguage resolves.
   return (
-    <I18nContext.Provider value={{ language, setLanguage, t }}>
+    <I18nContext.Provider value={value}>
       {children}
     </I18nContext.Provider>
   );
@@ -45,14 +45,11 @@ export const useTranslation = () => {
   return context;
 };
 
-// Export currency helper
 export const useCurrency = () => {
   const { t } = useTranslation();
   return {
     symbol: t.currency.symbol,
     code: t.currency.code,
-    format: (amount: number) => {
-      return `${t.currency.symbol}${amount.toFixed(2)}`;
-    }
+    format: (amount: number) => `${t.currency.symbol}${amount.toFixed(2)}`,
   };
 };

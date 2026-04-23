@@ -58,6 +58,23 @@ const makeEmojiIcon = (emoji: string, size = 28) =>
     iconAnchor: [size / 2, size / 2],
   });
 
+// Emoji-free icons using SVG
+const makeUserIcon = (size = 28) =>
+  L?.divIcon({
+    html: `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="#3B82F6" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="8" r="4"/><path d="M12 14c-5.5 0-10 2.5-10 5v1h20v-1c0-2.5-4.5-5-10-5z"/></svg>`,
+    className: '',
+    iconSize: [size, size],
+    iconAnchor: [size / 2, size / 2],
+  });
+
+const makePinIcon = (size = 30) =>
+  L?.divIcon({
+    html: `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="#EF4444" xmlns="http://www.w3.org/2000/svg"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 1 1 0-5 2.5 2.5 0 0 1 0 5z"/></svg>`,
+    className: '',
+    iconSize: [size, size],
+    iconAnchor: [size / 2, size / 2],
+  });
+
 // ─── Internal helpers ─────────────────────────────────────────────────────────
 
 /** Stops all animations on unmount to prevent rAF-on-detached-DOM errors. */
@@ -260,14 +277,14 @@ const DriverMap = ({ driverLat, driverLng, trip }: DriverMapProps) => {
             {trip.status === 'accepted' && (
               <Marker
                 position={[trip.start_lat, trip.start_lng]}
-                icon={makeEmojiIcon('👤', 28)}
+                icon={makeUserIcon(28)}
               />
             )}
 
             {/* Destination marker */}
             <Marker
               position={[trip.end_lat, trip.end_lng]}
-              icon={makeEmojiIcon('📍', 30)}
+              icon={makePinIcon(30)}
             />
 
             {/* Route: driver → pickup (orange, shown when accepted) */}

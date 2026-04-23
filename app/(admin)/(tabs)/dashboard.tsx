@@ -13,6 +13,7 @@ import { router } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAdminDashboard } from '@/hooks/useAdmin';
 import { formatDate } from '@/lib/utils';
+import { useTranslation } from '@/i18n/I18nProvider';
 
 const StatCard = ({
   label,
@@ -51,41 +52,46 @@ const TRIP_STATUS_COLORS: Record<string, string> = {
   cancelled: '#ef4444',
 };
 
-const TripRow = ({ item }: { item: any }) => (
-  <TouchableOpacity
-    onPress={() => router.push(`/(admin)/trips/${item.id}`)}
-    style={{
-      flexDirection: 'row',
-      alignItems: 'center',
-      paddingVertical: 12,
-      borderBottomWidth: 1,
-      borderBottomColor: '#f1f5f9',
-    }}
-  >
-    <View style={{ flex: 1 }}>
-      <Text style={{ fontWeight: '600', fontSize: 14, color: '#0f172a' }}>
-        {item.customer_name || 'Customer'}
-      </Text>
-      <Text style={{ fontSize: 12, color: '#94a3b8', marginTop: 2 }}>
-        {item.created_at ? formatDate(item.created_at) : ''}
-      </Text>
-    </View>
-    <View
+const TripRow = ({ item }: { item: any }) => {
+  const { t } = useTranslation();
+  
+  return (
+    <TouchableOpacity
+      onPress={() => router.push(`/(admin)/trips/${item.id}`)}
       style={{
-        paddingHorizontal: 10,
-        paddingVertical: 4,
-        borderRadius: 20,
-        backgroundColor: TRIP_STATUS_COLORS[item.status] ?? '#94a3b8',
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingVertical: 12,
+        borderBottomWidth: 1,
+        borderBottomColor: '#f1f5f9',
       }}
     >
-      <Text style={{ color: 'white', fontSize: 11, fontWeight: '600', textTransform: 'capitalize' }}>
-        {item.status}
-      </Text>
-    </View>
-  </TouchableOpacity>
-);
+      <View style={{ flex: 1 }}>
+        <Text style={{ fontWeight: '600', fontSize: 14, color: '#0f172a' }}>
+          {item.customer_name || t.admin.common.customer}
+        </Text>
+        <Text style={{ fontSize: 12, color: '#94a3b8', marginTop: 2 }}>
+          {item.created_at ? formatDate(item.created_at) : ''}
+        </Text>
+      </View>
+      <View
+        style={{
+          paddingHorizontal: 10,
+          paddingVertical: 4,
+          borderRadius: 20,
+          backgroundColor: TRIP_STATUS_COLORS[item.status] ?? '#94a3b8',
+        }}
+      >
+        <Text style={{ color: 'white', fontSize: 11, fontWeight: '600', textTransform: 'capitalize' }}>
+          {item.status}
+        </Text>
+      </View>
+    </TouchableOpacity>
+  );
+};
 
 export default function DashboardScreen() {
+  const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   const { data, isLoading, refetch, isRefetching } = useAdminDashboard();
 
@@ -108,20 +114,20 @@ export default function DashboardScreen() {
       >
         {/* Header */}
         <Text style={{ fontSize: 24, fontWeight: '700', color: '#0f172a', marginBottom: 4 }}>
-          Admin Dashboard
+          {t.admin.dashboard.title}
         </Text>
         <Text style={{ fontSize: 13, color: '#64748b', marginBottom: 20 }}>
-          Platform overview
+          {t.admin.dashboard.subtitle}
         </Text>
 
         {/* Stats grid */}
         <View style={{ flexDirection: 'row', flexWrap: 'wrap', marginHorizontal: -6, marginBottom: 8 }}>
-          <StatCard label="Total Users" value={data?.total_users ?? 0} color="#3b82f6" />
-          <StatCard label="Total Drivers" value={data?.total_drivers ?? 0} color="#8b5cf6" />
-          <StatCard label="Online Drivers" value={data?.online_drivers ?? 0} color="#10b981" />
-          <StatCard label="Trips Today" value={data?.trips_today ?? 0} color="#f59e0b" />
+          <StatCard label={t.admin.dashboard.totalUsers} value={data?.total_users ?? 0} color="#3b82f6" />
+          <StatCard label={t.admin.dashboard.totalDrivers} value={data?.total_drivers ?? 0} color="#8b5cf6" />
+          <StatCard label={t.admin.dashboard.onlineDrivers} value={data?.online_drivers ?? 0} color="#10b981" />
+          <StatCard label={t.admin.dashboard.tripsToday} value={data?.trips_today ?? 0} color="#f59e0b" />
           <StatCard
-            label="Revenue Today"
+            label={t.admin.dashboard.revenueToday}
             value={`$${Number(data?.revenue_today ?? 0).toFixed(2)}`}
             color="#ef4444"
           />
@@ -142,15 +148,15 @@ export default function DashboardScreen() {
           }}
         >
           <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-            <Text style={{ fontSize: 16, fontWeight: '700', color: '#0f172a' }}>Recent Trips</Text>
+            <Text style={{ fontSize: 16, fontWeight: '700', color: '#0f172a' }}>{t.admin.dashboard.recentTrips}</Text>
             <TouchableOpacity onPress={() => router.push('/(admin)/(tabs)/trips')}>
-              <Text style={{ fontSize: 13, color: '#3b82f6', fontWeight: '600' }}>View All</Text>
+              <Text style={{ fontSize: 13, color: '#3b82f6', fontWeight: '600' }}>{t.admin.dashboard.viewAll}</Text>
             </TouchableOpacity>
           </View>
 
           {recentTrips.length === 0 ? (
             <Text style={{ textAlign: 'center', color: '#94a3b8', paddingVertical: 24 }}>
-              No trips yet
+              {t.admin.dashboard.noTrips}
             </Text>
           ) : (
             <FlatList

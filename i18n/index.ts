@@ -257,9 +257,138 @@ export interface Translations {
     selectCarTitle: string;
     noCarsAvailable: string;
   };
+  payment: {
+    title: string;
+    passenger: string;
+    amount: string;
+    selectMethod: string;
+    processing: string;
+    payWith: string;
+    payWithCash: string;
+    cash: string;
+    rideBooked: string;
+    tripConfirmed: string;
+    paidVia: string;
+    paidWithCash: string;
+    backHome: string;
+    paymentMethod: string;
+    failed: string;
+    methods: {
+      cash: string;
+      kaspi: string;
+      halyk: string;
+      freedom: string;
+    };
+  };
   currency: {
     symbol: string;
     code: string;
+  };
+  admin: {
+    dashboard: {
+      title: string;
+      subtitle: string;
+      totalUsers: string;
+      totalDrivers: string;
+      onlineDrivers: string;
+      tripsToday: string;
+      revenueToday: string;
+      recentTrips: string;
+      viewAll: string;
+      noTrips: string;
+    };
+    drivers: {
+      title: string;
+      searchPlaceholder: string;
+      search: string;
+      all: string;
+      pending: string;
+      active: string;
+      suspended: string;
+      yearsExp: string;
+      online: string;
+      noDriversFound: string;
+    };
+    trips: {
+      title: string;
+      searchPlaceholder: string;
+      search: string;
+      all: string;
+      pending: string;
+      accepted: string;
+      inProgress: string;
+      completed: string;
+      cancelled: string;
+      noTripsFound: string;
+    };
+    users: {
+      title: string;
+      searchPlaceholder: string;
+      search: string;
+      joined: string;
+      noName: string;
+      suspended: string;
+      noUsersFound: string;
+    };
+    settings: {
+      title: string;
+      quickAccess: string;
+      dashboard: string;
+      dashboardDesc: string;
+      manageUsers: string;
+      manageUsersDesc: string;
+      manageDrivers: string;
+      manageDriversDesc: string;
+      manageTrips: string;
+      manageTripsDesc: string;
+      session: string;
+      signOut: string;
+      signingOut: string;
+      signOutDesc: string;
+      confirmSignOut: string;
+    };
+    tariffs: {
+      title: string;
+      active: string;
+      inactive: string;
+      new: string;
+      activeLabel: string;
+      inactiveLabel: string;
+      edit: string;
+      activate: string;
+      deactivate: string;
+      base: string;
+      perKm: string;
+      perMin: string;
+      minPrice: string;
+      newTariff: string;
+      editTariff: string;
+      code: string;
+      codePlaceholder: string;
+      basePrice: string;
+      basePricePlaceholder: string;
+      pricePerKm: string;
+      pricePerKmPlaceholder: string;
+      pricePerMin: string;
+      pricePerMinPlaceholder: string;
+      minimumPrice: string;
+      minimumPricePlaceholder: string;
+      cancel: string;
+      save: string;
+      saving: string;
+      noTariffs: string;
+      noTariffsDesc: string;
+      confirmActivate: string;
+      confirmDeactivate: string;
+      confirmActivateDesc: string;
+      confirmDeactivateDesc: string;
+    };
+    common: {
+      customer: string;
+      driver: string;
+      notSet: string;
+      loading: string;
+    };
   };
 }
 

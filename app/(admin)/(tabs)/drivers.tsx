@@ -12,28 +12,23 @@ import {
 import { router } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAdminDrivers } from '@/hooks/useAdmin';
-
-const STATUS_TABS = [
-  { key: '', label: 'All' },
-  { key: 'pending', label: 'Pending' },
-  { key: 'active', label: 'Active' },
-  { key: 'suspended', label: 'Suspended' },
-];
+import { useTranslation } from '@/i18n/I18nProvider';
 
 const DriverRow = ({ item }: { item: any }) => {
+  const { t } = useTranslation();
   const isVerified = item.is_verified;
   const isActive = item.is_active;
 
-  let statusLabel = 'Active';
+  let statusLabel = t.admin.drivers.active;
   let statusColor = '#10b981';
   let statusBg = '#d1fae5';
 
   if (!isActive) {
-    statusLabel = 'Suspended';
+    statusLabel = t.admin.drivers.suspended;
     statusColor = '#ef4444';
     statusBg = '#fee2e2';
   } else if (!isVerified) {
-    statusLabel = 'Pending';
+    statusLabel = t.admin.drivers.pending;
     statusColor = '#f59e0b';
     statusBg = '#fef3c7';
   }
@@ -73,11 +68,11 @@ const DriverRow = ({ item }: { item: any }) => {
         <Text style={{ fontWeight: '600', fontSize: 14, color: '#0f172a' }}>
           {item.first_name || item.last_name
             ? `${item.first_name} ${item.last_name}`.trim()
-            : 'No name'}
+            : t.admin.users.noName}
         </Text>
         <Text style={{ fontSize: 12, color: '#64748b', marginTop: 2 }}>{item.phone}</Text>
         <Text style={{ fontSize: 11, color: '#94a3b8', marginTop: 2 }}>
-          {item.experience_years != null ? `${item.experience_years} yrs exp` : ''}
+          {item.experience_years != null ? `${item.experience_years} ${t.admin.drivers.yearsExp}` : ''}
           {item.rating_avg ? ` · ★ ${Number(item.rating_avg).toFixed(1)}` : ''}
         </Text>
       </View>
@@ -88,7 +83,7 @@ const DriverRow = ({ item }: { item: any }) => {
         </View>
         {item.is_online && (
           <View style={{ paddingHorizontal: 8, paddingVertical: 3, borderRadius: 10, backgroundColor: '#d1fae5' }}>
-            <Text style={{ fontSize: 10, fontWeight: '600', color: '#065f46' }}>Online</Text>
+            <Text style={{ fontSize: 10, fontWeight: '600', color: '#065f46' }}>{t.admin.drivers.online}</Text>
           </View>
         )}
       </View>
@@ -97,10 +92,18 @@ const DriverRow = ({ item }: { item: any }) => {
 };
 
 export default function DriversScreen() {
+  const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   const [activeTab, setActiveTab] = useState('');
   const [search, setSearch] = useState('');
   const [query, setQuery] = useState('');
+
+  const STATUS_TABS = [
+    { key: '', label: t.admin.drivers.all },
+    { key: 'pending', label: t.admin.drivers.pending },
+    { key: 'active', label: t.admin.drivers.active },
+    { key: 'suspended', label: t.admin.drivers.suspended },
+  ];
 
   const { data, isLoading, refetch, isRefetching } = useAdminDrivers(activeTab, query);
   const drivers: any[] = data?.results ?? data ?? [];
@@ -110,7 +113,7 @@ export default function DriversScreen() {
       <View style={Platform.OS === 'web' ? { maxWidth: 900, alignSelf: 'center' as const, width: '100%', flex: 1 } : { flex: 1 }}>
       <View style={{ paddingTop: insets.top + 16, paddingHorizontal: 16, paddingBottom: 8 }}>
         <Text style={{ fontSize: 22, fontWeight: '700', color: '#0f172a', marginBottom: 12 }}>
-          Drivers
+          {t.admin.drivers.title}
         </Text>
 
         {/* Search */}
@@ -119,7 +122,7 @@ export default function DriversScreen() {
             value={search}
             onChangeText={setSearch}
             onSubmitEditing={() => setQuery(search.trim())}
-            placeholder="Search drivers…"
+            placeholder={t.admin.drivers.searchPlaceholder}
             placeholderTextColor="#94a3b8"
             returnKeyType="search"
             style={{
@@ -143,7 +146,7 @@ export default function DriversScreen() {
               justifyContent: 'center',
             }}
           >
-            <Text style={{ color: 'white', fontWeight: '600' }}>Search</Text>
+            <Text style={{ color: 'white', fontWeight: '600' }}>{t.admin.drivers.search}</Text>
           </TouchableOpacity>
         </View>
 
@@ -194,7 +197,7 @@ export default function DriversScreen() {
           refreshing={isRefetching}
           ListEmptyComponent={
             <Text style={{ textAlign: 'center', color: '#94a3b8', paddingVertical: 48 }}>
-              No drivers found
+              {t.admin.drivers.noDriversFound}
             </Text>
           }
         />

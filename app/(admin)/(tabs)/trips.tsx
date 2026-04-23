@@ -13,25 +13,19 @@ import { router } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAdminTrips } from '@/hooks/useAdmin';
 import { formatDate } from '@/lib/utils';
-
-const STATUS_TABS = [
-  { key: '', label: 'All' },
-  { key: 'pending', label: 'Pending' },
-  { key: 'accepted', label: 'Accepted' },
-  { key: 'in_progress', label: 'Active' },
-  { key: 'completed', label: 'Done' },
-  { key: 'cancelled', label: 'Cancelled' },
-];
-
-const STATUS_COLORS: Record<string, { bg: string; text: string }> = {
-  pending: { bg: '#fef3c7', text: '#92400e' },
-  accepted: { bg: '#dbeafe', text: '#1e40af' },
-  in_progress: { bg: '#ede9fe', text: '#5b21b6' },
-  completed: { bg: '#d1fae5', text: '#065f46' },
-  cancelled: { bg: '#fee2e2', text: '#991b1b' },
-};
+import { useTranslation } from '@/i18n/I18nProvider';
 
 const TripRow = ({ item }: { item: any }) => {
+  const { t } = useTranslation();
+  
+  const STATUS_COLORS: Record<string, { bg: string; text: string }> = {
+    pending: { bg: '#fef3c7', text: '#92400e' },
+    accepted: { bg: '#dbeafe', text: '#1e40af' },
+    in_progress: { bg: '#ede9fe', text: '#5b21b6' },
+    completed: { bg: '#d1fae5', text: '#065f46' },
+    cancelled: { bg: '#fee2e2', text: '#991b1b' },
+  };
+  
   const colors = STATUS_COLORS[item.status] ?? { bg: '#f1f5f9', text: '#475569' };
 
   return (
@@ -51,8 +45,8 @@ const TripRow = ({ item }: { item: any }) => {
     >
       <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
         <Text style={{ fontWeight: '600', fontSize: 14, color: '#0f172a' }} numberOfLines={1}>
-          {item.customer_name || 'Customer'}
-          {item.driver_name ? ` → ${item.driver_name}` : ''}
+          {item.customer_name || t.admin.common.customer}
+          {item.driver_name ? ` → ${t.admin.common.driver}` : ''}
         </Text>
         <View
           style={{
@@ -83,10 +77,20 @@ const TripRow = ({ item }: { item: any }) => {
 };
 
 export default function TripsScreen() {
+  const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   const [activeTab, setActiveTab] = useState('');
   const [search, setSearch] = useState('');
   const [query, setQuery] = useState('');
+
+  const STATUS_TABS = [
+    { key: '', label: t.admin.trips.all },
+    { key: 'pending', label: t.admin.trips.pending },
+    { key: 'accepted', label: t.admin.trips.accepted },
+    { key: 'in_progress', label: t.admin.trips.inProgress },
+    { key: 'completed', label: t.admin.trips.completed },
+    { key: 'cancelled', label: t.admin.trips.cancelled },
+  ];
 
   const { data, isLoading, refetch, isRefetching } = useAdminTrips({
     status: activeTab,
@@ -99,7 +103,7 @@ export default function TripsScreen() {
       <View style={Platform.OS === 'web' ? { maxWidth: 900, alignSelf: 'center' as const, width: '100%', flex: 1 } : { flex: 1 }}>
       <View style={{ paddingTop: insets.top + 16, paddingHorizontal: 16, paddingBottom: 8 }}>
         <Text style={{ fontSize: 22, fontWeight: '700', color: '#0f172a', marginBottom: 12 }}>
-          Trips
+          {t.admin.trips.title}
         </Text>
 
         {/* Search */}
@@ -108,7 +112,7 @@ export default function TripsScreen() {
             value={search}
             onChangeText={setSearch}
             onSubmitEditing={() => setQuery(search.trim())}
-            placeholder="Search by name or phone…"
+            placeholder={t.admin.trips.searchPlaceholder}
             placeholderTextColor="#94a3b8"
             returnKeyType="search"
             style={{
@@ -132,7 +136,7 @@ export default function TripsScreen() {
               justifyContent: 'center',
             }}
           >
-            <Text style={{ color: 'white', fontWeight: '600' }}>Search</Text>
+            <Text style={{ color: 'white', fontWeight: '600' }}>{t.admin.trips.search}</Text>
           </TouchableOpacity>
         </View>
 
@@ -184,7 +188,7 @@ export default function TripsScreen() {
           refreshing={isRefetching}
           ListEmptyComponent={
             <Text style={{ textAlign: 'center', color: '#94a3b8', paddingVertical: 48 }}>
-              No trips found
+              {t.admin.trips.noTripsFound}
             </Text>
           }
         />

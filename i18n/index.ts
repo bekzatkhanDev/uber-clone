@@ -136,6 +136,9 @@ export interface Translations {
     noMessagesYet: string;
     typeMessage: string;
     failedToSend: string;
+    tripChat: string;
+    waitingForDriver: string;
+    chatOpensWhenAccepted: string;
   };
   findRide: {
     distance: string;
@@ -389,6 +392,49 @@ export interface Translations {
       notSet: string;
       loading: string;
     };
+  };
+  tripShare: {
+    title: string;
+    subtitle: string;
+    secureSharing: string;
+    secureSharingDesc: string;
+    generateLink: string;
+    linkGenerated: string;
+    expires: string;
+    accessCount: string;
+    copyLink: string;
+    shareVia: string;
+    generateNewLink: string;
+    previousLinks: string;
+    created: string;
+    accessedTimes: string;
+    expired: string;
+    loadingLinks: string;
+    error: string;
+    helpText: string;
+  };
+  publicTrack: {
+    loadingTrip: string;
+    linkExpired: string;
+    tripNotFound: string;
+    linkExpiredDesc: string;
+    unableToLoad: string;
+    shareLinkInfo: string;
+    lookingForDriver: string;
+    driverAssigned: string;
+    onRoute: string;
+    tripCompleted: string;
+    tripCancelled: string;
+    liveMapView: string;
+    updatesEvery10s: string;
+    yourDriver: string;
+    waitingForDriver: string;
+    route: string;
+    pickup: string;
+    dropOff: string;
+    tariff: string;
+    aboutPage: string;
+    aboutPageDesc: string;
   };
 }
 

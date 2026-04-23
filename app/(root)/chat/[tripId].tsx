@@ -5,7 +5,7 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-
+import { useTranslation } from '@/i18n/I18nProvider'; 
 import {
   useChatRoomStatus,
   useChatMessages,
@@ -19,7 +19,7 @@ const ChatRoom = () => {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const { tripId } = useLocalSearchParams<{ tripId: string }>();
-
+  const { t } = useTranslation();
   const [messageText, setMessageText] = useState('');
   const [myUserId, setMyUserId] = useState<string | null>(null);
   const scrollViewRef = useRef<ScrollView>(null);

@@ -83,13 +83,13 @@ const ChatRoom = () => {
       <View className="flex-1 bg-white" style={{ paddingTop: insets.top }}>
         <View className="px-5 py-3 border-b border-gray-100 flex-row items-center">
           <TouchableOpacity onPress={() => router.back()} className="mr-3 p-1">
-            <Text className="text-primary-500 font-JakartaSemiBold text-base">‹ Back</Text>
+            <Text className="text-primary-500 font-JakartaSemiBold text-base">‹ {t.common.back}</Text>
           </TouchableOpacity>
-          <Text className="text-xl font-JakartaBold">Chat</Text>
+          <Text className="text-xl font-JakartaBold">{t.chat.tripChat}</Text>
         </View>
         <View className="flex-1 items-center justify-center" style={{ paddingBottom: insets.bottom }}>
           <ActivityIndicator size="large" color="#0CC25F" />
-          <Text className="mt-4 text-gray-500">Loading chat...</Text>
+          <Text className="mt-4 text-gray-500">{t.chat.loadingChat}</Text>
         </View>
       </View>
     );
@@ -101,17 +101,17 @@ const ChatRoom = () => {
       <View className="flex-1 bg-white" style={{ paddingTop: insets.top }}>
         <View className="px-5 py-3 border-b border-gray-100 flex-row items-center">
           <TouchableOpacity onPress={() => router.back()} className="mr-3 p-1">
-            <Text className="text-primary-500 font-JakartaSemiBold text-base">‹ Back</Text>
+            <Text className="text-primary-500 font-JakartaSemiBold text-base">‹ {t.common.back}</Text>
           </TouchableOpacity>
-          <Text className="text-xl font-JakartaBold">Chat</Text>
+          <Text className="text-xl font-JakartaBold">{t.chat.tripChat}</Text>
         </View>
         <View className="flex-1 items-center justify-center p-6" style={{ paddingBottom: insets.bottom }}>
           <ActivityIndicator size="large" color="#0CC25F" style={{ marginBottom: 16 }} />
           <Text className="text-xl font-JakartaBold text-gray-700 mb-2 text-center">
-            Waiting for Driver
+            {t.chat.waitingForDriver}
           </Text>
           <Text className="text-center text-gray-500">
-            Chat opens as soon as a driver accepts your ride.
+            {t.chat.chatOpensWhenAccepted}
           </Text>
           {roomError && (
             <Text className="text-red-400 text-sm text-center mt-3">{roomError}</Text>
@@ -132,16 +132,16 @@ const ChatRoom = () => {
       <View className="px-5 py-3 border-b border-gray-100 bg-white flex-row items-center justify-between">
         <View className="flex-row items-center flex-1">
           <TouchableOpacity onPress={() => router.back()} className="mr-3 p-1">
-            <Text className="text-primary-500 font-JakartaSemiBold text-base">‹ Back</Text>
+            <Text className="text-primary-500 font-JakartaSemiBold text-base">‹ {t.common.back}</Text>
           </TouchableOpacity>
           <View className="flex-1">
-            <Text className="text-xl font-JakartaBold">Trip Chat</Text>
+            <Text className="text-xl font-JakartaBold">{t.chat.tripChat}</Text>
             <View className="flex-row items-center mt-0.5">
               <View className={`w-2 h-2 rounded-full mr-2 ${
                 isConnected ? 'bg-green-500' : isConnecting ? 'bg-yellow-400' : 'bg-gray-400'
               }`} />
               <Text className="text-xs text-gray-400">
-                {isConnected ? 'Live' : isConnecting ? 'Connecting...' : 'Polling'}
+                {isConnected ? t.chat.live : isConnecting ? t.chat.connecting : t.chat.polling}
               </Text>
             </View>
           </View>
@@ -159,7 +159,7 @@ const ChatRoom = () => {
           <View className="flex-1 items-center justify-center py-20">
             <Text className="text-4xl mb-3">💬</Text>
             <Text className="text-gray-400 text-center font-Jakarta">
-              No messages yet{'\n'}Say hello!
+              {t.chat.noMessagesYet}
             </Text>
           </View>
         ) : (
@@ -195,7 +195,7 @@ const ChatRoom = () => {
       >
         <TextInput
           className="flex-1 bg-gray-100 rounded-2xl px-4 py-3 text-base"
-          placeholder="Type a message..."
+          placeholder={t.chat.typeMessage}
           placeholderTextColor="#9ca3af"
           value={messageText}
           onChangeText={setMessageText}

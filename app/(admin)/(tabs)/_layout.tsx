@@ -1,5 +1,8 @@
 import { Tabs } from 'expo-router';
-import { Image, Platform, Text, View } from 'react-native';
+import React from 'react';
+import { Image, Platform, View } from 'react-native';
+import LanguageSwitcher from '@/components/LanguageSwitcher';
+import { useTranslation } from '@/i18n/I18nProvider';
 
 // SVG icons as base64 for emoji-free tab bar
 const DASHBOARD_ICON = `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23ffffff"><path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/></svg>`;
@@ -48,6 +51,7 @@ const nativeTabBarStyle = {
 };
 
 export default function AdminTabLayout() {
+  const { t } = useTranslation();
   const isWeb = Platform.OS === 'web';
 
   return (
@@ -59,48 +63,54 @@ export default function AdminTabLayout() {
         tabBarShowLabel: isWeb,
         tabBarLabelStyle: isWeb ? { fontSize: 11, marginTop: 2, color: 'white' } : undefined,
         tabBarStyle: isWeb ? webTabBarStyle : nativeTabBarStyle,
-        headerShown: false,
+        headerShown: true,
+        headerTransparent: false,
+        headerTitle: '',
+        headerStyle: { backgroundColor: '#ffffff', shadowOpacity: 0, elevation: 0 },
+        headerRight: () => <LanguageSwitcher variant="dark" />,
+        headerLeft: () => null,
       }}
     >
       <Tabs.Screen
         name="dashboard"
         options={{
-          title: 'Dashboard',
+          title: t.admin.dashboard.title,
+          headerShown: false,
           tabBarIcon: ({ focused }) => <TabIcon iconSource={DASHBOARD_ICON} focused={focused} />,
         }}
       />
       <Tabs.Screen
         name="users"
         options={{
-          title: 'Users',
+          title: t.admin.users.title,
           tabBarIcon: ({ focused }) => <TabIcon iconSource={USERS_ICON} focused={focused} />,
         }}
       />
       <Tabs.Screen
         name="drivers"
         options={{
-          title: 'Drivers',
+          title: t.admin.drivers.title,
           tabBarIcon: ({ focused }) => <TabIcon iconSource={DRIVERS_ICON} focused={focused} />,
         }}
       />
       <Tabs.Screen
         name="trips"
         options={{
-          title: 'Trips',
+          title: t.admin.trips.title,
           tabBarIcon: ({ focused }) => <TabIcon iconSource={TRIPS_ICON} focused={focused} />,
         }}
       />
       <Tabs.Screen
         name="tariffs"
         options={{
-          title: 'Tariffs',
+          title: t.admin.tariffs.title,
           tabBarIcon: ({ focused }) => <TabIcon iconSource={TARIFFS_ICON} focused={focused} />,
         }}
       />
       <Tabs.Screen
         name="settings"
         options={{
-          title: 'Settings',
+          title: t.admin.settings.title,
           tabBarIcon: ({ focused }) => <TabIcon iconSource={SETTINGS_ICON} focused={focused} />,
         }}
       />

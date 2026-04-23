@@ -172,7 +172,7 @@ const BookRide = () => {
             <Image source={icons.person} style={{ width: 40, height: 40 }} resizeMode="contain" />
           </View>
           <Text style={{ fontSize: 18, fontWeight: '700', color: '#111827' }}>
-            {tripData.driver?.first_name ?? 'Driver'}
+            {tripData.driver?.first_name ?? t.admin.common.driver}
           </Text>
           {tripData.car && (
             <Text style={{ fontSize: 14, color: '#6b7280', marginTop: 4 }}>
@@ -180,7 +180,7 @@ const BookRide = () => {
             </Text>
           )}
           <View style={{ backgroundColor: '#0CC25F', borderRadius: 999, paddingHorizontal: 14, paddingVertical: 4, marginTop: 10 }}>
-            <Text style={{ color: 'white', fontSize: 13, fontWeight: '600' }}>Driver assigned</Text>
+            <Text style={{ color: 'white', fontSize: 13, fontWeight: '600' }}>{t.bookRide.driverAssigned}</Text>
           </View>
           {/* Chat with Driver button */}
           <TouchableOpacity
@@ -199,16 +199,16 @@ const BookRide = () => {
             }}
           >
             <Text style={{ fontSize: 16 }}>💬</Text>
-            <Text style={{ color: '#0CC25F', fontSize: 14, fontWeight: '700' }}>Chat with Driver</Text>
+            <Text style={{ color: '#0CC25F', fontSize: 14, fontWeight: '700' }}>{t.chat.chatWith} {t.admin.common.driver}</Text>
           </TouchableOpacity>
         </View>
       ) : noDriverFound ? (
         <View style={{ alignItems: 'center', paddingVertical: 20, backgroundColor: '#fef9c3', borderRadius: 16, marginBottom: 16 }}>
           <Text style={{ fontSize: 16, fontWeight: '700', color: '#92400e', marginBottom: 8 }}>
-            No drivers available
+            {t.bookRide.failedToCreate}
           </Text>
           <Text style={{ fontSize: 14, color: '#78350f', textAlign: 'center', paddingHorizontal: 16 }}>
-            There are no drivers near you right now. Please try again shortly.
+            {t.bookRide.lookingForDrivers}
           </Text>
         </View>
       ) : (

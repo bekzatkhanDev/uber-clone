@@ -13,8 +13,10 @@ import { router } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAdminUsers } from '@/hooks/useAdmin';
 import { formatDate } from '@/lib/utils';
+import { useTranslation } from '@/i18n/I18nProvider';
 
 const UserRow = ({ item }: { item: any }) => {
+  const { t } = useTranslation();
   const roles: string[] = item.roles ?? [];
 
   return (
@@ -52,11 +54,11 @@ const UserRow = ({ item }: { item: any }) => {
         <Text style={{ fontWeight: '600', fontSize: 14, color: '#0f172a' }}>
           {item.first_name || item.last_name
             ? `${item.first_name} ${item.last_name}`.trim()
-            : 'No name'}
+            : t.admin.users.noName}
         </Text>
         <Text style={{ fontSize: 12, color: '#64748b', marginTop: 2 }}>{item.phone}</Text>
         <Text style={{ fontSize: 11, color: '#94a3b8', marginTop: 2 }}>
-          Joined {item.created_at ? formatDate(item.created_at) : '—'}
+          {t.admin.users.joined} {item.created_at ? formatDate(item.created_at) : '—'}
         </Text>
       </View>
 
@@ -88,7 +90,7 @@ const UserRow = ({ item }: { item: any }) => {
         ))}
         {!item.is_active && (
           <View style={{ paddingHorizontal: 8, paddingVertical: 3, borderRadius: 10, backgroundColor: '#fee2e2' }}>
-            <Text style={{ fontSize: 10, fontWeight: '600', color: '#dc2626' }}>Suspended</Text>
+            <Text style={{ fontSize: 10, fontWeight: '600', color: '#dc2626' }}>{t.admin.users.suspended}</Text>
           </View>
         )}
       </View>
@@ -97,6 +99,7 @@ const UserRow = ({ item }: { item: any }) => {
 };
 
 export default function UsersScreen() {
+  const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   const [search, setSearch] = useState('');
   const [query, setQuery] = useState('');
@@ -111,7 +114,7 @@ export default function UsersScreen() {
       <View style={Platform.OS === 'web' ? { maxWidth: 900, alignSelf: 'center' as const, width: '100%', flex: 1 } : { flex: 1 }}>
       <View style={{ paddingTop: insets.top + 16, paddingHorizontal: 16, paddingBottom: 8 }}>
         <Text style={{ fontSize: 22, fontWeight: '700', color: '#0f172a', marginBottom: 12 }}>
-          Users
+          {t.admin.users.title}
         </Text>
 
         {/* Search bar */}
@@ -120,7 +123,7 @@ export default function UsersScreen() {
             value={search}
             onChangeText={setSearch}
             onSubmitEditing={handleSearch}
-            placeholder="Search by name or phone…"
+            placeholder={t.admin.users.searchPlaceholder}
             placeholderTextColor="#94a3b8"
             returnKeyType="search"
             style={{
@@ -144,7 +147,7 @@ export default function UsersScreen() {
               justifyContent: 'center',
             }}
           >
-            <Text style={{ color: 'white', fontWeight: '600' }}>Search</Text>
+            <Text style={{ color: 'white', fontWeight: '600' }}>{t.admin.users.search}</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -166,7 +169,7 @@ export default function UsersScreen() {
           refreshing={isRefetching}
           ListEmptyComponent={
             <Text style={{ textAlign: 'center', color: '#94a3b8', paddingVertical: 48 }}>
-              No users found
+              {t.admin.users.noUsersFound}
             </Text>
           }
         />

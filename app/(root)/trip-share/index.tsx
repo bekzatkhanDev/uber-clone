@@ -18,10 +18,12 @@ import {
   ShareToken,
 } from '@/hooks/useTripSharing';
 import { useActiveTrip } from '@/hooks/useTrips';
+import { useTranslation } from '@/i18n/I18nProvider';
 
 const TripShare = () => {
   const insets = useSafeAreaInsets();
   const router = useRouter();
+  const { t } = useTranslation();
   const { tripId } = useLocalSearchParams<{ tripId?: string }>();
   
   // Get active trip if no tripId provided
@@ -46,7 +48,7 @@ const TripShare = () => {
       await createToken();
       setShowSuccess(true);
     } catch (err: any) {
-      Alert.alert('Error', err.message || 'Failed to create share link');
+      Alert.alert(t.common.error, err.message || t.tripShare.error);
     }
   };
   
@@ -63,16 +65,16 @@ const TripShare = () => {
     if (!url) return;
     const success = await copyToClipboard(url);
     if (success) {
-      Alert.alert('Copied!', url);
+      Alert.alert(t.common.success, url);
     } else {
-      Alert.alert('Error', 'Failed to copy link');
+      Alert.alert(t.common.error, t.common.error);
     }
   };
 
   const handleShareNative = async () => {
     const url = getFrontendShareUrl();
     if (!url) return;
-    const success = await shareViaNative(url, 'Track my trip');
+    const success = await shareViaNative(url, t.tripShare.title);
     if (!success) {
       Alert.alert('Info', 'Native sharing not available on this device');
     }
@@ -89,9 +91,9 @@ const TripShare = () => {
       style={{ paddingTop: insets.top, paddingBottom: insets.bottom }}
     >
       <View className="px-5 py-3 border-b border-gray-200">
-        <Text className="text-xl font-JakartaBold">Share Trip</Text>
+        <Text className="text-xl font-JakartaBold">{t.tripShare.title}</Text>
         <Text className="text-sm text-gray-500 mt-1">
-          Share your live location with friends and family
+          {t.tripShare.subtitle}
         </Text>
       </View>
       
@@ -99,10 +101,10 @@ const TripShare = () => {
         {/* Info Card */}
         <View className="bg-blue-50 rounded-xl p-4 mb-6">
           <Text className="text-blue-800 font-JakartaSemiBold mb-2">
-            🔒 Secure Sharing
+            {t.tripShare.secureSharing}
           </Text>
           <Text className="text-blue-700 text-sm">
-            Generate a time-limited link that expires in 24 hours. Anyone with the link can track your trip in real-time.
+            {t.tripShare.secureSharingDesc}
           </Text>
         </View>
         
@@ -119,7 +121,7 @@ const TripShare = () => {
               <ActivityIndicator size="large" color="white" />
             ) : (
               <Text className="text-white text-lg font-JakartaSemiBold">
-                Generate Share Link
+                {t.tripShare.generateLink}
               </Text>
             )}
           </TouchableOpacity>
@@ -130,13 +132,13 @@ const TripShare = () => {
           <View className="mb-6">
             <View className="bg-green-50 rounded-xl p-4 mb-4">
               <Text className="text-green-800 font-JakartaBold text-lg mb-2">
-                ✓ Link Generated!
+                {t.tripShare.linkGenerated}
               </Text>
               <Text className="text-green-700 text-sm mb-3">
-                Expires: {formatExpiresAt(shareToken.expires_at)}
+                {t.tripShare.expires}: {formatExpiresAt(shareToken.expires_at)}
               </Text>
               <Text className="text-green-600 text-xs mb-3">
-                Access count: {shareToken.accessed_count}
+                {t.tripShare.accessCount}: {shareToken.accessed_count}
               </Text>
             </View>
             
@@ -146,14 +148,14 @@ const TripShare = () => {
                 className="w-full bg-[#0CC25F] py-3 rounded-xl items-center flex-row justify-center gap-2"
                 onPress={handleCopyLink}
               >
-                <Text className="text-white font-JakartaSemiBold">📋 Copy Link</Text>
+                <Text className="text-white font-JakartaSemiBold">{t.tripShare.copyLink}</Text>
               </TouchableOpacity>
               
               <TouchableOpacity
                 className="w-full bg-blue-500 py-3 rounded-xl items-center flex-row justify-center gap-2"
                 onPress={handleShareNative}
               >
-                <Text className="text-white font-JakartaSemiBold">📤 Share via...</Text>
+                <Text className="text-white font-JakartaSemiBold">{t.tripShare.shareVia}</Text>
               </TouchableOpacity>
               
               <TouchableOpacity
@@ -164,7 +166,7 @@ const TripShare = () => {
                 }}
               >
                 <Text className="text-gray-700 font-JakartaMedium">
-                  Generate New Link
+                  {t.tripShare.generateNewLink}
                 </Text>
               </TouchableOpacity>
             </View>
@@ -174,20 +176,20 @@ const TripShare = () => {
         {/* Previous Tokens */}
         {tokens.length > 0 && (
           <View className="mt-8">
-            <Text className="text-lg font-JakartaBold mb-3">Previous Links</Text>
+            <Text className="text-lg font-JakartaBold mb-3">{t.tripShare.previousLinks}</Text>
             {tokens.map((token: ShareToken) => (
               <View
                 key={token.token}
                 className="bg-gray-50 rounded-lg p-3 mb-2 border border-gray-200"
               >
                 <Text className="text-sm text-gray-600 font-JakartaMedium">
-                  Created: {formatExpiresAt(token.expires_at)}
+                  {t.tripShare.created}: {formatExpiresAt(token.expires_at)}
                 </Text>
                 <Text className="text-xs text-gray-500 mt-1">
-                  Accessed {token.accessed_count} times
+                  {t.tripShare.accessedTimes.replace('{{count}}', String(token.accessed_count))}
                 </Text>
                 <Text className="text-xs text-red-500 mt-1">
-                  ⚠️ Expired
+                  {t.tripShare.expired}
                 </Text>
               </View>
             ))}
@@ -198,7 +200,7 @@ const TripShare = () => {
         {loadingTokens && !tokens.length && (
           <View className="items-center py-10">
             <ActivityIndicator size="small" color="#0CC25F" />
-            <Text className="text-gray-500 mt-2">Loading previous links...</Text>
+            <Text className="text-gray-500 mt-2">{t.tripShare.loadingLinks}</Text>
           </View>
         )}
         
@@ -206,7 +208,7 @@ const TripShare = () => {
         {createError && (
           <View className="bg-red-50 rounded-xl p-4 mt-4">
             <Text className="text-red-700 font-JakartaMedium">
-              Error: {createError}
+              {t.common.error}: {createError}
             </Text>
           </View>
         )}
@@ -214,8 +216,7 @@ const TripShare = () => {
         {/* Help Text */}
         <View className="mt-8 pt-6 border-t border-gray-200">
           <Text className="text-sm text-gray-500 text-center">
-            The recipient will see your driver's location, ETA, and trip status.
-            No login required for them to view.
+            {t.tripShare.helpText}
           </Text>
         </View>
       </View>

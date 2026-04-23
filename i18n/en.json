@@ -384,5 +384,48 @@
       "notSet": "Not set",
       "loading": "Loading..."
     }
+  },
+  "tripShare": {
+    "title": "Share Trip",
+    "subtitle": "Share your live location with friends and family",
+    "secureSharing": "🔒 Secure Sharing",
+    "secureSharingDesc": "Generate a time-limited link that expires in 24 hours. Anyone with the link can track your trip in real-time.",
+    "generateLink": "Generate Share Link",
+    "linkGenerated": "✓ Link Generated!",
+    "expires": "Expires",
+    "accessCount": "Access count",
+    "copyLink": "📋 Copy Link",
+    "shareVia": "📤 Share via...",
+    "generateNewLink": "Generate New Link",
+    "previousLinks": "Previous Links",
+    "created": "Created",
+    "accessedTimes": "Accessed {{count}} times",
+    "expired": "⚠️ Expired",
+    "loadingLinks": "Loading previous links...",
+    "error": "Error",
+    "helpText": "The recipient will see your driver's location, ETA, and trip status. No login required for them to view."
+  },
+  "publicTrack": {
+    "loadingTrip": "Loading trip details…",
+    "linkExpired": "Link Expired",
+    "tripNotFound": "Trip Not Found",
+    "linkExpiredDesc": "This tracking link has expired. Ask the sender to generate a new one.",
+    "unableToLoad": "Unable to load trip information.",
+    "shareLinkInfo": "Share links are valid for 24 hours and expire automatically for security.",
+    "lookingForDriver": "Looking for driver…",
+    "driverAssigned": "Driver assigned — Heading to pickup",
+    "onRoute": "On route to destination",
+    "tripCompleted": "Trip completed",
+    "tripCancelled": "Trip cancelled",
+    "liveMapView": "🗺️ Live Map View",
+    "updatesEvery10s": "Updates every 10 s",
+    "yourDriver": "Your Driver",
+    "waitingForDriver": "Waiting for driver…",
+    "route": "Route",
+    "pickup": "Pickup",
+    "dropOff": "Drop-off",
+    "tariff": "Tariff",
+    "aboutPage": "ℹ️ About This Page",
+    "aboutPageDesc": "You're viewing a shared trip. The page refreshes automatically every 10 s. This link expires in 24 hours."
   }
 }

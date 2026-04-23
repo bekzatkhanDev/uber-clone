@@ -267,10 +267,122 @@
     "paidWithCash": "Оплачено наличными",
     "backHome": "На главную",
     "paymentMethod": "Способ оплаты",
-    "failed": "Ошибка оплаты"
+    "failed": "Ошибка оплаты",
+    "methods": {
+      "cash": "Наличные",
+      "kaspi": "Kaspi Bank",
+      "halyk": "Halyk Bank",
+      "freedom": "Freedom Bank"
+    }
   },
   "currency": {
     "symbol": "₸",
     "code": "KZT"
+  },
+  "admin": {
+    "dashboard": {
+      "title": "Панель администратора",
+      "subtitle": "Обзор платформы",
+      "totalUsers": "Всего пользователей",
+      "totalDrivers": "Всего водителей",
+      "onlineDrivers": "Водителей онлайн",
+      "tripsToday": "Поездок сегодня",
+      "revenueToday": "Доход сегодня",
+      "recentTrips": "Последние поездки",
+      "viewAll": "Посмотреть все",
+      "noTrips": "Поездок пока нет"
+    },
+    "drivers": {
+      "title": "Водители",
+      "searchPlaceholder": "Поиск водителей…",
+      "search": "Поиск",
+      "all": "Все",
+      "pending": "Ожидают",
+      "active": "Активны",
+      "suspended": "Приостановлены",
+      "yearsExp": "лет опыта",
+      "online": "Онлайн",
+      "noDriversFound": "Водители не найдены"
+    },
+    "trips": {
+      "title": "Поездки",
+      "searchPlaceholder": "Поиск по имени или телефону…",
+      "search": "Поиск",
+      "all": "Все",
+      "pending": "Ожидают",
+      "accepted": "Приняты",
+      "inProgress": "В пути",
+      "completed": "Завершены",
+      "cancelled": "Отменены",
+      "noTripsFound": "Поездки не найдены"
+    },
+    "users": {
+      "title": "Пользователи",
+      "searchPlaceholder": "Поиск по имени или телефону…",
+      "search": "Поиск",
+      "joined": "Присоединился",
+      "noName": "Без имени",
+      "suspended": "Приостановлен",
+      "noUsersFound": "Пользователи не найдены"
+    },
+    "settings": {
+      "title": "Настройки",
+      "quickAccess": "Быстрый доступ",
+      "dashboard": "Панель управления",
+      "dashboardDesc": "Обзор платформы и статистика",
+      "manageUsers": "Управление пользователями",
+      "manageUsersDesc": "Просмотр и управление всеми пользователями",
+      "manageDrivers": "Управление водителями",
+      "manageDriversDesc": "Одобрение или приостановка водителей",
+      "manageTrips": "Управление поездками",
+      "manageTripsDesc": "Мониторинг всех поездок",
+      "session": "Сессия",
+      "signOut": "Выйти",
+      "signingOut": "Выход…",
+      "signOutDesc": "Завершить сессию администратора",
+      "confirmSignOut": "Вы уверены, что хотите выйти?"
+    },
+    "tariffs": {
+      "title": "Тарифы",
+      "active": "активных",
+      "inactive": "неактивных",
+      "new": "Новый",
+      "activeLabel": "Активен",
+      "inactiveLabel": "Неактивен",
+      "edit": "Изменить",
+      "activate": "Активировать",
+      "deactivate": "Деактивировать",
+      "base": "Базовый",
+      "perKm": "За км",
+      "perMin": "За мин",
+      "minPrice": "Мин цена",
+      "newTariff": "Новый тариф",
+      "editTariff": "Изменить тариф",
+      "code": "Код",
+      "codePlaceholder": "напр. economy",
+      "basePrice": "Базовая цена (₸)",
+      "basePricePlaceholder": "500.00",
+      "pricePerKm": "Цена за км (₸)",
+      "pricePerKmPlaceholder": "100.00",
+      "pricePerMin": "Цена за минуту (₸)",
+      "pricePerMinPlaceholder": "10.00",
+      "minimumPrice": "Минимальная цена (₸)",
+      "minimumPricePlaceholder": "500.00",
+      "cancel": "Отмена",
+      "save": "Сохранить",
+      "saving": "Сохранение…",
+      "noTariffs": "Тарифов пока нет",
+      "noTariffsDesc": "Нажмите \"+ Новый\" чтобы создать первый тариф",
+      "confirmActivate": "Активировать тариф",
+      "confirmDeactivate": "Деактивировать тариф",
+      "confirmActivateDesc": "Вы уверены, что хотите активировать",
+      "confirmDeactivateDesc": "Вы уверены, что хотите деактивировать"
+    },
+    "common": {
+      "customer": "Пассажир",
+      "driver": "Водитель",
+      "notSet": "Не задано",
+      "loading": "Загрузка..."
+    }
   }
 }

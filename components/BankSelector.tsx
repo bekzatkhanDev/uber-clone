@@ -1,5 +1,6 @@
 import React from 'react';
 import { Linking, Text, TouchableOpacity, View } from 'react-native';
+import { useI18n } from '@/i18n';
 
 // ─── Bank definitions (single source of truth) 
 
@@ -41,18 +42,110 @@ export type BankId = (typeof BANKS)[number]['id'];
 export const getBankById = (id: BankId | null) =>
   id ? BANKS.find((b) => b.id === id) ?? null : null;
 
+// Cash payment option
+export const CASH_PAYMENT = {
+  id: 'cash' as const,
+  nameKey: 'payment.methods.cash' as const,
+  shortName: 'Cash',
+  tagline: '',
+  bgColor: '#10B981',
+  textColor: '#ffffff',
+  initials: '$',
+};
+
+export type PaymentMethodId = BankId | 'cash';
+
 // ─── BankSelector ─────────────────────────────────────────────────────────────
 
 interface BankSelectorProps {
-  selectedBank: BankId | null;
-  onSelect: (id: BankId) => void;
+  selectedBank: PaymentMethodId | null;
+  onSelect: (id: PaymentMethodId) => void;
   /** Renders smaller cards — useful inside a profile list row */
   compact?: boolean;
 }
 
 const BankSelector = ({ selectedBank, onSelect, compact = false }: BankSelectorProps) => {
+  const { t } = useI18n();
+  
   return (
     <View>
+      {/* Cash payment option */}
+      <TouchableOpacity
+        onPress={() => onSelect('cash')}
+        activeOpacity={0.75}
+        style={{
+          flexDirection: 'row',
+          alignItems: 'center',
+          borderRadius: compact ? 10 : 12,
+          borderWidth: selectedBank === 'cash' ? 2 : 1,
+          borderColor: selectedBank === 'cash' ? CASH_PAYMENT.bgColor : '#e5e7eb',
+          backgroundColor: selectedBank === 'cash' ? `${CASH_PAYMENT.bgColor}0D` : '#ffffff',
+          padding: compact ? 10 : 12,
+          marginBottom: compact ? 8 : 10,
+        }}
+      >
+        {/* Logo badge */}
+        <View
+          style={{
+            width: compact ? 36 : 44,
+            height: compact ? 36 : 44,
+            borderRadius: compact ? 8 : 10,
+            backgroundColor: CASH_PAYMENT.bgColor,
+            alignItems: 'center',
+            justifyContent: 'center',
+            marginRight: 12,
+            shadowColor: CASH_PAYMENT.bgColor,
+            shadowOffset: { width: 0, height: 2 },
+            shadowOpacity: 0.3,
+            shadowRadius: 4,
+            elevation: 3,
+          }}
+        >
+          <Text
+            style={{
+              color: CASH_PAYMENT.textColor,
+              fontSize: compact ? 16 : 20,
+              fontWeight: '900',
+              letterSpacing: -0.5,
+            }}
+          >
+            {CASH_PAYMENT.initials}
+          </Text>
+        </View>
+
+        {/* Name */}
+        <View style={{ flex: 1 }}>
+          <Text style={{ fontSize: compact ? 14 : 15, fontWeight: '700', color: '#111827' }}>
+            {t.payment.methods.cash}
+          </Text>
+        </View>
+
+        {/* Radio */}
+        <View
+          style={{
+            width: 20,
+            height: 20,
+            borderRadius: 10,
+            borderWidth: 2,
+            borderColor: selectedBank === 'cash' ? CASH_PAYMENT.bgColor : '#d1d5db',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
+          {selectedBank === 'cash' && (
+            <View
+              style={{
+                width: 10,
+                height: 10,
+                borderRadius: 5,
+                backgroundColor: CASH_PAYMENT.bgColor,
+              }}
+            />
+          )}
+        </View>
+      </TouchableOpacity>
+
+      {/* Bank payment options */}
       {BANKS.map((bank) => {
         const isSelected = selectedBank === bank.id;
 

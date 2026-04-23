@@ -78,7 +78,7 @@ export default function LanguageSwitcher({ variant = 'light' }: Props) {
                   {languageNames[code]}
                 </Text>
                 {language === code && (
-                  <Text style={styles.checkmark}>✓</Text>
+                  <Text style={styles.checkmark}>✔</Text>
                 )}
               </TouchableOpacity>
             ))}

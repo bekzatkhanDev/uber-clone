@@ -58,7 +58,7 @@ const makeCircleIcon = (fill: string, stroke: string, size = 18) =>
 
 const makeCarIcon = (selected: boolean) =>
   L?.divIcon({
-    html: `<div style="font-size:22px;line-height:1;filter:${selected ? 'drop-shadow(0 0 4px #0286FF)' : 'none'}">🚗</div>`,
+    html: `<svg width="26" height="26" viewBox="0 0 24 24" fill="${selected ? '#0286FF' : '#6B7280'}" xmlns="http://www.w3.org/2000/svg"><path d="M18.92 6.01C18.72 5.42 18.16 5 17.5 5h-11c-.66 0-1.22.42-1.42 1.01L3 12v8c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h12v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-8l-2.08-5.99zM6.5 16c-.83 0-1.5-.67-1.5-1.5S5.67 13 6.5 13s1.5.67 1.5 1.5S7.33 16 6.5 16zm11 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zM5 11l1.5-4.5h11L19 11H5z"/></svg>`,
     className: '',
     iconSize: [26, 26],
     iconAnchor: [13, 13],
@@ -66,7 +66,7 @@ const makeCarIcon = (selected: boolean) =>
 
 const makeDestIcon = () =>
   L?.divIcon({
-    html: `<div style="font-size:26px;line-height:1">📍</div>`,
+    html: `<svg width="26" height="26" viewBox="0 0 24 24" fill="#EF4444" xmlns="http://www.w3.org/2000/svg"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 1 1 0-5 2.5 2.5 0 0 1 0 5z"/></svg>`,
     className: '',
     iconSize: [26, 26],
     iconAnchor: [13, 26],

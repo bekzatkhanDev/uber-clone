@@ -122,7 +122,7 @@ const RideCard = ({ ride }: { ride: Ride }) => {
             }}
           >
             <Text className="text-blue-600 font-JakartaSemiBold text-sm">
-              📤 Share Trip
+              Share Trip
             </Text>
           </View>
         </View>

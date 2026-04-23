@@ -190,7 +190,7 @@ const PhoneInput: React.FC<PhoneInputProps> = ({
             <View style={styles.modalHeader}>
               <Text style={styles.modalTitle}>Выберите страну</Text>
               <TouchableOpacity onPress={() => setShowCountryPicker(false)}>
-                <Text style={styles.closeButton}>✕</Text>
+                <Text style={styles.closeButton}>×</Text>
               </TouchableOpacity>
             </View>
             <FlatList

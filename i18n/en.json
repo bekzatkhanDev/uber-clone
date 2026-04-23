@@ -267,10 +267,122 @@
     "paidWithCash": "Paid with Cash",
     "backHome": "Back Home",
     "paymentMethod": "Payment Method",
-    "failed": "Payment failed"
+    "failed": "Payment failed",
+    "methods": {
+      "cash": "Cash",
+      "kaspi": "Kaspi Bank",
+      "halyk": "Halyk Bank",
+      "freedom": "Freedom Bank"
+    }
   },
   "currency": {
     "symbol": "$",
     "code": "USD"
+  },
+  "admin": {
+    "dashboard": {
+      "title": "Admin Dashboard",
+      "subtitle": "Platform overview",
+      "totalUsers": "Total Users",
+      "totalDrivers": "Total Drivers",
+      "onlineDrivers": "Online Drivers",
+      "tripsToday": "Trips Today",
+      "revenueToday": "Revenue Today",
+      "recentTrips": "Recent Trips",
+      "viewAll": "View All",
+      "noTrips": "No trips yet"
+    },
+    "drivers": {
+      "title": "Drivers",
+      "searchPlaceholder": "Search drivers…",
+      "search": "Search",
+      "all": "All",
+      "pending": "Pending",
+      "active": "Active",
+      "suspended": "Suspended",
+      "yearsExp": "yrs exp",
+      "online": "Online",
+      "noDriversFound": "No drivers found"
+    },
+    "trips": {
+      "title": "Trips",
+      "searchPlaceholder": "Search by name or phone…",
+      "search": "Search",
+      "all": "All",
+      "pending": "Pending",
+      "accepted": "Accepted",
+      "inProgress": "Active",
+      "completed": "Done",
+      "cancelled": "Cancelled",
+      "noTripsFound": "No trips found"
+    },
+    "users": {
+      "title": "Users",
+      "searchPlaceholder": "Search by name or phone…",
+      "search": "Search",
+      "joined": "Joined",
+      "noName": "No name",
+      "suspended": "Suspended",
+      "noUsersFound": "No users found"
+    },
+    "settings": {
+      "title": "Settings",
+      "quickAccess": "Quick Access",
+      "dashboard": "Dashboard",
+      "dashboardDesc": "Platform overview and stats",
+      "manageUsers": "Manage Users",
+      "manageUsersDesc": "View and manage all users",
+      "manageDrivers": "Manage Drivers",
+      "manageDriversDesc": "Approve or suspend drivers",
+      "manageTrips": "Manage Trips",
+      "manageTripsDesc": "Monitor all trips",
+      "session": "Session",
+      "signOut": "Sign Out",
+      "signingOut": "Signing out…",
+      "signOutDesc": "End your admin session",
+      "confirmSignOut": "Are you sure you want to sign out?"
+    },
+    "tariffs": {
+      "title": "Tariffs",
+      "active": "active",
+      "inactive": "inactive",
+      "new": "New",
+      "activeLabel": "Active",
+      "inactiveLabel": "Inactive",
+      "edit": "Edit",
+      "activate": "Activate",
+      "deactivate": "Deactivate",
+      "base": "Base",
+      "perKm": "Per km",
+      "perMin": "Per min",
+      "minPrice": "Min price",
+      "newTariff": "New Tariff",
+      "editTariff": "Edit Tariff",
+      "code": "Code",
+      "codePlaceholder": "e.g. economy",
+      "basePrice": "Base price (₸)",
+      "basePricePlaceholder": "500.00",
+      "pricePerKm": "Price per km (₸)",
+      "pricePerKmPlaceholder": "100.00",
+      "pricePerMin": "Price per minute (₸)",
+      "pricePerMinPlaceholder": "10.00",
+      "minimumPrice": "Minimum price (₸)",
+      "minimumPricePlaceholder": "500.00",
+      "cancel": "Cancel",
+      "save": "Save",
+      "saving": "Saving…",
+      "noTariffs": "No tariffs yet",
+      "noTariffsDesc": "Tap \"+ New\" to create your first tariff",
+      "confirmActivate": "Activate tariff",
+      "confirmDeactivate": "Deactivate tariff",
+      "confirmActivateDesc": "Are you sure you want to activate",
+      "confirmDeactivateDesc": "Are you sure you want to deactivate"
+    },
+    "common": {
+      "customer": "Customer",
+      "driver": "Driver",
+      "notSet": "Not set",
+      "loading": "Loading..."
+    }
   }
 }

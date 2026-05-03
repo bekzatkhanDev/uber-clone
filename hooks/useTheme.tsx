@@ -59,6 +59,12 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
       
       // Also set the data attribute for additional styling hooks
       rootElement.setAttribute('data-theme', colorScheme);
+      
+      // Update meta theme-color for browser UI
+      const themeColorMeta = document.querySelector('meta[name="theme-color"]');
+      if (themeColorMeta) {
+        themeColorMeta.setAttribute('content', colorScheme === 'dark' ? '#000000' : '#0CC25F');
+      }
     }
 
     // For React Native, we also need to handle the class name

@@ -10,12 +10,6 @@
   :root.dark {
     color-scheme: dark;
   }
-  
-  /* Dark mode background and text colors */
-  :root.dark {
-    --tw-bg-opacity: 1;
-    background-color: rgb(17 24 39 / var(--tw-bg-opacity));
-  }
 }
 
 @layer base {
@@ -45,6 +39,12 @@
     user-select: none;
     -webkit-user-select: none;
   }
+  
+  /* Dark mode base styles for web */
+  :root.dark body {
+    background-color: #000000;
+    color: #ffffff;
+  }
 }
 
 /* Leaflet map container needs explicit dimensions */
@@ -73,5 +73,33 @@
   }
   .tint-black {
     filter: brightness(0);
+  }
+}
+
+/* Dark mode utility classes for common patterns */
+@layer components {
+  /* Card backgrounds that adapt to theme */
+  .card-bg {
+    @apply bg-white dark:bg-zinc-900;
+  }
+  
+  /* Primary text color that adapts to theme */
+  .primary-text {
+    @apply text-black dark:text-white;
+  }
+  
+  /* Secondary text color that adapts to theme */
+  .secondary-text {
+    @apply text-gray-600 dark:text-gray-400;
+  }
+  
+  /* Input backgrounds that adapt to theme */
+  .input-bg {
+    @apply bg-neutral-100 dark:bg-zinc-800;
+  }
+  
+  /* Border colors that adapt to theme */
+  .theme-border {
+    @apply border-gray-200 dark:border-zinc-700;
   }
 }

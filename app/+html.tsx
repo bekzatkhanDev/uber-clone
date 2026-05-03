@@ -3,7 +3,7 @@ import { type PropsWithChildren } from 'react';
 
 export default function Root({ children }: PropsWithChildren) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <head>
         <meta charSet="utf-8" />
         <meta httpEquiv="X-UA-Compatible" content="IE=edge" />
@@ -13,7 +13,7 @@ export default function Root({ children }: PropsWithChildren) {
         <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
         <style dangerouslySetInnerHTML={{ __html: globalStyles }} />
       </head>
-      <body>{children}</body>
+      <body suppressHydrationWarning>{children}</body>
     </html>
   );
 }
@@ -30,6 +30,13 @@ const globalStyles = `
     background-color: #fff;
     -webkit-text-size-adjust: 100%;
     text-size-adjust: 100%;
+    transition: background-color 0.2s ease, color 0.2s ease;
+  }
+
+  /* Dark mode body background */
+  html.dark body {
+    background-color: #000000 !important;
+    color: #ffffff !important;
   }
 
   * {
@@ -44,7 +51,7 @@ const globalStyles = `
   ::-webkit-scrollbar-track { background: transparent; }
   ::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 2px; }
 
-  @media (prefers-color-scheme: dark) {
-    body { background-color: #000; }
+  html.dark ::-webkit-scrollbar-thumb {
+    background: #4b5563;
   }
 `;

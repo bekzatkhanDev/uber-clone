@@ -21,6 +21,7 @@ import { useLocationStore } from "@/store";
 import { useTranslation } from "@/i18n/I18nProvider";
 import { Language } from "@/i18n";
 import BankSelector, { BankId, getBankById } from "@/components/BankSelector";
+import ThemeToggle from "@/components/ThemeToggle";
 
 const Profile = () => {
   const { t, language, setLanguage } = useTranslation();
@@ -147,6 +148,15 @@ const Profile = () => {
             <Image source={icons.checkmark} style={{ width: 20, height: 20 }} resizeMode="contain" />
           )}
         </TouchableOpacity>
+      </View>
+
+      {/* Theme Toggle */}
+      <View className="bg-white rounded-xl p-5 mb-5">
+        <Text className="text-lg font-JakartaSemiBold mb-3">Appearance</Text>
+        <View className="flex flex-row items-center justify-between">
+          <Text className="text-gray-600">Toggle dark/light mode</Text>
+          <ThemeToggle variant="button" size="medium" />
+        </View>
       </View>
 
       {/* Настройки аккаунта */}

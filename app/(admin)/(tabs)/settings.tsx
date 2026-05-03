@@ -6,6 +6,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useLogout } from '@/hooks/useAuth';
 import { useAuthStore } from '@/store/authStore';
 import { useTranslation } from '@/i18n/I18nProvider';
+import ThemeToggle from '@/components/ThemeToggle';
 
 const SettingRow = ({
   emoji,
@@ -146,6 +147,49 @@ export default function AdminSettingsScreen() {
             onPress={handleLogout}
             danger
           />
+
+          {/* Appearance */}
+          <Text style={{ fontSize: 12, fontWeight: '700', color: '#94a3b8', letterSpacing: 0.8, marginTop: 16, marginBottom: 8, textTransform: 'uppercase' }}>
+            Appearance
+          </Text>
+          <View
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              backgroundColor: 'white',
+              borderRadius: 12,
+              padding: 16,
+              marginBottom: 8,
+              shadowColor: '#000',
+              shadowOffset: { width: 0, height: 1 },
+              shadowOpacity: 0.04,
+              shadowRadius: 3,
+              elevation: 1,
+            }}
+          >
+            <View
+              style={{
+                width: 44,
+                height: 44,
+                borderRadius: 22,
+                backgroundColor: '#f1f5f9',
+                alignItems: 'center',
+                justifyContent: 'center',
+                marginRight: 14,
+              }}
+            >
+              <Text style={{ fontSize: 20 }}>🌓</Text>
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={{ fontWeight: '600', fontSize: 15, color: '#0f172a' }}>
+                Theme Mode
+              </Text>
+              <Text style={{ fontSize: 12, color: '#94a3b8', marginTop: 2 }}>
+                Toggle dark/light mode
+              </Text>
+            </View>
+            <ThemeToggle variant="button" size="small" />
+          </View>
         </ScrollView>
       </View>
     </View>

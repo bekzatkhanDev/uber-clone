@@ -8,6 +8,7 @@ import { useDriverDashboard } from '@/hooks/useDriverDashboard';
 import { useLogout } from '@/hooks/useAuth';
 import { useAuthStore } from '@/store/authStore';
 import { useTranslation } from '@/i18n/I18nProvider';
+import ThemeToggle from '@/components/ThemeToggle';
 
 const DriverProfile = () => {
   const { t } = useTranslation();
@@ -119,6 +120,15 @@ const DriverProfile = () => {
             </View>
           ))
         )}
+      </View>
+
+      {/* Theme Toggle */}
+      <View className="bg-white rounded-2xl p-5 mb-4 shadow-sm">
+        <Text className="text-base font-JakartaSemiBold mb-3">Appearance</Text>
+        <View className="flex-row items-center justify-between">
+          <Text className="text-gray-500">Toggle dark/light mode</Text>
+          <ThemeToggle variant="button" size="medium" />
+        </View>
       </View>
 
       {/* Switch to passenger mode */}

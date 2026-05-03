@@ -14,11 +14,13 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useLocalSearchParams } from 'expo-router';
 import { usePublicTripData } from '@/hooks/useTripSharing';
 import { useTranslation } from '@/i18n/I18nProvider';
+import { useTheme } from '@/hooks/useTheme';
 
 const PublicTrackPage = () => {
   const insets = useSafeAreaInsets();
   const { t } = useTranslation();
   const { token } = useLocalSearchParams<{ token?: string }>();
+  const { isDark } = useTheme();
 
   const { tripData, isLoading, error, isExpired, refreshData } = usePublicTripData(
     token || null,
@@ -73,11 +75,11 @@ const PublicTrackPage = () => {
   if (isLoading && !tripData) {
     return (
       <View
-        className="flex-1 bg-white items-center justify-center"
+        className={`flex-1 items-center justify-center ${isDark ? 'bg-black' : 'bg-white'}`}
         style={{ paddingTop: insets.top, paddingBottom: insets.bottom }}
       >
         <ActivityIndicator size="large" color="#0CC25F" />
-        <Text className="mt-4 text-gray-500">{t.publicTrack.loadingTrip}</Text>
+        <Text className={`mt-4 ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>{t.publicTrack.loadingTrip}</Text>
       </View>
     );
   }
@@ -86,19 +88,19 @@ const PublicTrackPage = () => {
   if (error || isExpired || !tripData) {
     return (
       <View
-        className="flex-1 bg-white items-center justify-center p-6"
+        className={`flex-1 items-center justify-center p-6 ${isDark ? 'bg-black' : 'bg-white'}`}
         style={{ paddingTop: insets.top, paddingBottom: insets.bottom }}
       >
-        <Text className="text-2xl font-JakartaBold text-red-500 mb-2">
+        <Text className={`text-2xl font-JakartaBold mb-2 ${isDark ? 'text-red-400' : 'text-red-500'}`}>
           {isExpired ? t.publicTrack.linkExpired : t.publicTrack.tripNotFound}
         </Text>
-        <Text className="text-center text-gray-500 mb-6">
+        <Text className={`text-center mb-6 ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
           {isExpired
             ? t.publicTrack.linkExpiredDesc
             : error || t.publicTrack.unableToLoad}
         </Text>
-        <View className="bg-gray-100 rounded-xl p-4 w-full max-w-sm">
-          <Text className="text-sm text-gray-600 text-center">
+        <View className={`rounded-xl p-4 w-full max-w-sm ${isDark ? 'bg-zinc-800' : 'bg-gray-100'}`}>
+          <Text className={`text-sm text-center ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
             {t.publicTrack.shareLinkInfo}
           </Text>
         </View>
@@ -118,7 +120,7 @@ const PublicTrackPage = () => {
 
   return (
     <ScrollView
-      className="flex-1 bg-gray-50"
+      className={`flex-1 ${isDark ? 'bg-zinc-900' : 'bg-gray-50'}`}
       contentContainerStyle={{ paddingBottom: insets.bottom + 24 }}
     >
       {/* Status Banner */}
@@ -133,30 +135,30 @@ const PublicTrackPage = () => {
       </View>
 
       {/* Map placeholder */}
-      <View className="bg-gray-200 h-52 w-full items-center justify-center">
-        <Text className="text-gray-500 font-JakartaMedium text-base">{t.publicTrack.liveMapView}</Text>
-        <Text className="text-gray-400 text-sm mt-1">{t.publicTrack.updatesEvery10s}</Text>
+      <View className={`${isDark ? 'bg-zinc-800' : 'bg-gray-200'} h-52 w-full items-center justify-center`}>
+        <Text className={`${isDark ? 'text-gray-300' : 'text-gray-500'} font-JakartaMedium text-base`}>{t.publicTrack.liveMapView}</Text>
+        <Text className={`${isDark ? 'text-gray-400' : 'text-gray-400'} text-sm mt-1`}>{t.publicTrack.updatesEvery10s}</Text>
       </View>
 
       {/* Driver / vehicle card */}
       <View
-        className="bg-white mx-4 rounded-2xl p-5 shadow-sm border border-gray-100"
+        className={`${isDark ? 'bg-zinc-800 border-zinc-700' : 'bg-white border-gray-100'} mx-4 rounded-2xl p-5 shadow-sm`}
         style={{ marginTop: -24, zIndex: 10, position: 'relative' }}
       >
         {tripData.driver ? (
           <>
-            <Text className="text-xs text-gray-400 mb-1 font-JakartaMedium uppercase tracking-wide">
+            <Text className={`text-xs mb-1 font-JakartaMedium uppercase tracking-wide ${isDark ? 'text-gray-400' : 'text-gray-400'}`}>
               {t.publicTrack.yourDriver}
             </Text>
             <View className="flex-row items-center justify-between">
               <View className="flex-1">
-                <Text className="text-xl font-JakartaBold">{driverName}</Text>
+                <Text className={`text-xl font-JakartaBold ${isDark ? 'text-white' : 'text-black'}`}>{driverName}</Text>
                 {vehicleLabel && (
-                  <Text className="text-gray-500 mt-0.5">{vehicleLabel}</Text>
+                  <Text className={`${isDark ? 'text-gray-300' : 'text-gray-500'} mt-0.5`}>{vehicleLabel}</Text>
                 )}
                 {tripData.car?.plate_number && (
-                  <View className="bg-gray-100 rounded-lg px-3 py-1 mt-2 self-start">
-                    <Text className="text-gray-800 font-JakartaSemiBold text-sm">
+                  <View className={`${isDark ? 'bg-zinc-700' : 'bg-gray-100'} rounded-lg px-3 py-1 mt-2 self-start`}>
+                    <Text className={`${isDark ? 'text-gray-100' : 'text-gray-800'} font-JakartaSemiBold text-sm`}>
                       {tripData.car.plate_number}
                     </Text>
                   </View>
@@ -175,21 +177,21 @@ const PublicTrackPage = () => {
         ) : (
           <View className="items-center py-4">
             <ActivityIndicator size="small" color="#0CC25F" />
-            <Text className="text-gray-500 mt-2">{t.publicTrack.waitingForDriver}</Text>
+            <Text className={`${isDark ? 'text-gray-300' : 'text-gray-500'} mt-2`}>{t.publicTrack.waitingForDriver}</Text>
           </View>
         )}
       </View>
 
       {/* Trip Locations */}
-      <View className="bg-white mx-4 mt-3 rounded-2xl p-5 border border-gray-100">
-        <Text className="text-xs text-gray-400 mb-3 font-JakartaMedium uppercase tracking-wide">
+      <View className={`${isDark ? 'bg-zinc-800 border-zinc-700' : 'bg-white border-gray-100'} mx-4 mt-3 rounded-2xl p-5`}>
+        <Text className={`text-xs mb-3 font-JakartaMedium uppercase tracking-wide ${isDark ? 'text-gray-400' : 'text-gray-400'}`}>
           {t.publicTrack.route}
         </Text>
         <View className="flex-row items-start mb-4">
           <View className="w-3 h-3 rounded-full bg-green-500 mt-1 mr-3 flex-shrink-0" />
           <View className="flex-1">
-            <Text className="text-xs text-gray-400">{t.publicTrack.pickup}</Text>
-            <Text className="text-sm font-JakartaMedium text-gray-800">
+            <Text className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-400'}`}>{t.publicTrack.pickup}</Text>
+            <Text className={`text-sm font-JakartaMedium ${isDark ? 'text-gray-200' : 'text-gray-800'}`}>
               {formatCoords(tripData.start_lat, tripData.start_lng)}
             </Text>
           </View>
@@ -197,16 +199,16 @@ const PublicTrackPage = () => {
         <View className="flex-row items-start">
           <View className="w-3 h-3 rounded-full bg-red-500 mt-1 mr-3 flex-shrink-0" />
           <View className="flex-1">
-            <Text className="text-xs text-gray-400">{t.publicTrack.dropOff}</Text>
-            <Text className="text-sm font-JakartaMedium text-gray-800">
+            <Text className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-400'}`}>{t.publicTrack.dropOff}</Text>
+            <Text className={`text-sm font-JakartaMedium ${isDark ? 'text-gray-200' : 'text-gray-800'}`}>
               {formatCoords(tripData.end_lat, tripData.end_lng)}
             </Text>
           </View>
         </View>
         {tripData.tariff && (
-          <View className="border-t border-gray-100 mt-4 pt-3">
-            <Text className="text-xs text-gray-400">{t.publicTrack.tariff}</Text>
-            <Text className="text-sm font-JakartaMedium text-gray-700 capitalize">
+          <View className={`border-t mt-4 pt-3 ${isDark ? 'border-zinc-700' : 'border-gray-100'}`}>
+            <Text className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-400'}`}>{t.publicTrack.tariff}</Text>
+            <Text className={`text-sm font-JakartaMedium ${isDark ? 'text-gray-300' : 'text-gray-700'} capitalize`}>
               {tripData.tariff.code}
             </Text>
           </View>
@@ -214,9 +216,9 @@ const PublicTrackPage = () => {
       </View>
 
       {/* Safety notice */}
-      <View className="mx-4 mt-3 bg-yellow-50 rounded-xl p-4 border border-yellow-200">
-        <Text className="text-yellow-800 font-JakartaSemiBold mb-1">{t.publicTrack.aboutPage}</Text>
-        <Text className="text-yellow-700 text-sm">
+      <View className={`mx-4 mt-3 rounded-xl p-4 ${isDark ? 'bg-yellow-900/30 border-yellow-700' : 'bg-yellow-50 border-yellow-200'} border`}>
+        <Text className={`${isDark ? 'text-yellow-300' : 'text-yellow-800'} font-JakartaSemiBold mb-1`}>{t.publicTrack.aboutPage}</Text>
+        <Text className={`${isDark ? 'text-yellow-200' : 'text-yellow-700'} text-sm`}>
           {t.publicTrack.aboutPageDesc}
         </Text>
       </View>

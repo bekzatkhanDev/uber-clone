@@ -1,32 +1,32 @@
 // Edit Profile Screen - General Profile Update (Customers & Drivers)
 import React, { useState, useRef } from 'react';
-import {
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  Image,
-  ScrollView,
-  ActivityIndicator,
-  Alert,
-} from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, Image, ScrollView, ActivityIndicator, Alert } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
-import { router, useLocalSearchParams } from 'expo-router';
+import { router } from 'expo-router';
 
 import { useCurrentUser, useUpdateProfile, UserProfileData } from '@/hooks/useUser';
 import { useTranslation } from '@/i18n/I18nProvider';
+import { useTheme } from '@/hooks/useTheme';
 
 const EditProfile = () => {
   const { t } = useTranslation();
+  const { isDark } = useTheme();
   const { data: currentUser, isLoading: userLoading } = useCurrentUser();
   const { mutate: updateProfile, isPending: isUpdating } = useUpdateProfile();
-  
+
   const [firstName, setFirstName] = useState(currentUser?.first_name || '');
   const [lastName, setLastName] = useState(currentUser?.last_name || '');
   const [phone, setPhone] = useState(currentUser?.phone || '');
   const [profilePhoto, setProfilePhoto] = useState<string | null>(currentUser?.profile_photo || null);
   const [error, setError] = useState<string | null>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const bg = isDark ? '#0f172a' : '#f5f5f5';
+  const cardBg = isDark ? '#1e293b' : '#ffffff';
+  const textPrimary = isDark ? '#f1f5f9' : '#111827';
+  const textSecondary = isDark ? '#94a3b8' : '#6b7280';
+  const inputBorder = isDark ? '#334155' : '#e5e7eb';
+  const inputBg = isDark ? '#0f172a' : '#ffffff';
+  const avatarBg = isDark ? '#334155' : '#e5e7eb';
 
   const handlePickImage = async () => {
     try {
@@ -39,10 +39,7 @@ const EditProfile = () => {
 
       if (!result.canceled && result.assets[0]) {
         const asset = result.assets[0];
-        // For web, we'll need to fetch the blob
-        if (asset.uri) {
-          setProfilePhoto(asset.uri);
-        }
+        if (asset.uri) setProfilePhoto(asset.uri);
       }
     } catch (err) {
       console.error('Error picking image:', err);
@@ -53,7 +50,6 @@ const EditProfile = () => {
   const handleSave = async () => {
     setError(null);
 
-    // Validation
     if (!firstName.trim() || !lastName.trim()) {
       setError(t.profile.nameRequired);
       return;
@@ -65,11 +61,7 @@ const EditProfile = () => {
       phone: phone.trim(),
     };
 
-    // If profile photo changed and it's a local file, we need to handle it differently on web
-    // For now, we'll send the URI string if it's different from current
     if (profilePhoto && profilePhoto !== currentUser?.profile_photo) {
-      // On web, you might need to convert the URI to a File/Blob
-      // This is a simplified version - in production you'd handle the file conversion properly
       updateData.profile_photo = profilePhoto;
     }
 
@@ -88,119 +80,88 @@ const EditProfile = () => {
 
   if (userLoading) {
     return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-        <ActivityIndicator size="large" color="#000" />
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: bg }}>
+        <ActivityIndicator size="large" color="#0CC25F" />
       </View>
     );
   }
 
-  return (
-    <ScrollView 
-      style={{ flex: 1, backgroundColor: '#f5f5f5' }}
-      contentContainerStyle={{ padding: 20 }}
-    >
-      <Text className="text-2xl font-JakartaBold mb-6">{t.profile.editProfile}</Text>
+  const Field = ({ label, value, onChange, keyboardType = 'default', autoCapitalize = 'sentences' }: {
+    label: string; value: string; onChange: (v: string) => void;
+    keyboardType?: 'default' | 'phone-pad'; autoCapitalize?: 'none' | 'sentences' | 'words';
+  }) => (
+    <View style={{ backgroundColor: cardBg, borderRadius: 12, padding: 16, marginBottom: 12 }}>
+      <Text style={{ fontSize: 13, fontWeight: '500', color: textSecondary, marginBottom: 8 }}>{label}</Text>
+      <TextInput
+        value={value}
+        onChangeText={onChange}
+        placeholder={label}
+        placeholderTextColor={isDark ? '#475569' : '#94a3b8'}
+        keyboardType={keyboardType}
+        autoCapitalize={autoCapitalize}
+        style={{ borderWidth: 1, borderColor: inputBorder, borderRadius: 8, paddingHorizontal: 14, paddingVertical: 10, fontSize: 15, color: textPrimary, backgroundColor: inputBg }}
+      />
+    </View>
+  );
 
-      {/* Profile Photo */}
-      <View style={{ alignItems: 'center', marginBottom: 30 }}>
-        <TouchableOpacity onPress={handlePickImage}>
-          <View className="w-32 h-32 rounded-full bg-gray-200 justify-center items-center overflow-hidden">
+  return (
+    <ScrollView style={{ flex: 1, backgroundColor: bg }} contentContainerStyle={{ padding: 20 }}>
+      <Text style={{ fontSize: 24, fontWeight: '700', color: textPrimary, marginBottom: 24 }}>
+        {t.profile.editProfile}
+      </Text>
+
+      <View style={{ alignItems: 'center', marginBottom: 28 }}>
+        <TouchableOpacity onPress={handlePickImage} style={{ position: 'relative' }}>
+          <View style={{ width: 128, height: 128, borderRadius: 64, backgroundColor: avatarBg, justifyContent: 'center', alignItems: 'center', overflow: 'hidden' }}>
             {profilePhoto ? (
-              <Image
-                source={{ uri: profilePhoto }}
-                style={{ width: 128, height: 128 }}
-                resizeMode="cover"
-              />
+              <Image source={{ uri: profilePhoto }} style={{ width: 128, height: 128 }} resizeMode="cover" />
             ) : (
-              <Text className="text-4xl font-JakartaBold">
+              <Text style={{ fontSize: 36, fontWeight: '700', color: textPrimary }}>
                 {firstName?.[0]}{lastName?.[0]}
               </Text>
             )}
           </View>
-          <View className="absolute bottom-0 right-0 bg-blue-500 w-10 h-10 rounded-full justify-center items-center">
-            <Text className="text-white text-xl">📷</Text>
+          <View style={{ position: 'absolute', bottom: 0, right: 0, backgroundColor: '#3b82f6', width: 40, height: 40, borderRadius: 20, justifyContent: 'center', alignItems: 'center' }}>
+            <Text style={{ fontSize: 18 }}>📷</Text>
           </View>
         </TouchableOpacity>
-        <Text className="text-gray-500 mt-3">{t.profile.changePhoto}</Text>
+        <Text style={{ color: textSecondary, marginTop: 10, fontSize: 13 }}>{t.profile.changePhoto}</Text>
       </View>
 
-      {/* Error Message */}
       {error && (
-        <View className="bg-red-50 border border-red-200 rounded-xl p-4 mb-5">
-          <Text className="text-red-600">{error}</Text>
+        <View style={{ backgroundColor: isDark ? '#450a0a' : '#fef2f2', borderWidth: 1, borderColor: isDark ? '#7f1d1d' : '#fecaca', borderRadius: 12, padding: 14, marginBottom: 16 }}>
+          <Text style={{ color: isDark ? '#f87171' : '#dc2626' }}>{error}</Text>
         </View>
       )}
 
-      {/* Form Fields */}
-      <View className="bg-white rounded-xl p-5 mb-4">
-        <Text className="text-sm font-JakartaMedium text-gray-500 mb-2">
-          {t.profile.firstName}
-        </Text>
-        <TextInput
-          className="border border-gray-200 rounded-lg px-4 py-3 text-base"
-          value={firstName}
-          onChangeText={setFirstName}
-          placeholder={t.profile.firstName}
-          autoCapitalize="words"
-        />
-      </View>
+      <Field label={t.profile.firstName} value={firstName} onChange={setFirstName} autoCapitalize="words" />
+      <Field label={t.profile.lastName} value={lastName} onChange={setLastName} autoCapitalize="words" />
+      <Field label={t.profile.phone} value={phone} onChange={setPhone} keyboardType="phone-pad" autoCapitalize="none" />
 
-      <View className="bg-white rounded-xl p-5 mb-4">
-        <Text className="text-sm font-JakartaMedium text-gray-500 mb-2">
-          {t.profile.lastName}
-        </Text>
-        <TextInput
-          className="border border-gray-200 rounded-lg px-4 py-3 text-base"
-          value={lastName}
-          onChangeText={setLastName}
-          placeholder={t.profile.lastName}
-          autoCapitalize="words"
-        />
-      </View>
-
-      <View className="bg-white rounded-xl p-5 mb-4">
-        <Text className="text-sm font-JakartaMedium text-gray-500 mb-2">
-          {t.profile.phone}
-        </Text>
-        <TextInput
-          className="border border-gray-200 rounded-lg px-4 py-3 text-base"
-          value={phone}
-          onChangeText={setPhone}
-          placeholder={t.profile.phone}
-          keyboardType="phone-pad"
-          autoCapitalize="none"
-        />
-      </View>
-
-      {/* Note about read-only fields */}
-      <View className="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-6">
-        <Text className="text-blue-700 text-sm">
+      <View style={{ backgroundColor: isDark ? '#1e3a5f' : '#eff6ff', borderWidth: 1, borderColor: isDark ? '#1e40af' : '#bfdbfe', borderRadius: 12, padding: 14, marginBottom: 20 }}>
+        <Text style={{ color: isDark ? '#60a5fa' : '#1d4ed8', fontSize: 13 }}>
           ℹ️ {t.profile.emailReadOnly}
         </Text>
       </View>
 
-      {/* Save Button */}
       <TouchableOpacity
         onPress={handleSave}
         disabled={isUpdating}
-        className="bg-[#0CC25F] rounded-xl p-4 items-center"
+        style={{ backgroundColor: '#0CC25F', borderRadius: 12, padding: 16, alignItems: 'center', marginBottom: 10 }}
       >
         {isUpdating ? (
           <ActivityIndicator size="small" color="#fff" />
         ) : (
-          <Text className="text-white font-JakartaSemiBold text-lg">
-            {t.common.save}
-          </Text>
+          <Text style={{ color: 'white', fontWeight: '700', fontSize: 16 }}>{t.common.save}</Text>
         )}
       </TouchableOpacity>
 
-      {/* Cancel Button */}
       <TouchableOpacity
         onPress={() => router.back()}
         disabled={isUpdating}
-        className="bg-gray-200 rounded-xl p-4 items-center mt-3"
+        style={{ backgroundColor: isDark ? '#334155' : '#e5e7eb', borderRadius: 12, padding: 16, alignItems: 'center' }}
       >
-        <Text className="text-gray-700 font-JakartaSemiBold text-lg">
+        <Text style={{ color: isDark ? '#94a3b8' : '#374151', fontWeight: '600', fontSize: 16 }}>
           {t.common.cancel}
         </Text>
       </TouchableOpacity>

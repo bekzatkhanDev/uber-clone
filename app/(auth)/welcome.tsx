@@ -7,9 +7,11 @@ import Swiper from "react-native-swiper";
 import CustomButton from "@/components/CustomButton";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
 import { useTranslation } from "@/i18n/I18nProvider";
+import { useTheme } from "@/hooks/useTheme";
 
 const Home = () => {
   const { t } = useTranslation();
+  const { isDark } = useTheme();
   const insets = useSafeAreaInsets();
   const swiperRef = useRef<Swiper>(null);
   const [activeIndex, setActiveIndex] = useState(0);
@@ -23,29 +25,29 @@ const Home = () => {
   ];
 
   const renderSlide = ({ item }: { item: typeof onboardingSlides[0] }) => (
-    <View className="flex items-center justify-center p-5">
-      <Image
-        source={item.image}
-        className="w-full h-[300px]"
-        resizeMode="contain"
-      />
-      <View className="flex flex-row items-center justify-center w-full mt-10">
-        <Text className="text-black text-3xl font-bold mx-10 text-center">
+    <View style={{ alignItems: 'center', justifyContent: 'center', padding: 20 }}>
+      <Image source={item.image} style={{ width: '100%', height: 300 }} resizeMode="contain" />
+      <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', width: '100%', marginTop: 40 }}>
+        <Text style={{ color: isDark ? '#f1f5f9' : '#000000', fontSize: 28, fontWeight: 'bold', marginHorizontal: 40, textAlign: 'center' }}>
           {item.title}
         </Text>
       </View>
-      <Text className="text-md font-JakartaSemiBold text-center text-[#858585] mx-10 mt-3">
+      <Text style={{ fontFamily: 'Jakarta-SemiBold', textAlign: 'center', color: isDark ? '#94a3b8' : '#858585', marginHorizontal: 40, marginTop: 12 }}>
         {item.description}
       </Text>
     </View>
   );
 
+  const bg = isDark ? '#0f172a' : '#ffffff';
+  const textPrimary = isDark ? '#f1f5f9' : '#000000';
+  const textSecondary = isDark ? '#94a3b8' : '#858585';
+
   return (
-    <View style={{ flex: 1, alignItems: 'center', justifyContent: 'space-between', backgroundColor: 'white', paddingTop: insets.top, paddingBottom: insets.bottom }}>
-      <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 20, paddingTop: 12 }}>
-        <LanguageSwitcher variant="dark" />
+    <View style={{ flex: 1, alignItems: 'center', justifyContent: 'space-between', backgroundColor: bg, paddingTop: insets.top, paddingBottom: insets.bottom }}>
+      <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 20, paddingTop: 12, width: '100%' }}>
+        <LanguageSwitcher variant={isDark ? 'light' : 'dark'} />
         <TouchableOpacity onPress={() => router.push("/(auth)/sign-in")}>
-          <Text className="text-black text-md font-JakartaBold">{t.common.skip}</Text>
+          <Text style={{ color: textPrimary, fontSize: 16, fontFamily: 'Jakarta-Bold' }}>{t.common.skip}</Text>
         </TouchableOpacity>
       </View>
 

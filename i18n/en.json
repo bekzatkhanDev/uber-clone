@@ -405,6 +405,28 @@
     "error": "Error",
     "helpText": "The recipient will see your driver's location, ETA, and trip status. No login required for them to view."
   },
+  "review": {
+    "rateYourRide": "Rate Your Ride",
+    "howWasRideWith": "How was your ride with",
+    "terrible": "Terrible",
+    "bad": "Bad",
+    "okay": "Okay",
+    "good": "Good",
+    "excellent": "Excellent!",
+    "commentPlaceholder": "Share your experience (optional)...",
+    "submit": "Submit Review",
+    "rateRide": "Rate Ride",
+    "yourRating": "Your Rating",
+    "reviewSubmitted": "Review submitted!",
+    "alreadyReviewed": "You've already rated this ride",
+    "noReview": "Not rated yet",
+    "dateLabel": "Date",
+    "driverLabel": "Driver",
+    "distanceLabel": "Distance",
+    "priceLabel": "Price",
+    "statusLabel": "Status",
+    "shareTrip": "Share"
+  },
   "publicTrack": {
     "loadingTrip": "Loading trip details…",
     "linkExpired": "Link Expired",

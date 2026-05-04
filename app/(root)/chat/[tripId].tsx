@@ -5,24 +5,30 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useTranslation } from '@/i18n/I18nProvider'; 
+import { useTranslation } from '@/i18n/I18nProvider';
 import {
-  useChatRoomStatus,
-  useChatMessages,
-  useChatWebSocket,
-  useSendMessage,
-  ChatMessage,
+  useChatRoomStatus, useChatMessages, useChatWebSocket, useSendMessage, ChatMessage,
 } from '@/hooks/useChat';
 import { getCurrentUserId } from '@/hooks/useAuth';
+import { useTheme } from '@/hooks/useTheme';
 
 const ChatRoom = () => {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const { tripId } = useLocalSearchParams<{ tripId: string }>();
   const { t } = useTranslation();
+  const { isDark } = useTheme();
   const [messageText, setMessageText] = useState('');
   const [myUserId, setMyUserId] = useState<string | null>(null);
   const scrollViewRef = useRef<ScrollView>(null);
+
+  const bg = isDark ? '#0f172a' : '#ffffff';
+  const headerBg = isDark ? '#1e293b' : '#ffffff';
+  const borderColor = isDark ? '#1e293b' : '#f3f4f6';
+  const textPrimary = isDark ? '#f1f5f9' : '#111827';
+  const textSecondary = isDark ? '#94a3b8' : '#6b7280';
+  const inputBg = isDark ? '#1e293b' : '#f3f4f6';
+  const inputText = isDark ? '#f1f5f9' : '#111827';
 
   useEffect(() => {
     getCurrentUserId().then(setMyUserId);
@@ -34,18 +40,8 @@ const ChatRoom = () => {
     addWsMessage(msg);
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const { isConnected, isConnecting, sendMessage: wsSend } = useChatWebSocket(
-    tripId,
-    handleWsMessage,
-    hasDriver,
-  );
-
-  const { messages, isLoading: loadingHistory, addWsMessage } = useChatMessages(
-    tripId,
-    hasDriver,
-    isConnected,
-  );
-
+  const { isConnected, isConnecting, sendMessage: wsSend } = useChatWebSocket(tripId, handleWsMessage, hasDriver);
+  const { messages, isLoading: loadingHistory, addWsMessage } = useChatMessages(tripId, hasDriver, isConnected);
   const { send: restSend, isPending: isSending } = useSendMessage(tripId);
 
   useEffect(() => {
@@ -58,7 +54,6 @@ const ChatRoom = () => {
     const text = messageText.trim();
     if (!text || !hasDriver) return;
     setMessageText('');
-
     const sentViaWs = wsSend(text);
     if (!sentViaWs) {
       const saved = await restSend(text);
@@ -77,88 +72,77 @@ const ChatRoom = () => {
   const formatTime = (iso: string) =>
     new Date(iso).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
-  // ── Loading ──
+  const Header = () => (
+    <View style={{ paddingHorizontal: 20, paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: borderColor, backgroundColor: headerBg, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+      <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}>
+        <TouchableOpacity onPress={() => router.back()} style={{ marginRight: 12, padding: 4 }}>
+          <Text style={{ color: '#0286FF', fontFamily: 'Jakarta-SemiBold', fontSize: 15 }}>‹ {t.common.back}</Text>
+        </TouchableOpacity>
+        <View style={{ flex: 1 }}>
+          <Text style={{ fontSize: 20, fontFamily: 'Jakarta-Bold', color: textPrimary }}>{t.chat.tripChat}</Text>
+          {isConnected !== undefined && (
+            <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 2 }}>
+              <View style={{ width: 8, height: 8, borderRadius: 4, marginRight: 6, backgroundColor: isConnected ? '#22c55e' : isConnecting ? '#facc15' : '#9ca3af' }} />
+              <Text style={{ fontSize: 11, color: textSecondary }}>
+                {isConnected ? t.chat.live : isConnecting ? t.chat.connecting : t.chat.polling}
+              </Text>
+            </View>
+          )}
+        </View>
+      </View>
+    </View>
+  );
+
   if (checkingRoom || loadingHistory) {
     return (
-      <View className="flex-1 bg-white" style={{ paddingTop: insets.top }}>
-        <View className="px-5 py-3 border-b border-gray-100 flex-row items-center">
-          <TouchableOpacity onPress={() => router.back()} className="mr-3 p-1">
-            <Text className="text-primary-500 font-JakartaSemiBold text-base">‹ {t.common.back}</Text>
-          </TouchableOpacity>
-          <Text className="text-xl font-JakartaBold">{t.chat.tripChat}</Text>
-        </View>
-        <View className="flex-1 items-center justify-center" style={{ paddingBottom: insets.bottom }}>
+      <View style={{ flex: 1, backgroundColor: bg, paddingTop: insets.top }}>
+        <Header />
+        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', paddingBottom: insets.bottom }}>
           <ActivityIndicator size="large" color="#0CC25F" />
-          <Text className="mt-4 text-gray-500">{t.chat.loadingChat}</Text>
+          <Text style={{ marginTop: 16, color: textSecondary }}>{t.chat.loadingChat}</Text>
         </View>
       </View>
     );
   }
 
-  // ── No chat room (driver not assigned yet) ──
   if (!hasDriver) {
     return (
-      <View className="flex-1 bg-white" style={{ paddingTop: insets.top }}>
-        <View className="px-5 py-3 border-b border-gray-100 flex-row items-center">
-          <TouchableOpacity onPress={() => router.back()} className="mr-3 p-1">
-            <Text className="text-primary-500 font-JakartaSemiBold text-base">‹ {t.common.back}</Text>
-          </TouchableOpacity>
-          <Text className="text-xl font-JakartaBold">{t.chat.tripChat}</Text>
-        </View>
-        <View className="flex-1 items-center justify-center p-6" style={{ paddingBottom: insets.bottom }}>
+      <View style={{ flex: 1, backgroundColor: bg, paddingTop: insets.top }}>
+        <Header />
+        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', padding: 24, paddingBottom: insets.bottom }}>
           <ActivityIndicator size="large" color="#0CC25F" style={{ marginBottom: 16 }} />
-          <Text className="text-xl font-JakartaBold text-gray-700 mb-2 text-center">
+          <Text style={{ fontSize: 20, fontFamily: 'Jakarta-Bold', color: textPrimary, marginBottom: 8, textAlign: 'center' }}>
             {t.chat.waitingForDriver}
           </Text>
-          <Text className="text-center text-gray-500">
+          <Text style={{ textAlign: 'center', color: textSecondary }}>
             {t.chat.chatOpensWhenAccepted}
           </Text>
           {roomError && (
-            <Text className="text-red-400 text-sm text-center mt-3">{roomError}</Text>
+            <Text style={{ color: '#f87171', fontSize: 13, textAlign: 'center', marginTop: 12 }}>{roomError}</Text>
           )}
         </View>
       </View>
     );
   }
 
-  // ── Chat UI ──
   return (
     <KeyboardAvoidingView
-      className="flex-1 bg-white"
+      style={{ flex: 1, backgroundColor: bg, paddingTop: insets.top }}
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-      style={{ paddingTop: insets.top }}
     >
-      {/* Header */}
-      <View className="px-5 py-3 border-b border-gray-100 bg-white flex-row items-center justify-between">
-        <View className="flex-row items-center flex-1">
-          <TouchableOpacity onPress={() => router.back()} className="mr-3 p-1">
-            <Text className="text-primary-500 font-JakartaSemiBold text-base">‹ {t.common.back}</Text>
-          </TouchableOpacity>
-          <View className="flex-1">
-            <Text className="text-xl font-JakartaBold">{t.chat.tripChat}</Text>
-            <View className="flex-row items-center mt-0.5">
-              <View className={`w-2 h-2 rounded-full mr-2 ${
-                isConnected ? 'bg-green-500' : isConnecting ? 'bg-yellow-400' : 'bg-gray-400'
-              }`} />
-              <Text className="text-xs text-gray-400">
-                {isConnected ? t.chat.live : isConnecting ? t.chat.connecting : t.chat.polling}
-              </Text>
-            </View>
-          </View>
-        </View>
-      </View>
+      <Header />
 
       {/* Messages */}
       <ScrollView
         ref={scrollViewRef}
-        className="flex-1 px-4 py-3"
+        style={{ flex: 1, paddingHorizontal: 16, paddingTop: 12 }}
         contentContainerStyle={{ flexGrow: 1, paddingBottom: insets.bottom + 8 }}
         showsVerticalScrollIndicator={false}
       >
         {messages.length === 0 ? (
-          <View className="flex-1 items-center justify-center py-20">
-            <Text className="text-4xl mb-3">💬</Text>
-            <Text className="text-gray-400 text-center font-Jakarta">
+          <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', paddingVertical: 80 }}>
+            <Text style={{ fontSize: 40, marginBottom: 12 }}>💬</Text>
+            <Text style={{ color: textSecondary, textAlign: 'center', fontFamily: 'Jakarta' }}>
               {t.chat.noMessagesYet}
             </Text>
           </View>
@@ -166,19 +150,23 @@ const ChatRoom = () => {
           messages.map((msg) => {
             const mine = isMyMessage(msg);
             return (
-              <View key={msg.id} className={`flex mb-3 ${mine ? 'items-end' : 'items-start'}`}>
+              <View key={msg.id} style={{ flexDirection: 'column', marginBottom: 12, alignItems: mine ? 'flex-end' : 'flex-start' }}>
                 {!mine && (
-                  <Text className="text-xs text-gray-400 mb-1 ml-1 font-Jakarta">
+                  <Text style={{ fontSize: 11, color: textSecondary, marginBottom: 4, marginLeft: 4, fontFamily: 'Jakarta' }}>
                     {msg.sender.first_name || msg.sender.phone}
                   </Text>
                 )}
-                <View className={`max-w-[78%] px-4 py-2 rounded-2xl ${
-                  mine ? 'bg-[#0CC25F] rounded-br-sm' : 'bg-gray-100 rounded-bl-sm'
-                }`}>
-                  <Text className={`text-base ${mine ? 'text-white' : 'text-gray-800'}`}>
+                <View style={{
+                  maxWidth: '78%', paddingHorizontal: 16, paddingVertical: 10,
+                  borderRadius: 18,
+                  borderBottomRightRadius: mine ? 4 : 18,
+                  borderBottomLeftRadius: mine ? 18 : 4,
+                  backgroundColor: mine ? '#0CC25F' : (isDark ? '#1e293b' : '#f3f4f6'),
+                }}>
+                  <Text style={{ fontSize: 15, color: mine ? '#ffffff' : textPrimary }}>
                     {msg.text}
                   </Text>
-                  <Text className={`text-xs mt-1 ${mine ? 'text-green-100' : 'text-gray-400'}`}>
+                  <Text style={{ fontSize: 11, marginTop: 4, color: mine ? 'rgba(255,255,255,0.7)' : textSecondary }}>
                     {formatTime(msg.created_at)}
                   </Text>
                 </View>
@@ -188,15 +176,23 @@ const ChatRoom = () => {
         )}
       </ScrollView>
 
-      {/* Input */}
-      <View
-        className="px-4 py-3 border-t border-gray-100 bg-white flex-row items-end gap-3"
-        style={{ paddingBottom: insets.bottom + 12 }}
-      >
+      {/* Input bar */}
+      <View style={{
+        paddingHorizontal: 16, paddingVertical: 12,
+        borderTopWidth: 1, borderTopColor: borderColor,
+        backgroundColor: headerBg,
+        flexDirection: 'row', alignItems: 'flex-end', gap: 12,
+        paddingBottom: insets.bottom + 12,
+      }}>
         <TextInput
-          className="flex-1 bg-gray-100 rounded-2xl px-4 py-3 text-base"
+          style={{
+            flex: 1, backgroundColor: inputBg, borderRadius: 20,
+            paddingHorizontal: 16, paddingVertical: 12,
+            fontSize: 15, color: inputText,
+            maxHeight: 120,
+          }}
           placeholder={t.chat.typeMessage}
-          placeholderTextColor="#9ca3af"
+          placeholderTextColor={isDark ? '#475569' : '#9ca3af'}
           value={messageText}
           onChangeText={setMessageText}
           multiline
@@ -207,16 +203,17 @@ const ChatRoom = () => {
           blurOnSubmit={false}
         />
         <TouchableOpacity
-          className={`w-12 h-12 rounded-full items-center justify-center ${
-            messageText.trim() && !isSending ? 'bg-[#0CC25F]' : 'bg-gray-200'
-          }`}
+          style={{
+            width: 48, height: 48, borderRadius: 24, alignItems: 'center', justifyContent: 'center',
+            backgroundColor: messageText.trim() && !isSending ? '#0CC25F' : (isDark ? '#1e293b' : '#e5e7eb'),
+          }}
           onPress={handleSend}
           disabled={!messageText.trim() || isSending}
         >
           {isSending ? (
-            <ActivityIndicator size="small" color="white" />
+            <ActivityIndicator size="small" color={isDark ? '#94a3b8' : '#9ca3af'} />
           ) : (
-            <Text className="text-white text-lg font-JakartaBold" style={{ marginLeft: 2 }}>›</Text>
+            <Text style={{ color: messageText.trim() ? '#ffffff' : (isDark ? '#475569' : '#9ca3af'), fontSize: 20, fontFamily: 'Jakarta-Bold', marginLeft: 2 }}>›</Text>
           )}
         </TouchableOpacity>
       </View>

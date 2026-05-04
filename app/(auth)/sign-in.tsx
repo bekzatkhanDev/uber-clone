@@ -11,9 +11,11 @@ import { useLogin } from "@/hooks/useAuth";
 import { useAuthStore } from "@/store/authStore";
 import { useTranslation } from "@/i18n/I18nProvider";
 import { navigateByRole } from "@/lib/utils";
+import { useTheme } from "@/hooks/useTheme";
 
 const SignIn = () => {
   const { t } = useTranslation();
+  const { isDark } = useTheme();
   const [form, setForm] = useState({
     phone: "",
     password: "",
@@ -49,17 +51,21 @@ const SignIn = () => {
     );
   };
 
+  const bg = isDark ? '#0f172a' : '#ffffff';
+  const textPrimary = isDark ? '#f1f5f9' : '#000000';
+  const textSecondary = isDark ? '#94a3b8' : '#858585';
+
   return (
-    <ScrollView className="flex-1 bg-white">
-      <View className="flex-1">
-        <View className="relative w-full h-[250px]">
-          <Image source={images.signUpCar} className="z-0 w-full h-[250px]" />
-          <Text className="text-2xl text-black font-JakartaSemiBold absolute bottom-5 left-5">
+    <ScrollView style={{ flex: 1, backgroundColor: bg }}>
+      <View style={{ flex: 1 }}>
+        <View style={{ position: 'relative', width: '100%', height: 250 }}>
+          <Image source={images.signUpCar} style={{ width: '100%', height: 250 }} />
+          <Text style={{ fontSize: 22, color: '#ffffff', fontFamily: 'Jakarta-SemiBold', position: 'absolute', bottom: 20, left: 20 }}>
             {t.auth.welcome} 👋
           </Text>
         </View>
 
-        <View className="p-5">
+        <View style={{ padding: 20 }}>
           <PhoneInput
             label={t.auth.phoneNumber}
             icon={icons.call}
@@ -86,12 +92,11 @@ const SignIn = () => {
           {/* Optional: Remove OAuth if not supported */}
           {/* <OAuth /> */}
 
-          <Link
-            href="/(auth)/role-select"
-            className="text-lg text-center text-general-200 mt-10"
-          >
-            {t.auth.dontHaveAccount}{" "}
-            <Text className="text-primary-500">{t.auth.signUp}</Text>
+          <Link href="/(auth)/role-select" style={{ textAlign: 'center', marginTop: 40, display: 'flex', justifyContent: 'center' }}>
+            <Text style={{ fontSize: 17, color: textSecondary, textAlign: 'center' }}>
+              {t.auth.dontHaveAccount}{" "}
+              <Text style={{ color: '#0286FF' }}>{t.auth.signUp}</Text>
+            </Text>
           </Link>
         </View>
       </View>

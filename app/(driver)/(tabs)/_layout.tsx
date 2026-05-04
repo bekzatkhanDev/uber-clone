@@ -5,6 +5,7 @@ import TintedImage from '@/components/TintedImage';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
 import { icons } from '@/constants';
 import { useTranslation } from '@/i18n/I18nProvider';
+import { useTheme } from '@/hooks/useTheme';
 
 const TabIcon = ({
   source,
@@ -45,6 +46,7 @@ const nativeTabBarStyle = {
 
 export default function DriverTabLayout() {
   const { t } = useTranslation();
+  const { isDark } = useTheme();
   const isWeb = Platform.OS === 'web';
 
   return (
@@ -61,8 +63,8 @@ export default function DriverTabLayout() {
         headerShown: true,
         headerTransparent: false,
         headerTitle: '',
-        headerStyle: { backgroundColor: '#ffffff', shadowOpacity: 0, elevation: 0 },
-        headerRight: () => <LanguageSwitcher variant="dark" />,
+        headerStyle: { backgroundColor: isDark ? '#0f172a' : '#ffffff', shadowOpacity: 0, elevation: 0 },
+        headerRight: () => <LanguageSwitcher variant={isDark ? 'light' : 'dark'} />,
         headerLeft: () => null,
       }}
     >

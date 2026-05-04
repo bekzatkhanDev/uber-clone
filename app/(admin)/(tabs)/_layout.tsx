@@ -3,6 +3,7 @@ import React from 'react';
 import { Image, Platform, View } from 'react-native';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
 import { useTranslation } from '@/i18n/I18nProvider';
+import { useTheme } from '@/hooks/useTheme';
 
 // SVG icons as base64 for emoji-free tab bar
 const DASHBOARD_ICON = `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23ffffff"><path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/></svg>`;
@@ -52,6 +53,7 @@ const nativeTabBarStyle = {
 
 export default function AdminTabLayout() {
   const { t } = useTranslation();
+  const { isDark } = useTheme();
   const isWeb = Platform.OS === 'web';
 
   return (
@@ -66,8 +68,8 @@ export default function AdminTabLayout() {
         headerShown: true,
         headerTransparent: false,
         headerTitle: '',
-        headerStyle: { backgroundColor: '#ffffff', shadowOpacity: 0, elevation: 0 },
-        headerRight: () => <LanguageSwitcher variant="dark" />,
+        headerStyle: { backgroundColor: isDark ? '#0f172a' : '#ffffff', shadowOpacity: 0, elevation: 0 },
+        headerRight: () => <LanguageSwitcher variant={isDark ? 'light' : 'dark'} />,
         headerLeft: () => null,
       }}
     >

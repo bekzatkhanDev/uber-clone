@@ -88,13 +88,22 @@ export const useCancelTrip = (tripId: string) => {
 export const useCreateReview = (tripId: string) => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (reviewData: { rating: number; comment?: string }) =>
+    mutationFn: (reviewData: { reviewed: number; rating: number; comment?: string }) =>
       fetchWithAuth(`/trips/${tripId}/review/`, {
         method: 'POST',
         body: JSON.stringify(reviewData),
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['trip', tripId] });
+      queryClient.invalidateQueries({ queryKey: ['trips', 'history'] });
     },
   });
 };
+
+// Получить отзывы пользователя
+export const useUserReviews = (userId: number | undefined) =>
+  useQuery({
+    queryKey: ['reviews', 'user', userId],
+    queryFn: () => fetchWithAuth(`/reviews/user/${userId}/`),
+    enabled: !!userId,
+  });

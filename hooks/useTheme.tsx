@@ -1,5 +1,5 @@
 import { useEffect, useState, createContext, useContext, ReactNode } from 'react';
-import { useColorScheme as useRNColorScheme } from 'react-native';
+import { useColorScheme as useRNColorScheme, Appearance, Platform } from 'react-native';
 import { getItem, setItem } from '@/lib/storage';
 
 type Theme = 'light' | 'dark' | 'system';
@@ -45,24 +45,21 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     loadTheme();
   }, []);
 
-  // Apply theme class to document for web
+  // Apply theme to web (class on html) and native (Appearance API)
   useEffect(() => {
     if (!isLoaded) return;
 
-    const rootElement = typeof document !== 'undefined' ? document.documentElement : null;
-    
-    if (rootElement) {
-      // Remove both classes first
-      rootElement.classList.remove('light', 'dark');
-      // Add the current color scheme class
-      rootElement.classList.add(colorScheme);
-      
-      // Also set the data attribute for additional styling hooks
-      rootElement.setAttribute('data-theme', colorScheme);
+    if (Platform.OS === 'web') {
+      const rootElement = typeof document !== 'undefined' ? document.documentElement : null;
+      if (rootElement) {
+        rootElement.classList.remove('light', 'dark');
+        rootElement.classList.add(colorScheme);
+        rootElement.setAttribute('data-theme', colorScheme);
+      }
+    } else {
+      // Tell React Native's Appearance API so NativeWind dark: classes update
+      Appearance.setColorScheme(colorScheme);
     }
-
-    // For React Native, we also need to handle the class name
-    // NativeWind will pick up the colorScheme from context
   }, [colorScheme, isLoaded]);
 
   const setTheme = async (newTheme: Theme) => {

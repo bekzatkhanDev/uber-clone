@@ -405,6 +405,28 @@
     "error": "Қате",
     "helpText": "Алушы жүргізушінің орналасқан жерін, келу уақытын және сапар мәртебесін көреді. Көру үшін тіркелу қажет емес."
   },
+  "review": {
+    "rateYourRide": "Сапарды бағалаңыз",
+    "howWasRideWith": "Сапар қалай өтті",
+    "terrible": "Өте жаман",
+    "bad": "Жаман",
+    "okay": "Қалыпты",
+    "good": "Жақсы",
+    "excellent": "Өте жақсы!",
+    "commentPlaceholder": "Пікіріңізді жазыңыз (міндетті емес)...",
+    "submit": "Пікір жіберу",
+    "rateRide": "Бағалау",
+    "yourRating": "Сіздің бағаңыз",
+    "reviewSubmitted": "Пікір жіберілді!",
+    "alreadyReviewed": "Сіз бұл сапарды бұрын бағаладыңыз",
+    "noReview": "Әлі бағаланбаған",
+    "dateLabel": "Күн",
+    "driverLabel": "Жүргізуші",
+    "distanceLabel": "Қашықтық",
+    "priceLabel": "Баға",
+    "statusLabel": "Мәртебе",
+    "shareTrip": "Бөлісу"
+  },
   "publicTrack": {
     "loadingTrip": "Сапар деректері жүктелуде…",
     "linkExpired": "Сілтеменің мерзімі аяқталды",

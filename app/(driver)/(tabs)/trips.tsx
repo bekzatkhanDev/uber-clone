@@ -7,6 +7,7 @@ import { images } from '@/constants';
 import { useTripHistory } from '@/hooks/useTrips';
 import { formatDate } from '@/lib/utils';
 import { useTranslation } from '@/i18n/I18nProvider';
+import { useTheme } from '@/hooks/useTheme';
 
 const STATUS_COLOR: Record<string, string> = {
   completed: '#0CC25F',
@@ -30,37 +31,39 @@ interface TripItem {
   tariff?: { code?: string };
 }
 
-const TripRow = ({ item }: { item: TripItem }) => {
+const TripRow = ({ item, isDark }: { item: TripItem; isDark: boolean }) => {
   const statusColor = STATUS_COLOR[item.status] ?? '#6b7280';
+  const cardBg = isDark ? '#1e293b' : '#ffffff';
+  const textPrimary = isDark ? '#f1f5f9' : '#111827';
+  const textSecondary = isDark ? '#94a3b8' : '#6b7280';
 
   return (
-    <View className="bg-white rounded-2xl p-4 mb-3 shadow-sm">
-      <View className="flex-row justify-between items-start mb-2">
-        <View className="flex-1">
+    <View style={{ backgroundColor: cardBg, borderRadius: 16, padding: 16, marginBottom: 12, shadowColor: '#000', shadowOpacity: isDark ? 0.2 : 0.05, shadowRadius: 4, elevation: 2 }}>
+      <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 }}>
+        <View style={{ flex: 1 }}>
           {item.customer && (
-            <Text className="text-sm font-JakartaSemiBold">
+            <Text style={{ fontSize: 14, fontFamily: 'Jakarta-SemiBold', color: textPrimary }}>
               {item.customer.first_name} {item.customer.last_name}
             </Text>
           )}
-          <Text className="text-xs text-gray-400 mt-0.5">{formatDate(item.created_at)}</Text>
+          <Text style={{ fontSize: 12, color: textSecondary, marginTop: 2 }}>{formatDate(item.created_at)}</Text>
         </View>
         <View style={{ backgroundColor: statusColor + '20', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 20 }}>
-          <Text style={{ color: statusColor, fontSize: 12 }} className="font-JakartaMedium capitalize">
+          <Text style={{ color: statusColor, fontSize: 12, fontFamily: 'Jakarta-Medium', textTransform: 'capitalize' }}>
             {item.status}
           </Text>
         </View>
       </View>
-
-      <View className="flex-row justify-between">
+      <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
         {item.distance_km != null && (
-          <Text className="text-sm text-gray-500">{parseFloat(item.distance_km).toFixed(1)} km</Text>
+          <Text style={{ fontSize: 13, color: textSecondary }}>{parseFloat(String(item.distance_km)).toFixed(1)} km</Text>
         )}
         {item.tariff?.code && (
-          <Text className="text-sm text-gray-500 capitalize">{item.tariff.code}</Text>
+          <Text style={{ fontSize: 13, color: textSecondary, textTransform: 'capitalize' }}>{item.tariff.code}</Text>
         )}
         {item.price != null && (
-          <Text className="text-sm font-JakartaBold text-[#0CC25F]">
-            {parseFloat(item.price).toFixed(0)} KZT
+          <Text style={{ fontSize: 13, fontFamily: 'Jakarta-Bold', color: '#0CC25F' }}>
+            {parseFloat(String(item.price)).toFixed(0)} KZT
           </Text>
         )}
       </View>
@@ -71,30 +74,32 @@ const TripRow = ({ item }: { item: TripItem }) => {
 const DriverTrips = () => {
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();
+  const { isDark } = useTheme();
   const { data: trips = [], isLoading } = useTripHistory({ limit: 50 });
 
+  const bg = isDark ? '#0f172a' : '#f5f5f5';
+  const textPrimary = isDark ? '#f1f5f9' : '#111827';
+
   return (
-    <View style={{ flex: 1, backgroundColor: '#f5f5f5' }}>
+    <View style={{ flex: 1, backgroundColor: bg }}>
       <FlatList
         data={trips}
         keyExtractor={(item: TripItem) => item.id}
-        renderItem={({ item }) => <TripRow item={item} />}
-        contentContainerStyle={{
-          paddingTop: insets.top + 20,
-          paddingBottom: insets.bottom + 100,
-          paddingHorizontal: 20,
-        }}
+        renderItem={({ item }) => <TripRow item={item} isDark={isDark} />}
+        contentContainerStyle={{ paddingTop: insets.top + 20, paddingBottom: insets.bottom + 100, paddingHorizontal: 20 }}
         ListHeaderComponent={
-          <Text className="text-2xl font-JakartaBold mb-5">{t.driver.myTrips}</Text>
+          <Text style={{ fontSize: 24, fontFamily: 'Jakarta-Bold', color: textPrimary, marginBottom: 20 }}>
+            {t.driver.myTrips}
+          </Text>
         }
         ListEmptyComponent={
-          <View className="items-center py-16">
+          <View style={{ alignItems: 'center', paddingVertical: 64 }}>
             {isLoading ? (
               <ActivityIndicator size="large" color="#0CC25F" />
             ) : (
               <>
                 <Image source={images.noResult} style={{ width: 140, height: 140 }} resizeMode="contain" />
-                <Text className="text-gray-500 mt-3">{t.driver.noTrips}</Text>
+                <Text style={{ color: isDark ? '#94a3b8' : '#6b7280', marginTop: 12 }}>{t.driver.noTrips}</Text>
               </>
             )}
           </View>

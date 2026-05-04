@@ -405,6 +405,28 @@
     "error": "Ошибка при создании ссылки",
     "helpText": "Получатель увидит местоположение вашего водителя, ETA и статус поездки. Вход в систему не требуется."
   },
+  "review": {
+    "rateYourRide": "Оцените поездку",
+    "howWasRideWith": "Как прошла поездка с",
+    "terrible": "Ужасно",
+    "bad": "Плохо",
+    "okay": "Нормально",
+    "good": "Хорошо",
+    "excellent": "Отлично!",
+    "commentPlaceholder": "Поделитесь впечатлениями (необязательно)...",
+    "submit": "Отправить отзыв",
+    "rateRide": "Оценить",
+    "yourRating": "Ваша оценка",
+    "reviewSubmitted": "Отзыв отправлен!",
+    "alreadyReviewed": "Вы уже оценили эту поездку",
+    "noReview": "Ещё не оценено",
+    "dateLabel": "Дата",
+    "driverLabel": "Водитель",
+    "distanceLabel": "Расстояние",
+    "priceLabel": "Цена",
+    "statusLabel": "Статус",
+    "shareTrip": "Поделиться"
+  },
   "publicTrack": {
     "loadingTrip": "Загрузка деталей поездки…",
     "linkExpired": "Ссылка истекла",

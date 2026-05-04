@@ -23,9 +23,11 @@ import { useUserLocation } from "@/hooks/useUserLocation";
 import { useAuthStore } from "@/store/authStore";
 import { useTranslation } from "@/i18n/I18nProvider";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
+import { useTheme } from "@/hooks/useTheme";
 
 const Home = () => {
   const { t } = useTranslation();
+  const { isDark } = useTheme();
   const insets = useSafeAreaInsets();
   const { data: currentUser, isLoading: userLoading } = useCurrentUser();
   const { mutate: logout, isPending: isLoggingOut } = useLogout();
@@ -64,14 +66,14 @@ const Home = () => {
 
   if (userLoading || locationLoading) {
     return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', paddingTop: insets.top, paddingBottom: insets.bottom }}>
-        <ActivityIndicator size="large" color="#000" />
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: isDark ? '#0f172a' : '#f5f5f5', paddingTop: insets.top, paddingBottom: insets.bottom }}>
+        <ActivityIndicator size="large" color={isDark ? '#818cf8' : '#000'} />
       </View>
     );
   }
 
   return (
-    <View style={{ flex: 1, backgroundColor: '#f5f5f5' }}>
+    <View style={{ flex: 1, backgroundColor: isDark ? '#0f172a' : '#f5f5f5' }}>
       {/* Карта на весь экран */}
       <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}>
         <Map />

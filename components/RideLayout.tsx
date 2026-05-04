@@ -10,6 +10,7 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 import Map from "@/components/Map";
 import { icons } from "@/constants";
 import { useLocationStore } from "@/store";
+import { useTheme } from "@/hooks/useTheme";
 
 interface RideLayoutProps {
   title: string;
@@ -22,6 +23,7 @@ interface RideLayoutProps {
 const RideLayout = ({ title, snapPoints, children, showLocationInputs, locationInputs }: RideLayoutProps) => {
   const bottomSheetRef = useRef<BottomSheet>(null);
   const { clearDestination } = useLocationStore();
+  const { isDark } = useTheme();
 
   const handleBack = () => {
     // При возврате сбрасываем точку назначения, чтобы убрать маршрут с карты
@@ -64,9 +66,10 @@ const RideLayout = ({ title, snapPoints, children, showLocationInputs, locationI
           ref={bottomSheetRef}
           snapPoints={snapPoints || ["40%", "85%"]}
           index={0}
-          handleComponent={null} // optional: cleaner look
+          handleComponent={null}
+          backgroundStyle={{ backgroundColor: isDark ? '#1e293b' : '#ffffff' }}
         >
-          <BottomSheetView style={{ flex: 1, padding: 20 }}>
+          <BottomSheetView style={{ flex: 1, padding: 20, backgroundColor: isDark ? '#1e293b' : '#ffffff' }}>
             {children}
           </BottomSheetView>
         </BottomSheet>

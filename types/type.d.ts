@@ -38,25 +38,47 @@ declare interface MapProps {
   onMapReady?: () => void;
 }
 
-// Ride — клиентская модель поездки
-declare interface Ride {
-  origin_address: string;
-  destination_address: string;
-  origin_latitude: number;
-  origin_longitude: number;
-  destination_latitude: number;
-  destination_longitude: number;
-  ride_time: number;
-  fare_price: number;
-  payment_status: 'pending' | 'paid' | 'failed';
-  driver_id: number | null;
-  user_id: number;
+// Review left on a trip
+declare interface TripReview {
+  id: number;
+  reviewer_id: number;
+  reviewed_id: number;
+  rating: number;
+  comment: string;
   created_at: string;
-  driver: {
-    first_name: string;
-    last_name: string;
-    car_seats: number;
+}
+
+// Participant in a trip (customer or driver)
+declare interface TripParticipant {
+  id: number;
+  first_name: string;
+  last_name: string;
+  phone: string;
+}
+
+// Ride — actual shape returned by TripDetailSerializer
+declare interface Ride {
+  id: string;
+  customer: TripParticipant | null;
+  driver: TripParticipant | null;
+  car: {
+    id: number;
+    brand: { id: number; name: string } | null;
+    plate_number: string;
+    year: number | null;
+    car_type: { id: number; code: string } | null;
   } | null;
+  tariff: { id: number; code: string; base_price: string } | null;
+  start_lat: number;
+  start_lng: number;
+  end_lat: number;
+  end_lng: number;
+  distance_km: number | null;
+  price: string | null;
+  status: string;
+  created_at: string;
+  allowed_actions: string[];
+  review: TripReview | null;
 }
 
 declare interface ButtonProps extends TouchableOpacityProps {

@@ -6,6 +6,7 @@ import { Image, ScrollView, Text, TouchableOpacity, View } from "react-native";
 import Map from "@/components/Map";
 import { icons } from "@/constants";
 import { useLocationStore } from "@/store";
+import { useTheme } from "@/hooks/useTheme";
 
 interface RideLayoutProps {
   title: string;
@@ -17,6 +18,7 @@ interface RideLayoutProps {
 
 const RideLayout = ({ title, children, showLocationInputs, locationInputs }: RideLayoutProps) => {
   const { clearDestination } = useLocationStore();
+  const { isDark } = useTheme();
 
   const handleBack = () => {
     clearDestination();
@@ -24,7 +26,7 @@ const RideLayout = ({ title, children, showLocationInputs, locationInputs }: Rid
   };
 
   return (
-    <View style={{ flex: 1, backgroundColor: "#f9fafb" }}>
+    <View style={{ flex: 1, backgroundColor: isDark ? '#0f172a' : '#f9fafb' }}>
       {/* Map — fixed height, never shrinks */}
       <View style={{ height: "40vh" as any, position: "relative", flexShrink: 0 }}>
         <View style={{ position: "absolute", zIndex: 10, top: 24, left: 20, flexDirection: "row", alignItems: "center" }}>
@@ -48,7 +50,7 @@ const RideLayout = ({ title, children, showLocationInputs, locationInputs }: Rid
       </View>
 
       {/* Content panel — fills remaining space, scrollable */}
-      <View style={{ flex: 1, backgroundColor: "white", borderTopLeftRadius: 24, borderTopRightRadius: 24, marginTop: -16, shadowColor: "#000", shadowOpacity: 0.08, shadowRadius: 12, elevation: 8, overflow: "hidden" }}>
+      <View style={{ flex: 1, backgroundColor: isDark ? '#1e293b' : 'white', borderTopLeftRadius: 24, borderTopRightRadius: 24, marginTop: -16, shadowColor: '#000', shadowOpacity: isDark ? 0.3 : 0.08, shadowRadius: 12, elevation: 8, overflow: 'hidden' }}>
         <ScrollView
           contentContainerStyle={{ padding: 20, paddingBottom: 40 }}
           keyboardShouldPersistTaps="handled"

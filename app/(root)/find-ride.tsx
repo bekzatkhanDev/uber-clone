@@ -14,6 +14,7 @@ import { useTariffs } from "@/hooks/useTariffs";
 import { useBulkTariffEstimate, BulkTariffEstimate } from "@/hooks/useBulkTariffEstimate";
 import { Tariff } from "@/types/type";
 import { useTranslation, useCurrency } from "@/i18n/I18nProvider";
+import { useTheme } from "@/hooks/useTheme";
 
 interface TariffWithEstimate extends Tariff {
   estimated_price?: number;
@@ -22,6 +23,11 @@ interface TariffWithEstimate extends Tariff {
 const FindRide = () => {
   const { t } = useTranslation();
   const { symbol } = useCurrency();
+  const { isDark } = useTheme();
+  const textPrimary = isDark ? '#f1f5f9' : '#111827';
+  const textSecondary = isDark ? '#94a3b8' : '#6b7280';
+  const cardBg = isDark ? '#0f172a' : '#ffffff';
+  const cardBorder = isDark ? '#334155' : '#e5e7eb';
   const [showTariffModal, setShowTariffModal] = useState(false);
   
   const {
@@ -118,38 +124,37 @@ const FindRide = () => {
     
     return (
       <TouchableOpacity
-        className={`p-4 mb-3 rounded-xl border-2 ${
-          isSelected 
-            ? "border-[#0CC25F] bg-[#0CC25F]/10" 
-            : "border-gray-200 bg-white"
-        }`}
+        style={{
+          padding: 16, marginBottom: 12, borderRadius: 12, borderWidth: 2,
+          borderColor: isSelected ? '#0CC25F' : cardBorder,
+          backgroundColor: isSelected ? 'rgba(12,194,95,0.1)' : cardBg,
+        }}
         onPress={() => handleSelectTariff(item)}
       >
-        <View className="flex-row justify-between items-center">
-          <View className="flex-1">
-            <Text className="text-lg font-JakartaSemiBold capitalize">{item.code}</Text>
+        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+          <View style={{ flex: 1 }}>
+            <Text style={{ fontSize: 17, fontFamily: 'Jakarta-SemiBold', textTransform: 'capitalize', color: textPrimary }}>{item.code}</Text>
             {hasLocationForEstimates && hasEstimate ? (
-              <Text className="text-sm text-gray-500">
-                {t.findRide.distance}: {item.estimated_price ? 
-                  `${(bulkEstimates?.distance_km || 0).toFixed(1)} km` : '-'}
+              <Text style={{ fontSize: 13, color: textSecondary }}>
+                {t.findRide.distance}: {item.estimated_price ? `${(bulkEstimates?.distance_km || 0).toFixed(1)} km` : '-'}
               </Text>
             ) : (
-              <Text className="text-sm text-gray-500">
+              <Text style={{ fontSize: 13, color: textSecondary }}>
                 {t.findRide.starting}: {formatPrice(item.base_price)}
               </Text>
             )}
           </View>
-          <View className="flex items-end">
+          <View style={{ alignItems: 'flex-end' }}>
             {hasLocationForEstimates && hasEstimate ? (
-              <Text className="text-xl font-JakartaBold text-[#0CC25F]">
+              <Text style={{ fontSize: 20, fontFamily: 'Jakarta-Bold', color: '#0CC25F' }}>
                 {formatPrice(item.estimated_price!)}
               </Text>
             ) : (
               <>
-                <Text className="text-lg font-JakartaBold text-[#0CC25F]">
+                <Text style={{ fontSize: 17, fontFamily: 'Jakarta-Bold', color: '#0CC25F' }}>
                   {formatPrice(item.base_price)}
                 </Text>
-                <Text className="text-xs text-gray-400">{t.findRide.starting}</Text>
+                <Text style={{ fontSize: 11, color: isDark ? '#64748b' : '#9ca3af' }}>{t.findRide.starting}</Text>
               </>
             )}
           </View>
@@ -158,24 +163,25 @@ const FindRide = () => {
     );
   };
 
+  const inputBg = isDark ? '#1e293b' : 'white';
+
   const locationInputs = (
-    <View className="flex-1">
-      <View className="mb-2">
+    <View style={{ flex: 1 }}>
+      <View style={{ marginBottom: 8 }}>
         <GoogleTextInput
           icon={icons.target}
           initialLocation={userAddress!}
-          containerStyle="bg-white shadow-lg"
-          textInputBackgroundColor="white"
+          containerStyle={isDark ? "bg-[#1e293b] shadow-lg" : "bg-white shadow-lg"}
+          textInputBackgroundColor={inputBg}
           handlePress={(location) => setUserLocation(location)}
         />
       </View>
-
-      <View className="mb-2">
+      <View style={{ marginBottom: 8 }}>
         <GoogleTextInput
           icon={icons.map}
           initialLocation={destinationAddress!}
-          containerStyle="bg-white shadow-lg"
-          textInputBackgroundColor="white"
+          containerStyle={isDark ? "bg-[#1e293b] shadow-lg" : "bg-white shadow-lg"}
+          textInputBackgroundColor={inputBg}
           handlePress={(location) => setDestinationLocation(location)}
         />
       </View>
@@ -183,76 +189,57 @@ const FindRide = () => {
   );
 
   return (
-    <RideLayout 
-      title={t.findRide.selectTariff}
-      showLocationInputs={true}
-      locationInputs={locationInputs}
-    >
-      <View className="my-3">
-        <Text className="text-lg font-JakartaSemiBold mb-3">{t.findRide.from}</Text>
-        <Text className="text-gray-500">{userAddress || "Not set"}</Text>
+    <RideLayout title={t.findRide.selectTariff} showLocationInputs={true} locationInputs={locationInputs}>
+      <View style={{ marginVertical: 12 }}>
+        <Text style={{ fontSize: 17, fontFamily: 'Jakarta-SemiBold', color: textPrimary, marginBottom: 6 }}>{t.findRide.from}</Text>
+        <Text style={{ color: textSecondary }}>{userAddress || "Not set"}</Text>
+      </View>
+      <View style={{ marginVertical: 12 }}>
+        <Text style={{ fontSize: 17, fontFamily: 'Jakarta-SemiBold', color: textPrimary, marginBottom: 6 }}>{t.findRide.to}</Text>
+        <Text style={{ color: textSecondary }}>{destinationAddress || "Not set"}</Text>
       </View>
 
-      <View className="my-3">
-        <Text className="text-lg font-JakartaSemiBold mb-3">{t.findRide.to}</Text>
-        <Text className="text-gray-500">{destinationAddress || "Not set"}</Text>
-      </View>
-
-      {/* Кнопка выбора тарифа */}
+      {/* Tariff selector button */}
       <TouchableOpacity
-        className={`mt-5 p-4 rounded-xl border-2 ${
-          selectedTariff ? "border-[#0CC25F] bg-[#0CC25F]/10" : "border-gray-200 bg-white"
-        }`}
+        style={{
+          marginTop: 20, padding: 16, borderRadius: 12, borderWidth: 2,
+          borderColor: selectedTariff ? '#0CC25F' : cardBorder,
+          backgroundColor: selectedTariff ? 'rgba(12,194,95,0.1)' : cardBg,
+        }}
         onPress={() => setShowTariffModal(true)}
       >
-        <View className="flex-row items-center justify-between">
-          <View className="flex-row items-center">
-            <Image source={icons.dollar} className="w-5 h-5 mr-2" />
-            <Text className="text-lg font-JakartaMedium">
-              {selectedTariff ? (
-                <Text className="capitalize">{selectedTariff.code}</Text>
-              ) : (
-                t.findRide.selectTariff
-              )}
+        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+            <Image source={icons.dollar} style={{ width: 20, height: 20, tintColor: isDark ? '#94a3b8' : undefined, marginRight: 8 }} resizeMode="contain" />
+            <Text style={{ fontSize: 17, fontFamily: 'Jakarta-Medium', color: textPrimary, textTransform: selectedTariff ? 'capitalize' : 'none' }}>
+              {selectedTariff ? selectedTariff.code : t.findRide.selectTariff}
             </Text>
           </View>
-          <Image source={icons.arrowDown} style={{ width: 20, height: 20 }} resizeMode="contain" />
+          <Image source={icons.arrowDown} style={{ width: 20, height: 20, tintColor: isDark ? '#94a3b8' : undefined }} resizeMode="contain" />
         </View>
         {selectedTariff && bulkEstimates && (
-          <Text className="text-sm text-gray-500 mt-1">
-            {hasLocationForEstimates 
+          <Text style={{ fontSize: 13, color: textSecondary, marginTop: 4 }}>
+            {hasLocationForEstimates
               ? formatPrice(bulkEstimates.estimates.find(e => e.tariff_id === selectedTariff.id)?.estimated_price || selectedTariff.base_price)
-              : `${t.findRide.starting} ${formatPrice(selectedTariff.base_price)}`
-            }
+              : `${t.findRide.starting} ${formatPrice(selectedTariff.base_price)}`}
           </Text>
         )}
       </TouchableOpacity>
 
-      <CustomButton
-        title={t.findRide.findNow}
-        onPress={handleFindRide}
-        className="mt-5"
-        disabled={!canFindRide}
-      />
+      <CustomButton title={t.findRide.findNow} onPress={handleFindRide} className="mt-5" disabled={!canFindRide} />
 
-      {/* Модалка выбора тарифа */}
-      <Modal
-        visible={showTariffModal}
-        animationType="slide"
-        transparent={true}
-        onRequestClose={() => setShowTariffModal(false)}
-      >
-        <View className="flex-1 bg-black/50 justify-end">
-          <View className="bg-white rounded-t-3xl p-5 max-h-[70%]">
-            <View className="flex-row justify-between items-center mb-5">
-              <Text className="text-xl font-JakartaSemiBold">{t.findRide.selectTariff}</Text>
+      {/* Tariff picker modal */}
+      <Modal visible={showTariffModal} animationType="slide" transparent onRequestClose={() => setShowTariffModal(false)}>
+        <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'flex-end' }}>
+          <View style={{ backgroundColor: isDark ? '#1e293b' : 'white', borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: 20, maxHeight: '70%' }}>
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+              <Text style={{ fontSize: 20, fontFamily: 'Jakarta-SemiBold', color: textPrimary }}>{t.findRide.selectTariff}</Text>
               <TouchableOpacity onPress={() => setShowTariffModal(false)}>
-                <Image source={icons.close} style={{ width: 24, height: 24 }} resizeMode="contain" />
+                <Image source={icons.close} style={{ width: 24, height: 24, tintColor: isDark ? '#94a3b8' : undefined }} resizeMode="contain" />
               </TouchableOpacity>
             </View>
-
             {isLoadingTariffs ? (
-              <Text className="text-center text-gray-500">{t.findRide.loadingTariffs}</Text>
+              <Text style={{ textAlign: 'center', color: textSecondary }}>{t.findRide.loadingTariffs}</Text>
             ) : (
               <FlatList
                 data={tariffsWithEstimates}

@@ -413,6 +413,28 @@ export interface Translations {
     error: string;
     helpText: string;
   };
+  review: {
+    rateYourRide: string;
+    howWasRideWith: string;
+    terrible: string;
+    bad: string;
+    okay: string;
+    good: string;
+    excellent: string;
+    commentPlaceholder: string;
+    submit: string;
+    rateRide: string;
+    yourRating: string;
+    reviewSubmitted: string;
+    alreadyReviewed: string;
+    noReview: string;
+    dateLabel: string;
+    driverLabel: string;
+    distanceLabel: string;
+    priceLabel: string;
+    statusLabel: string;
+    shareTrip: string;
+  };
   publicTrack: {
     loadingTrip: string;
     linkExpired: string;

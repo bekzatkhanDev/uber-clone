@@ -6,13 +6,13 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import EarningsSummary from '@/components/EarningsSummary';
 import { useDriverEarnings } from '@/hooks/useDriverDashboard';
 import { useTranslation } from '@/i18n/I18nProvider';
+import { useTheme } from '@/hooks/useTheme';
 
 type Period = 'today' | 'week' | 'month' | 'all';
 
 const getPeriodDates = (period: Period): { from?: string; to?: string } => {
   const now = new Date();
   const toISO = (d: Date) => d.toISOString();
-
   if (period === 'today') {
     const start = new Date(now);
     start.setHours(0, 0, 0, 0);
@@ -35,9 +35,15 @@ const getPeriodDates = (period: Period): { from?: string; to?: string } => {
 const Earnings = () => {
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();
+  const { isDark } = useTheme();
   const [period, setPeriod] = useState<Period>('week');
   const { from, to } = getPeriodDates(period);
   const { data, isLoading } = useDriverEarnings(from, to);
+
+  const bg = isDark ? '#0f172a' : '#f5f5f5';
+  const textPrimary = isDark ? '#f1f5f9' : '#111827';
+  const cardBg = isDark ? '#1e293b' : '#ffffff';
+  const inactiveLabelColor = isDark ? '#94a3b8' : '#4b5563';
 
   const PERIODS: { key: Period; label: string }[] = [
     { key: 'today', label: t.driver.today },
@@ -48,37 +54,32 @@ const Earnings = () => {
 
   return (
     <ScrollView
-      style={{ flex: 1, backgroundColor: '#f5f5f5' }}
-      contentContainerStyle={{
-        paddingTop: insets.top + 20,
-        paddingBottom: insets.bottom + 100,
-        paddingHorizontal: 20,
-      }}
+      style={{ flex: 1, backgroundColor: bg }}
+      contentContainerStyle={{ paddingTop: insets.top + 20, paddingBottom: insets.bottom + 100, paddingHorizontal: 20 }}
     >
-      <Text className="text-2xl font-JakartaBold mb-6">{t.driver.earnings}</Text>
+      <Text style={{ fontSize: 24, fontFamily: 'Jakarta-Bold', color: textPrimary, marginBottom: 24 }}>
+        {t.driver.earnings}
+      </Text>
 
       {/* Period selector */}
-      <View className="flex-row bg-white rounded-2xl p-1 shadow-sm mb-6">
+      <View style={{ flexDirection: 'row', backgroundColor: cardBg, borderRadius: 16, padding: 4, marginBottom: 24, shadowColor: '#000', shadowOpacity: isDark ? 0.2 : 0.04, shadowRadius: 4, elevation: 2 }}>
         {PERIODS.map(({ key, label }) => (
           <TouchableOpacity
             key={key}
             onPress={() => setPeriod(key)}
-            className={`flex-1 py-2 rounded-xl items-center ${
-              period === key ? 'bg-[#0CC25F]' : ''
-            }`}
+            style={{
+              flex: 1, paddingVertical: 8, borderRadius: 12, alignItems: 'center',
+              backgroundColor: period === key ? '#0CC25F' : 'transparent',
+            }}
           >
-            <Text
-              className={`text-sm font-JakartaSemiBold ${
-                period === key ? 'text-white' : 'text-gray-600'
-              }`}
-            >
+            <Text style={{ fontSize: 13, fontFamily: 'Jakarta-SemiBold', color: period === key ? '#ffffff' : inactiveLabelColor }}>
               {label}
             </Text>
           </TouchableOpacity>
         ))}
       </View>
 
-      {/* Summary card */}
+      {/* Summary */}
       <EarningsSummary
         data={data}
         isLoading={isLoading}
@@ -86,9 +87,11 @@ const Earnings = () => {
       />
 
       {/* Tips */}
-      <View className="bg-blue-50 rounded-2xl p-4 mt-6">
-        <Text className="text-sm font-JakartaSemiBold text-blue-700 mb-1">{t.driver.tipsTitle}</Text>
-        <Text className="text-sm text-blue-600">
+      <View style={{ backgroundColor: isDark ? '#1e3a5f' : '#eff6ff', borderRadius: 16, padding: 16, marginTop: 24 }}>
+        <Text style={{ fontSize: 13, fontFamily: 'Jakarta-SemiBold', color: isDark ? '#93c5fd' : '#1d4ed8', marginBottom: 4 }}>
+          {t.driver.tipsTitle}
+        </Text>
+        <Text style={{ fontSize: 13, color: isDark ? '#60a5fa' : '#2563eb' }}>
           {t.driver.tipsBody}
         </Text>
       </View>

@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { ActivityIndicator, Alert, Text, TouchableOpacity, View } from 'react-native';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { fetchWithAuth } from '@/lib/fetchWithAuth';
+import { useTheme } from '@/hooks/useTheme';
 
 interface TripInfo {
   id: string;
@@ -13,25 +14,28 @@ interface TripInfo {
   end_lng: number;
   price?: number;
   distance_km?: number;
-  customer?: { first_name?: string; last_name?: string; phone?: string };
+  customer?: { id?: number; first_name?: string; last_name?: string; phone?: string };
   tariff?: { code?: string };
+}
+
+export interface TripCompletedPayload {
+  tripId: string;
+  customerId: number;
+  customerName: string;
 }
 
 interface ActiveTripPanelProps {
   trip: TripInfo;
-  onTripCompleted?: () => void;
+  onTripCompleted?: (payload: TripCompletedPayload) => void;
 }
 
-const STATUS_LABEL: Record<string, string> = {
-  accepted: 'Accepted — Head to pickup',
-  on_route: 'On route — Heading to destination',
-  requested: 'Requested',
-  completed: 'Completed',
-  cancelled: 'Cancelled',
-};
-
 const ActiveTripPanel = ({ trip, onTripCompleted }: ActiveTripPanelProps) => {
+  const { isDark } = useTheme();
   const queryClient = useQueryClient();
+
+  const cardBg = isDark ? '#1e293b' : '#ffffff';
+  const textPrimary = isDark ? '#f1f5f9' : '#111827';
+  const textSecondary = isDark ? '#94a3b8' : '#6b7280';
 
   const { mutate: updateStatus, isPending } = useMutation({
     mutationFn: (newStatus: string) =>
@@ -42,7 +46,13 @@ const ActiveTripPanel = ({ trip, onTripCompleted }: ActiveTripPanelProps) => {
     onSuccess: (_, newStatus) => {
       queryClient.invalidateQueries({ queryKey: ['trips', 'active'] });
       queryClient.invalidateQueries({ queryKey: ['driver', 'dashboard'] });
-      if (newStatus === 'completed') onTripCompleted?.();
+      if (newStatus === 'completed' && onTripCompleted) {
+        onTripCompleted({
+          tripId: trip.id,
+          customerId: trip.customer?.id ?? 0,
+          customerName: `${trip.customer?.first_name ?? ''} ${trip.customer?.last_name ?? ''}`.trim() || 'Passenger',
+        });
+      }
     },
     onError: () => {
       Alert.alert('Error', 'Failed to update trip status. Please try again.');
@@ -72,52 +82,53 @@ const ActiveTripPanel = ({ trip, onTripCompleted }: ActiveTripPanelProps) => {
   };
 
   const isLoading = isPending || isCancelling;
+  const statusBg = trip.status === 'on_route' ? '#3b82f6' : '#0CC25F';
 
   return (
-    <View className="bg-white rounded-2xl shadow-md mx-5 overflow-hidden">
+    <View style={{ backgroundColor: cardBg, borderRadius: 16, marginHorizontal: 20, overflow: 'hidden', shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: isDark ? 0.25 : 0.08, shadowRadius: 8, elevation: 4 }}>
       {/* Status bar */}
-      <View className={`px-5 py-3 ${trip.status === 'on_route' ? 'bg-blue-500' : 'bg-[#0CC25F]'}`}>
-        <Text className="text-white font-JakartaSemiBold">
-          {STATUS_LABEL[trip.status] ?? trip.status}
+      <View style={{ backgroundColor: statusBg, paddingHorizontal: 20, paddingVertical: 10 }}>
+        <Text style={{ color: 'white', fontWeight: '600', fontSize: 14 }}>
+          {trip.status === 'accepted' ? '🚗 Head to pickup' : trip.status === 'on_route' ? '📍 En route to destination' : trip.status}
         </Text>
       </View>
 
-      <View className="p-5">
+      <View style={{ padding: 16 }}>
         {/* Customer */}
         {trip.customer && (
-          <View className="mb-4">
-            <Text className="text-sm text-gray-500">Passenger</Text>
-            <Text className="text-lg font-JakartaSemiBold">
+          <View style={{ marginBottom: 14 }}>
+            <Text style={{ fontSize: 12, color: textSecondary, marginBottom: 2 }}>Passenger</Text>
+            <Text style={{ fontSize: 17, fontWeight: '700', color: textPrimary }}>
               {trip.customer.first_name} {trip.customer.last_name}
             </Text>
             {trip.customer.phone && (
-              <Text className="text-sm text-gray-500">{trip.customer.phone}</Text>
+              <Text style={{ fontSize: 13, color: textSecondary, marginTop: 2 }}>{trip.customer.phone}</Text>
             )}
           </View>
         )}
 
         {/* Trip details */}
-        <View className="flex-row justify-between mb-4">
+        <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 16 }}>
           {trip.distance_km != null && (
             <View>
-              <Text className="text-sm text-gray-500">Distance</Text>
-              <Text className="text-base font-JakartaMedium">
-                {parseFloat(trip.distance_km).toFixed(1)} km
+              <Text style={{ fontSize: 12, color: textSecondary }}>Distance</Text>
+              <Text style={{ fontSize: 15, fontWeight: '600', color: textPrimary }}>
+                {parseFloat(String(trip.distance_km)).toFixed(1)} km
               </Text>
             </View>
           )}
           {trip.price != null && (
             <View>
-              <Text className="text-sm text-gray-500">Fare</Text>
-              <Text className="text-base font-JakartaBold text-[#0CC25F]">
-                {parseFloat(trip.price).toFixed(2)} KZT
+              <Text style={{ fontSize: 12, color: textSecondary }}>Fare</Text>
+              <Text style={{ fontSize: 15, fontWeight: '700', color: '#0CC25F' }}>
+                {parseFloat(String(trip.price)).toFixed(2)} ₸
               </Text>
             </View>
           )}
           {trip.tariff?.code && (
             <View>
-              <Text className="text-sm text-gray-500">Tariff</Text>
-              <Text className="text-base font-JakartaMedium capitalize">
+              <Text style={{ fontSize: 12, color: textSecondary }}>Tariff</Text>
+              <Text style={{ fontSize: 15, fontWeight: '600', color: textPrimary, textTransform: 'capitalize' }}>
                 {trip.tariff.code}
               </Text>
             </View>
@@ -126,33 +137,33 @@ const ActiveTripPanel = ({ trip, onTripCompleted }: ActiveTripPanelProps) => {
 
         {/* Actions */}
         {isLoading ? (
-          <ActivityIndicator size="small" color="#0CC25F" className="my-2" />
+          <ActivityIndicator size="small" color="#0CC25F" style={{ marginVertical: 8 }} />
         ) : (
-          <View className="flex-row gap-3">
+          <View style={{ flexDirection: 'row', gap: 10 }}>
             {trip.status === 'accepted' && (
               <TouchableOpacity
-                className="flex-1 bg-blue-500 py-3 rounded-xl items-center"
+                style={{ flex: 1, backgroundColor: '#3b82f6', paddingVertical: 12, borderRadius: 12, alignItems: 'center' }}
                 onPress={() => updateStatus('on_route')}
               >
-                <Text className="text-white font-JakartaSemiBold">Picked Up</Text>
+                <Text style={{ color: 'white', fontWeight: '700' }}>Picked Up</Text>
               </TouchableOpacity>
             )}
 
             {trip.status === 'on_route' && (
               <TouchableOpacity
-                className="flex-1 bg-[#0CC25F] py-3 rounded-xl items-center"
+                style={{ flex: 1, backgroundColor: '#0CC25F', paddingVertical: 12, borderRadius: 12, alignItems: 'center' }}
                 onPress={() => updateStatus('completed')}
               >
-                <Text className="text-white font-JakartaSemiBold">Complete Ride</Text>
+                <Text style={{ color: 'white', fontWeight: '700' }}>Complete Ride</Text>
               </TouchableOpacity>
             )}
 
             {(trip.status === 'accepted' || trip.status === 'on_route') && (
               <TouchableOpacity
-                className="px-5 py-3 rounded-xl border border-red-300 items-center"
+                style={{ paddingHorizontal: 18, paddingVertical: 12, borderRadius: 12, borderWidth: 1, borderColor: '#fca5a5', alignItems: 'center' }}
                 onPress={handleCancel}
               >
-                <Text className="text-red-500 font-JakartaSemiBold">Cancel</Text>
+                <Text style={{ color: '#ef4444', fontWeight: '600' }}>Cancel</Text>
               </TouchableOpacity>
             )}
           </View>
